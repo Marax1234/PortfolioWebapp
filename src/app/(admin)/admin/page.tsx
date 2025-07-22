@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { useCurrentUser } from "@/components/auth/session-check"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,19 +9,25 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   Images, 
   Users, 
-  BarChart3, 
   Clock, 
   CheckCircle,
   AlertTriangle,
-  Eye
+  PlusCircle,
+  Folder,
+  Star,
+  TrendingUp
 } from "lucide-react"
+import { PortfolioApi } from "@/lib/portfolio-api"
 
 interface DashboardStats {
   totalPortfolioItems: number
   publishedItems: number
   draftItems: number
-  totalInquiries: number
-  newInquiries: number
+  reviewItems: number
+  archivedItems: number
+  totalCategories: number
+  activeCategories: number
+  featuredItems: number
   totalViews: number
   recentActivity: string[]
 }
@@ -38,27 +45,76 @@ export default function AdminDashboard() {
         setIsLoading(true)
         setError(null)
 
-        // Mock data - in real app, fetch from API
-        const mockStats: DashboardStats = {
-          totalPortfolioItems: 8,
-          publishedItems: 8,
-          draftItems: 0,
-          totalInquiries: 2,
-          newInquiries: 1,
-          totalViews: 1247,
-          recentActivity: [
-            "New inquiry from Maria Schmidt",
-            "Portfolio item 'Alpenglow in the Bavarian Alps' published",
-            "Category 'Nature Photography' updated",
-            "New portfolio item draft saved"
-          ]
+        // Fetch real data from API
+        const [portfolioResponse, categoriesData] = await Promise.all([
+          PortfolioApi.fetchPortfolioItems({ limit: 1000 }), // Get all for stats
+          PortfolioApi.fetchCategories()
+        ])
+
+        const portfolioItems = portfolioResponse.items
+
+        // Calculate statistics
+        const statusCounts = portfolioItems.reduce((acc, item) => {
+          acc[item.status] = (acc[item.status] || 0) + 1
+          return acc
+        }, {} as Record<string, number>)
+
+        const totalViews = portfolioItems.reduce((sum, item) => sum + item.viewCount, 0)
+        const featuredCount = portfolioItems.filter(item => item.featured).length
+        const activeCategories = categoriesData.filter(cat => cat.isActive).length
+
+        // Generate recent activity based on real data
+        const recentActivity: string[] = []
+        
+        // Add recent portfolio items
+        const recentItems = portfolioItems
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 3)
+        
+        recentItems.forEach(item => {
+          const daysAgo = Math.floor(
+            (new Date().getTime() - new Date(item.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+          )
+          if (daysAgo <= 7) {
+            recentActivity.push(
+              `Portfolio item "${item.title}" ${item.status === 'PUBLISHED' ? 'published' : 'created'} ${
+                daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : `${daysAgo} days ago`
+              }`
+            )
+          }
+        })
+
+        // Add category activity
+        if (categoriesData.length > 0) {
+          recentActivity.push(`${categoriesData.length} categories available`)
         }
 
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setStats(mockStats)
+        // Add generic activity if no recent items
+        if (recentActivity.length === 0) {
+          recentActivity.push(
+            "Dashboard loaded successfully",
+            "Portfolio system operational",
+            `${portfolioItems.length} portfolio items managed`,
+            "Ready to create new content"
+          )
+        }
+
+        const dashboardStats: DashboardStats = {
+          totalPortfolioItems: portfolioItems.length,
+          publishedItems: statusCounts['PUBLISHED'] || 0,
+          draftItems: statusCounts['DRAFT'] || 0,
+          reviewItems: statusCounts['REVIEW'] || 0,
+          archivedItems: statusCounts['ARCHIVED'] || 0,
+          totalCategories: categoriesData.length,
+          activeCategories: activeCategories,
+          featuredItems: featuredCount,
+          totalViews: totalViews,
+          recentActivity: recentActivity.slice(0, 5) // Show max 5 activities
+        }
+
+        setStats(dashboardStats)
       } catch (err) {
-        setError('Failed to load dashboard statistics')
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard statistics')
         console.error('Dashboard error:', err)
       } finally {
         setIsLoading(false)
@@ -106,20 +162,40 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        <Button>
-          <Images className="w-4 h-4 mr-2" />
-          New Portfolio Item
-        </Button>
-        <Button variant="outline">
-          <Users className="w-4 h-4 mr-2" />
-          View Inquiries
-        </Button>
-        <Button variant="outline">
-          <BarChart3 className="w-4 h-4 mr-2" />
-          Analytics
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Quick Actions</CardTitle>
+          <CardDescription>Common tasks and navigation shortcuts</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <Button asChild className="h-auto p-4">
+              <Link href="/admin/portfolio/create" className="flex flex-col items-center space-y-2">
+                <PlusCircle className="w-6 h-6" />
+                <span className="text-sm font-medium">New Portfolio Item</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto p-4">
+              <Link href="/admin/portfolio" className="flex flex-col items-center space-y-2">
+                <Images className="w-6 h-6" />
+                <span className="text-sm font-medium">Manage Portfolio</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto p-4">
+              <Link href="/admin/categories" className="flex flex-col items-center space-y-2">
+                <Folder className="w-6 h-6" />
+                <span className="text-sm font-medium">Manage Categories</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto p-4">
+              <Link href="/admin/inquiries" className="flex flex-col items-center space-y-2">
+                <Users className="w-6 h-6" />
+                <span className="text-sm font-medium">View Inquiries</span>
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Statistics Cards */}
       {isLoading ? (
@@ -135,9 +211,9 @@ export default function AdminDashboard() {
           ))}
         </div>
       ) : stats && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
           {/* Total Portfolio Items */}
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Portfolio Items</CardTitle>
               <Images className="h-4 w-4 text-muted-foreground" />
@@ -151,7 +227,7 @@ export default function AdminDashboard() {
           </Card>
 
           {/* Published Items */}
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Published</CardTitle>
               <CheckCircle className="h-4 w-4 text-green-600" />
@@ -164,30 +240,44 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Inquiries */}
-          <Card>
+          {/* Featured Items */}
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Inquiries</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Featured</CardTitle>
+              <Star className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalInquiries}</div>
+              <div className="text-2xl font-bold">{stats.featuredItems}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.newInquiries} new this week
+                Highlighted items
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Categories */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Categories</CardTitle>
+              <Folder className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.activeCategories}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.totalCategories} total categories
               </p>
             </CardContent>
           </Card>
 
           {/* Total Views */}
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <TrendingUp className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalViews.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                Portfolio views this month
+                Portfolio engagement
               </p>
             </CardContent>
           </Card>
@@ -219,28 +309,46 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
-            <CardDescription>Portfolio performance overview</CardDescription>
+            <CardTitle>Content Status</CardTitle>
+            <CardDescription>Portfolio content breakdown</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Featured Items</span>
-                <span className="text-sm font-medium">4</span>
+                <span className="text-sm text-slate-600">Published</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium">{stats.publishedItems}</span>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Active Categories</span>
-                <span className="text-sm font-medium">4</span>
+                <span className="text-sm text-slate-600">Drafts</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium">{stats.draftItems}</span>
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Newsletter Subscribers</span>
-                <span className="text-sm font-medium">3</span>
+                <span className="text-sm text-slate-600">In Review</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium">{stats.reviewItems}</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Account Status</span>
-                <span className="text-sm font-medium text-green-600">
-                  Active
-                </span>
+                <span className="text-sm text-slate-600">Archived</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium">{stats.archivedItems}</span>
+                  <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                </div>
+              </div>
+              <div className="pt-2 border-t">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600">System Status</span>
+                  <span className="text-sm font-medium text-green-600">
+                    ✓ Operational
+                  </span>
+                </div>
               </div>
             </div>
           </CardContent>
