@@ -4,12 +4,12 @@ import { Instagram, Mail, Phone, MapPin } from "lucide-react"
 const socialLinks = [
   {
     name: "Instagram",
-    href: "https://instagram.com/photographer",
+    href: "https://www.instagram.com/strategieutopie/",
     icon: Instagram,
   },
   {
     name: "Email",
-    href: "mailto:contact@photographer.com",
+    href: "mailto:kilian.seibert@web.de",
     icon: Mail,
   },
 ]
@@ -17,12 +17,12 @@ const socialLinks = [
 const contactInfo = [
   {
     name: "Phone",
-    value: "+49 123 456 789",
+    value: "+49 1514 1200330",
     icon: Phone,
   },
   {
     name: "Location",
-    value: "Munich, Germany",
+    value: "Germany, Munich",
     icon: MapPin,
   },
 ]
@@ -31,19 +31,19 @@ const footerLinks = [
   {
     title: "Portfolio",
     links: [
-      { name: "Weddings", href: "/portfolio?category=wedding" },
-      { name: "Portraits", href: "/portfolio?category=portrait" },
+      { name: "Nature", href: "/portfolio?category=nature" },
+      { name: "Travel", href: "/portfolio?category=travel" },
       { name: "Events", href: "/portfolio?category=event" },
-      { name: "Commercial", href: "/portfolio?category=commercial" },
+      { name: "Videography", href: "/portfolio?category=videography" },
     ],
   },
   {
     title: "Services",
     links: [
-      { name: "Wedding Photography", href: "/services/wedding" },
-      { name: "Portrait Sessions", href: "/services/portrait" },
+      { name: "Nature Photography", href: "/services/nature" },
+      { name: "Travel Photography", href: "/services/travel" },
       { name: "Event Photography", href: "/services/event" },
-      { name: "Commercial Work", href: "/services/commercial" },
+      { name: "Videography", href: "/services/videography" },
     ],
   },
   {
@@ -72,7 +72,7 @@ export function Footer() {
               </div>
               <p className="text-muted-foreground mb-6 max-w-md">
                 Capturing life&apos;s precious moments through the lens of creativity 
-                and passion. Professional photography services in Munich and beyond.
+                and passion. Professional photography and videography services throughout Germany.
               </p>
               
               {/* Contact Information */}

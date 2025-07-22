@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Mail, Phone, MapPin, Camera, Clock, Award } from "lucide-react"
+import { Mail, Phone, MapPin, User, Clock, Award } from "lucide-react"
 
 export default function ContactPage() {
   return (
@@ -11,9 +11,9 @@ export default function ContactPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Get In Touch</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Kontakt</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Ready to capture your special moments? Let&apos;s discuss your photography needs and create something beautiful together.
+            Hallo! Ich bin Kilian Siebert, ein visueller Geschichtenerzähler mit einer Leidenschaft für Fotografie und Videografie. Lassen Sie uns gemeinsam Ihre Geschichte erzählen!
           </p>
         </div>
 
@@ -22,17 +22,17 @@ export default function ContactPage() {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Send a Message</CardTitle>
+                <CardTitle className="text-2xl">Nachricht Senden</CardTitle>
               </CardHeader>
               <CardContent>
                 <form className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">First Name</Label>
+                      <Label htmlFor="firstName">Vorname</Label>
                       <Input id="firstName" name="firstName" type="text" required />
                     </div>
                     <div>
-                      <Label htmlFor="lastName">Last Name</Label>
+                      <Label htmlFor="lastName">Nachname</Label>
                       <Input id="lastName" name="lastName" type="text" required />
                     </div>
                   </div>
@@ -43,45 +43,47 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="phone">Phone (Optional)</Label>
+                    <Label htmlFor="phone">Telefon (Optional)</Label>
                     <Input id="phone" name="phone" type="tel" />
                   </div>
                   
                   <div>
-                    <Label htmlFor="service">Service Interest</Label>
+                    <Label htmlFor="service">Service</Label>
                     <select 
                       id="service" 
                       name="service" 
                       className="w-full p-3 border rounded-md bg-background"
                       required
                     >
-                      <option value="">Select a service</option>
-                      <option value="wedding">Wedding Photography</option>
-                      <option value="portrait">Portrait Session</option>
-                      <option value="event">Event Photography</option>
-                      <option value="commercial">Commercial Work</option>
-                      <option value="other">Other</option>
+                      <option value="">Service auswählen</option>
+                      <option value="nature">Naturfotografie</option>
+                      <option value="travel">Reisefotografie</option>
+                      <option value="event">Eventfotografie</option>
+                      <option value="portrait">Portraits</option>
+                      <option value="corporate-video">Imagefilm</option>
+                      <option value="social-media">Social-Media-Inhalte</option>
+                      <option value="other">Anderes</option>
                     </select>
                   </div>
                   
                   <div>
-                    <Label htmlFor="eventDate">Event Date (If applicable)</Label>
+                    <Label htmlFor="eventDate">Datum des Events (falls zutreffend)</Label>
                     <Input id="eventDate" name="eventDate" type="date" />
                   </div>
                   
                   <div>
-                    <Label htmlFor="message">Tell me about your project</Label>
+                    <Label htmlFor="message">Erzählen Sie mir von Ihrem Projekt</Label>
                     <Textarea 
                       id="message" 
                       name="message" 
                       rows={5}
-                      placeholder="Please describe your photography needs, vision, location, and any other important details..."
+                      placeholder="Bitte beschreiben Sie Ihr Projekt, Ihre Vision, den Ort und andere wichtige Details..."
                       required 
                     />
                   </div>
                   
                   <Button type="submit" className="w-full" size="lg">
-                    Send Message
+                    Nachricht Senden
                   </Button>
                 </form>
               </CardContent>
@@ -95,17 +97,17 @@ export default function ContactPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Mail className="h-5 w-5" />
-                  Contact Information
+                  Kontaktinformationen
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>+49 123 456 789</span>
+                  <span>+49 1514 1200330</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>contact@photographer.com</span>
+                  <span>kilian.seibert@web.de</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -114,18 +116,19 @@ export default function ContactPage() {
               </CardContent>
             </Card>
 
-            {/* Photography Style */}
+            {/* About Me */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Camera className="h-5 w-5" />
-                  Photography Style
+                  <User className="h-5 w-5" />
+                  Über Mich
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  I specialize in capturing authentic moments with a blend of photojournalistic and artistic styles. 
-                  My approach focuses on natural lighting, genuine emotions, and timeless compositions.
+                  Ich bin ein 20-jähriger visueller Geschichtenerzähler mit einer brennenden Leidenschaft für Fotografie und Videografie. Was als neugieriges Ausprobieren begann, hat sich schnell zu einer tiefen Passion entwickelt.
+                  <br/><br/>
+                  Besonders begeistert mich die Vielfalt der Reise-, Event- und Naturfotografie. Neben der Fotografie bin ich auch aktiv im Bereich der Videografie tätig, von packenden Imagefilmen bis zu aufmerksamkeitsstarken Werbepostings für soziale Medien.
                 </p>
               </CardContent>
             </Card>
@@ -135,13 +138,13 @@ export default function ContactPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
-                  Response Time
+                  Antwortzeit
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  I typically respond to inquiries within 24 hours. For urgent requests, 
-                  please call directly and I&apos;ll do my best to accommodate your timeline.
+                  Ich antworte auf Anfragen in der Regel innerhalb von 24 Stunden. Für dringende Anfragen, 
+                  rufen Sie mich bitte direkt an.
                 </p>
               </CardContent>
             </Card>
@@ -151,15 +154,15 @@ export default function ContactPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Award className="h-5 w-5" />
-                  Experience
+                  Erfahrung
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <div>• 5+ years professional experience</div>
-                  <div>• 100+ weddings photographed</div>
-                  <div>• Published in photography magazines</div>
-                  <div>• Available for travel worldwide</div>
+                  <div>• 2 Jahre Erfahrung in Fotografie & Videografie</div>
+                  <div>• Spezialisiert auf Reise-, Event- & Naturfotografie</div>
+                  <div>• Videoproduktion für Imagefilme & Social Media</div>
+                  <div>• Weltweit für Projekte verfügbar</div>
                 </div>
               </CardContent>
             </Card>
@@ -168,30 +171,30 @@ export default function ContactPage() {
 
         {/* FAQ Section */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">Häufig gestellte Fragen</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             <div>
-              <h3 className="font-semibold mb-2">How far in advance should I book?</h3>
+              <h3 className="font-semibold mb-2">Wie weit im Voraus sollte ich buchen?</h3>
               <p className="text-muted-foreground text-sm">
-                I recommend booking 6-12 months in advance for weddings, and 2-4 weeks for portrait sessions.
+                Für größere Projekte und Reisen empfehle ich eine frühzeitige Anfrage. Porträtsitzungen sind oft auch kurzfristiger möglich.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Do you travel for shoots?</h3>
+              <h3 className="font-semibold mb-2">Reisen Sie für Aufträge?</h3>
               <p className="text-muted-foreground text-sm">
-                Yes! I&apos;m available for destination weddings and shoots worldwide. Travel fees apply for locations outside Munich.
+                Ja! Ich bin weltweit für Projekte verfügbar. Für Aufträge außerhalb von München fallen Reisekosten an.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">How long until I receive my photos?</h3>
+              <h3 className="font-semibold mb-2">Wie lange dauert es bis zur Lieferung?</h3>
               <p className="text-muted-foreground text-sm">
-                Wedding galleries are delivered within 4-6 weeks, while portrait sessions are ready in 1-2 weeks.
+                Fotogalerien sind meist innerhalb von 2-3 Wochen fertig. Videos benötigen je nach Umfang ca. 3-4 Wochen.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">What&apos;s included in your packages?</h3>
+              <h3 className="font-semibold mb-2">Was beinhalten Ihre Pakete?</h3>
               <p className="text-muted-foreground text-sm">
-                All packages include professional editing, online gallery delivery, and printing rights. Specific details vary by service.
+                Alle Pakete beinhalten professionelle Bearbeitung, eine Online-Galerie und Nutzungsrechte. Details variieren je nach Service.
               </p>
             </div>
           </div>

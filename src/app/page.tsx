@@ -2,21 +2,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Camera, Heart, Users, Building } from "lucide-react";
+import { ArrowRight, Camera, Mountain, Users, Video } from "lucide-react";
 
 // Mock data for portfolio preview
 const portfolioPreview = [
   {
     id: 1,
     src: "/images/portfolio/portfolio-1.jpg",
-    alt: "Wedding Photography",
-    category: "Wedding",
+    alt: "Nature Photography",
+    category: "Nature",
   },
   {
     id: 2,
     src: "/images/portfolio/portfolio-2.jpg",
-    alt: "Portrait Photography",
-    category: "Portrait",
+    alt: "Travel Photography",
+    category: "Travel",
   },
   {
     id: 3,
@@ -27,47 +27,47 @@ const portfolioPreview = [
   {
     id: 4,
     src: "/images/portfolio/portfolio-4.jpg",
-    alt: "Commercial Photography",
-    category: "Commercial",
+    alt: "Corporate Videography",
+    category: "Videography",
   },
   {
     id: 5,
     src: "/images/portfolio/portfolio-5.jpg",
-    alt: "Wedding Moments",
-    category: "Wedding",
+    alt: "Nature Landscapes",
+    category: "Nature",
   },
   {
     id: 6,
     src: "/images/portfolio/portfolio-6.jpg",
-    alt: "Professional Portrait",
-    category: "Portrait",
+    alt: "Travel Adventures",
+    category: "Travel",
   },
 ];
 
 const services = [
   {
-    icon: Heart,
-    title: "Wedding Photography",
-    description: "Capturing your special day with creativity and elegance. From intimate ceremonies to grand celebrations.",
-    href: "/services/wedding",
+    icon: Mountain,
+    title: "Nature Photography",
+    description: "Capturing the raw beauty and untouched splendor of nature in all its magnificent forms and seasons.",
+    href: "/services/nature",
   },
   {
     icon: Camera,
-    title: "Portrait Sessions",
-    description: "Professional headshots and personal portraits that showcase your unique personality and style.",
-    href: "/services/portrait",
+    title: "Travel Photography",
+    description: "Documenting unique journeys and adventures, preserving the essence and memories of special destinations.",
+    href: "/services/travel",
   },
   {
     icon: Users,
     title: "Event Photography",
-    description: "Corporate events, parties, and celebrations documented with professional expertise.",
+    description: "Corporate events, parties, and celebrations documented with professional expertise and creative vision.",
     href: "/services/event",
   },
   {
-    icon: Building,
-    title: "Commercial Work",
-    description: "Product photography, corporate imaging, and commercial projects tailored to your business needs.",
-    href: "/services/commercial",
+    icon: Video,
+    title: "Corporate Videography",
+    description: "Professional imagefilms and social media content creation that tells your brand story with impact.",
+    href: "/services/videography",
   },
 ];
 
@@ -93,7 +93,7 @@ export default function Home() {
             <span className="block text-accent">Precious Moments</span>
           </h1>
           <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed">
-            Professional photography services specializing in weddings, portraits, and events. 
+            Professional photography and videography services specializing in travel, events, and nature photography. 
             Every moment deserves to be preserved with artistic vision and technical excellence.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -118,7 +118,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Recent Work</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              A glimpse into my latest photography projects across weddings, portraits, and events.
+              A glimpse into my latest photography projects across travel, events, and nature.
             </p>
           </div>
           
@@ -162,7 +162,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Photography Services</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Specialized photography services tailored to capture your most important moments with professional excellence.
+              Specialized photography and videography services tailored to capture your adventures and important moments with professional excellence.
             </p>
           </div>
           
@@ -199,8 +199,8 @@ export default function Home() {
             Ready to Capture Your Story?
           </h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto opacity-90">
-            Let&apos;s discuss your photography needs and create something beautiful together. 
-            Every story deserves to be told through exceptional imagery.
+            Let&apos;s discuss your photography and videography needs and create something beautiful together. 
+            Every story deserves to be told through exceptional visual content.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button asChild size="lg" variant="secondary">

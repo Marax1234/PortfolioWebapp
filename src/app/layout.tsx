@@ -16,26 +16,26 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Portfolio - Professional Photography",
-    template: "%s | Portfolio"
+    default: "Kilian Siebert - Photography & Videography",
+    template: "%s | Kilian Siebert"
   },
-  description: "Professional photography services specializing in weddings, portraits, and events. Capturing life's precious moments with creativity and passion.",
-  keywords: ["photography", "photographer", "wedding", "portrait", "event", "professional", "Munich"],
-  authors: [{ name: "Portfolio Photographer" }],
-  creator: "Portfolio Photographer",
+  description: "Professional photography and videography services specializing in travel, event, and nature photography. Visual storytelling with passion and creativity by Kilian Siebert.",
+  keywords: ["photography", "photographer", "nature", "travel", "event", "videography", "professional", "Germany", "Kilian Siebert"],
+  authors: [{ name: "Kilian Siebert" }],
+  creator: "Kilian Siebert",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   openGraph: {
     type: "website",
     locale: "en_US",
     url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-    title: "Portfolio - Professional Photography",
-    description: "Professional photography services specializing in weddings, portraits, and events.",
-    siteName: "Portfolio Photography",
+    title: "Kilian Siebert - Photography & Videography",
+    description: "Professional photography and videography services specializing in travel, event, and nature photography.",
+    siteName: "Kilian Siebert Photography",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Portfolio - Professional Photography",
-    description: "Professional photography services specializing in weddings, portraits, and events.",
+    title: "Kilian Siebert - Photography & Videography",
+    description: "Professional photography and videography services specializing in travel, event, and nature photography.",
   },
 };
 

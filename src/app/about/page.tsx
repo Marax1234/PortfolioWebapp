@@ -1,15 +1,15 @@
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Camera, Award, Users, Heart } from "lucide-react"
+import { Camera, Award, Users, Mountain, Video } from "lucide-react"
 import Link from "next/link"
 
 export default function AboutPage() {
   const stats = [
-    { icon: Camera, value: "500+", label: "Photo Sessions" },
-    { icon: Heart, value: "100+", label: "Weddings" },
-    { icon: Users, value: "1000+", label: "Happy Clients" },
-    { icon: Award, value: "5+", label: "Years Experience" },
+    { icon: Camera, value: "200+", label: "Photo Sessions" },
+    { icon: Mountain, value: "50+", label: "Nature Shoots" },
+    { icon: Users, value: "150+", label: "Happy Clients" },
+    { icon: Award, value: "2", label: "Years Experience" },
   ]
 
   const values = [
@@ -38,18 +38,18 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Hello, I&apos;m a 
-              <span className="text-primary"> Photography Enthusiast</span>
+              Hello, I&apos;m 
+              <span className="text-primary"> Kilian Siebert</span>
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
-              With over 5 years of experience in professional photography, I&apos;ve had the privilege of capturing 
-              life&apos;s most precious moments for hundreds of clients. From intimate wedding ceremonies to corporate 
-              events, my passion lies in telling stories through the lens of creativity and authenticity.
+              A 20-year-old visual storyteller with a burning passion for photography and videography. Although I only began 
+              my journey into the world of visual creation two years ago, it was love at first click. What started as curious 
+              experimentation has quickly developed into a deep passion that drives me to capture the beauty of the world around me.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-8">
-              Based in Munich, Germany, I specialize in wedding photography, portrait sessions, and event documentation. 
-              My approach combines photojournalistic storytelling with artistic vision, ensuring that every image 
-              captures not just how things looked, but how they felt.
+              Based in Germany, I specialize in travel, event, and nature photography, along with corporate videography. 
+              My approach combines authentic storytelling with creative vision, ensuring that every image and video 
+              captures not just how things looked, but the emotions and stories behind them.
             </p>
             <Button asChild size="lg">
               <Link href="/contact">
@@ -67,7 +67,7 @@ export default function AboutPage() {
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-2xl">
-              <div className="text-2xl font-bold">5+</div>
+              <div className="text-2xl font-bold">2</div>
               <div className="text-sm">Years Experience</div>
             </div>
           </div>
@@ -93,9 +93,9 @@ export default function AboutPage() {
         {/* Photography Philosophy */}
         <div className="mb-16">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">My Photography Philosophy</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">My Visual Storytelling Philosophy</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Every photograph should tell a story, evoke emotion, and capture the essence of the moment.
+              Every photograph and video should tell a story, evoke emotion, and capture the unique beauty of nature, travel, and life&apos;s special moments.
             </p>
           </div>
           
@@ -114,20 +114,21 @@ export default function AboutPage() {
         {/* Equipment & Process */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           <div>
-            <h2 className="text-2xl font-bold mb-6">Equipment & Approach</h2>
+            <h2 className="text-2xl font-bold mb-6">My Journey & Approach</h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                I use professional-grade Canon equipment, including the latest mirrorless cameras and a selection 
-                of prime and zoom lenses to ensure the highest image quality in any lighting condition.
+                My photographic journey particularly excites me through the diversity of travel, event, and nature photography. 
+                It&apos;s the greatest privilege for me to capture the unique moments of a journey, document the vibrant atmosphere 
+                of events, or showcase nature&apos;s untouched splendor in all its facets.
               </p>
               <p>
-                My shooting style is unobtrusive and natural, allowing genuine moments to unfold while being ready 
-                to capture both planned shots and spontaneous emotions. I believe the best photographs happen when 
-                people feel comfortable and relaxed.
+                In addition to photography, I&apos;m also active in videography. Whether creating compelling corporate imagefilms 
+                or attention-grabbing advertising content for social media - I love using moving images to convey messages 
+                and captivate viewers.
               </p>
               <p>
-                Post-processing is done with care and attention to detail, enhancing the natural beauty of each 
-                image while maintaining authentic colors and tones that will stand the test of time.
+                My goal is not just to document, but to tell stories that remain in memory. I&apos;m constantly seeking new 
+                challenges and opportunities to develop my skills and create unique visual content.
               </p>
             </div>
           </div>
@@ -136,11 +137,11 @@ export default function AboutPage() {
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <div className="p-1 rounded bg-primary/10 mt-1">
-                  <Heart className="h-4 w-4 text-primary" />
+                  <Mountain className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Wedding Photography</h3>
-                  <p className="text-sm text-muted-foreground">Complete wedding day coverage from preparation to celebration</p>
+                  <h3 className="font-semibold">Nature Photography</h3>
+                  <p className="text-sm text-muted-foreground">Capturing the raw beauty and untouched splendor of nature in all its magnificent forms</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -148,8 +149,8 @@ export default function AboutPage() {
                   <Camera className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Portrait Sessions</h3>
-                  <p className="text-sm text-muted-foreground">Professional headshots, family portraits, and personal branding</p>
+                  <h3 className="font-semibold">Travel Photography</h3>
+                  <p className="text-sm text-muted-foreground">Documenting unique journeys and adventures, preserving memories of special destinations</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -157,8 +158,17 @@ export default function AboutPage() {
                   <Users className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Event Documentation</h3>
-                  <p className="text-sm text-muted-foreground">Corporate events, celebrations, and special occasions</p>
+                  <h3 className="font-semibold">Event Photography</h3>
+                  <p className="text-sm text-muted-foreground">Corporate events, celebrations, and special occasions documented with professional expertise</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-1 rounded bg-primary/10 mt-1">
+                  <Video className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Corporate Videography</h3>
+                  <p className="text-sm text-muted-foreground">Professional imagefilms and social media content that tells your brand story with impact</p>
                 </div>
               </div>
             </div>
@@ -169,8 +179,8 @@ export default function AboutPage() {
         <div className="text-center bg-muted/30 rounded-2xl p-8 md:p-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to Create Something Beautiful?</h2>
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Whether you&apos;re planning a wedding, need professional portraits, or want to document a special event, 
-            I&apos;d love to hear about your vision and discuss how we can bring it to life.
+            Whether you&apos;re planning an adventure, need corporate videography, or want to document nature&apos;s beauty, 
+            I&apos;d love to hear about your vision and discuss how we can bring it to life through visual storytelling.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg">
