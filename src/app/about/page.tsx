@@ -60,7 +60,7 @@ export default function AboutPage() {
           <div className="relative">
             <div className="aspect-[3/4] relative rounded-2xl overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=800&fit=crop"
+                src="/images/mein-portrait.JPG"
                 alt="Photographer portrait"
                 fill
                 className="object-cover"

@@ -8,37 +8,37 @@ import { ArrowRight, Camera, Heart, Users, Building } from "lucide-react";
 const portfolioPreview = [
   {
     id: 1,
-    src: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=500&h=600&fit=crop",
+    src: "/images/portfolio/portfolio-1.jpg",
     alt: "Wedding Photography",
     category: "Wedding",
   },
   {
     id: 2,
-    src: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=500&h=400&fit=crop",
+    src: "/images/portfolio/portfolio-2.jpg",
     alt: "Portrait Photography",
     category: "Portrait",
   },
   {
     id: 3,
-    src: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=500&h=700&fit=crop",
+    src: "/images/portfolio/portfolio-3.jpg",
     alt: "Event Photography",
     category: "Event",
   },
   {
     id: 4,
-    src: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=500&h=500&fit=crop",
+    src: "/images/portfolio/portfolio-4.jpg",
     alt: "Commercial Photography",
     category: "Commercial",
   },
   {
     id: 5,
-    src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=500&h=600&fit=crop",
+    src: "/images/portfolio/portfolio-5.jpg",
     alt: "Wedding Moments",
     category: "Wedding",
   },
   {
     id: 6,
-    src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=500&h=400&fit=crop",
+    src: "/images/portfolio/portfolio-6.jpg",
     alt: "Professional Portrait",
     category: "Portrait",
   },
@@ -78,7 +78,7 @@ export default function Home() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1920&h=1080&fit=crop"
+            src="/images/hero/HeroStart.jpg"
             alt="Featured Photography"
             fill
             className="object-cover"

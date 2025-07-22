@@ -9,7 +9,7 @@ import type { PortfolioItem } from "@/components/gallery/PortfolioGrid"
 const portfolioItems: PortfolioItem[] = [
   {
     id: 1,
-    src: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=600&h=900&fit=crop",
+    src: "/images/portfolio/portfolio-1.jpg",
     alt: "Elegant Wedding Ceremony",
     category: "Wedding",
     title: "Elegant Wedding Ceremony",
@@ -19,7 +19,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 2,
-    src: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=600&h=400&fit=crop",
+    src: "/images/portfolio/portfolio-2.jpg",
     alt: "Corporate Portrait Session",
     category: "Portrait",
     title: "Corporate Portrait Session",
@@ -29,7 +29,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 3,
-    src: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&h=800&fit=crop",
+    src: "/images/portfolio/portfolio-3.jpg",
     alt: "Conference Event",
     category: "Event",
     title: "Conference Event",
@@ -39,7 +39,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 4,
-    src: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=600&h=600&fit=crop",
+    src: "/images/portfolio/portfolio-4.jpg",
     alt: "Product Photography",
     category: "Commercial",
     title: "Product Photography",
@@ -49,7 +49,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 5,
-    src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&h=750&fit=crop",
+    src: "/images/portfolio/portfolio-5.jpg",
     alt: "Wedding Reception Dance",
     category: "Wedding",
     title: "Wedding Reception Dance",
@@ -59,7 +59,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 6,
-    src: "https://images.unsplash.com/photo-1554080353-a576cf803bda?w=600&h=400&fit=crop",
+    src: "/images/portfolio/portfolio-6.jpg",
     alt: "Professional Headshot",
     category: "Portrait",
     title: "Professional Headshot",
@@ -69,7 +69,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 7,
-    src: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=800&fit=crop",
+    src: "/images/portfolio/portfolio-7.jpg",
     alt: "Wedding Preparation",
     category: "Wedding",
     title: "Wedding Preparation",
@@ -79,7 +79,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 8,
-    src: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&h=900&fit=crop",
+    src: "/images/portfolio/portfolio-8.jpg",
     alt: "Business Meeting",
     category: "Commercial",
     title: "Business Meeting",
@@ -89,7 +89,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 9,
-    src: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop",
+    src: "/images/portfolio/portfolio-9.jpg",
     alt: "Outdoor Event",
     category: "Event",
     title: "Outdoor Event",
@@ -99,7 +99,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 10,
-    src: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=750&fit=crop",
+    src: "/images/portfolio/portfolio-10.jpg",
     alt: "Creative Portrait",
     category: "Portrait",
     title: "Creative Portrait",
@@ -109,7 +109,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 11,
-    src: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=600&h=800&fit=crop",
+    src: "/images/portfolio/portfolio-11.jpg",
     alt: "Romantic Wedding Moment",
     category: "Wedding",
     title: "Romantic Wedding Moment",
@@ -119,7 +119,7 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 12,
-    src: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=600&fit=crop",
+    src: "/images/portfolio/portfolio-12.jpg",
     alt: "Architecture Photography",
     category: "Commercial",
     title: "Architecture Photography",
