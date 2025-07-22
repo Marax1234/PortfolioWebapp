@@ -8,10 +8,10 @@ import { PortfolioQueries, handlePrismaError } from '@/lib/db-utils'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     // Validate ID parameter
     if (!id || typeof id !== 'string') {
@@ -55,7 +55,8 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error(`Error fetching portfolio item ${params.id}:`, error)
+    const { id } = await params
+    console.error(`Error fetching portfolio item ${id}:`, error)
     const { error: errorMessage, code } = handlePrismaError(error)
     
     return NextResponse.json(

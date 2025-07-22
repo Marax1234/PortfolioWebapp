@@ -3,10 +3,10 @@
  * GET /api/categories - Fetch all active categories with portfolio item counts
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { CategoryQueries, handlePrismaError } from '@/lib/db-utils'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Fetch all active categories with portfolio item counts
     const categories = await CategoryQueries.getActiveWithCounts()

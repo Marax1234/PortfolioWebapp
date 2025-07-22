@@ -17,7 +17,7 @@ export type CategoryWithCount = Prisma.CategoryGetPayload<{
   include: { _count: { select: { portfolioItems: true } } }
 }>
 
-export type UserSafe = Omit<Prisma.UserGetPayload<{}>, 'passwordHash' | 'verificationToken' | 'resetToken'>
+export type UserSafe = Omit<Prisma.UserGetPayload<Record<string, never>>, 'passwordHash' | 'verificationToken' | 'resetToken'>
 
 /**
  * Portfolio Item Queries
@@ -193,6 +193,7 @@ export class UserQueries {
     if (!user) return null
 
     // Remove sensitive fields
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, verificationToken, resetToken, ...safeUser } = user
     return safeUser
   }
@@ -221,7 +222,7 @@ export class AnalyticsQueries {
     return prisma.analyticsEvent.create({
       data: {
         eventType: 'page_view',
-        eventData: { pageUrl },
+        eventData: JSON.stringify({ pageUrl }),
         userAgent,
         referrer,
         sessionId,
