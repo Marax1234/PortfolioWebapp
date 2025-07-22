@@ -1,6 +1,6 @@
 /**
- * Database Seed Script for Kilian Siebert Portfolio
- * Creates test data for development and testing
+ * Updated Database Seed Script - With working image paths
+ * Lösung für 404-Fehler bei Portfolio-Bildern
  */
 
 import { PrismaClient } from '@prisma/client'
@@ -20,7 +20,7 @@ async function main() {
       lastName: 'Siebert',
       role: 'ADMIN',
       emailVerified: true,
-      passwordHash: '$2a$10$dummy.hash.for.development' // In real app, use proper hash
+      passwordHash: '$2a$10$dummy.hash.for.development'
     }
   })
 
@@ -76,15 +76,16 @@ async function main() {
 
   console.log('✅ Created categories:', categories.map(c => c.name))
 
-  // Create sample portfolio items
+  // Create sample portfolio items with WORKING image paths
+  // Using placeholder images from Unsplash (configured in next.config.ts)
   const portfolioItems = [
     // Nature Photography
     {
       title: 'Alpenglow in the Bavarian Alps',
       description: 'Golden hour light illuminating the mountain peaks during a winter morning in Bavaria.',
       mediaType: 'IMAGE' as const,
-      filePath: '/images/portfolio/nature/bavarian-alps-1.jpg',
-      thumbnailPath: '/images/portfolio/nature/thumbs/bavarian-alps-1.jpg',
+      filePath: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop',
+      thumbnailPath: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
       tags: '["landscape", "mountains", "golden hour", "bavaria", "winter"]',
       metadata: '{"camera": "Sony A7R IV", "lens": "24-70mm f/2.8", "settings": "f/8, 1/250s, ISO 100", "location": "Garmisch-Partenkirchen"}',
       status: 'PUBLISHED' as const,
@@ -97,8 +98,8 @@ async function main() {
       title: 'Forest Mist at Dawn',
       description: 'Ethereal morning fog rolling through an ancient German forest.',
       mediaType: 'IMAGE' as const,
-      filePath: '/images/portfolio/nature/forest-mist.jpg',
-      thumbnailPath: '/images/portfolio/nature/thumbs/forest-mist.jpg',
+      filePath: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&h=800&fit=crop',
+      thumbnailPath: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
       tags: '["forest", "mist", "dawn", "atmospheric", "trees"]',
       metadata: '{"camera": "Sony A7R IV", "lens": "85mm f/1.8", "settings": "f/4, 1/125s, ISO 400", "location": "Black Forest"}',
       status: 'PUBLISHED' as const,
@@ -111,8 +112,8 @@ async function main() {
       title: 'Wildlife: Red Fox in Snow',
       description: 'A majestic red fox captured during snowfall in its natural habitat.',
       mediaType: 'IMAGE' as const,
-      filePath: '/images/portfolio/nature/red-fox-snow.jpg',
-      thumbnailPath: '/images/portfolio/nature/thumbs/red-fox-snow.jpg',
+      filePath: 'https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=1200&h=800&fit=crop',
+      thumbnailPath: 'https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=400&h=300&fit=crop',
       tags: '["wildlife", "fox", "snow", "winter", "animals"]',
       metadata: '{"camera": "Sony A7R IV", "lens": "200-600mm f/5.6-6.3", "settings": "f/6.3, 1/500s, ISO 800", "location": "Nationalpark Berchtesgaden"}',
       status: 'PUBLISHED' as const,
@@ -126,8 +127,8 @@ async function main() {
       title: 'Venice at Blue Hour',
       description: 'The romantic canals of Venice illuminated during the magical blue hour.',
       mediaType: 'IMAGE' as const,
-      filePath: '/images/portfolio/travel/venice-blue-hour.jpg',
-      thumbnailPath: '/images/portfolio/travel/thumbs/venice-blue-hour.jpg',
+      filePath: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=1200&h=800&fit=crop',
+      thumbnailPath: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&h=300&fit=crop',
       tags: '["venice", "italy", "blue hour", "canals", "architecture"]',
       metadata: '{"camera": "Sony A7R IV", "lens": "24-70mm f/2.8", "settings": "f/5.6, 2s, ISO 100", "location": "Venice, Italy"}',
       status: 'PUBLISHED' as const,
@@ -140,8 +141,8 @@ async function main() {
       title: 'Neuschwanstein Castle',
       description: 'The fairy-tale castle of Neuschwanstein emerging from autumn fog.',
       mediaType: 'IMAGE' as const,
-      filePath: '/images/portfolio/travel/neuschwanstein.jpg',
-      thumbnailPath: '/images/portfolio/travel/thumbs/neuschwanstein.jpg',
+      filePath: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200&h=800&fit=crop',
+      thumbnailPath: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=400&h=300&fit=crop',
       tags: '["castle", "neuschwanstein", "bavaria", "autumn", "fog"]',
       metadata: '{"camera": "Sony A7R IV", "lens": "70-200mm f/2.8", "settings": "f/8, 1/200s, ISO 200", "location": "Schwangau, Bavaria"}',
       status: 'PUBLISHED' as const,
@@ -155,8 +156,8 @@ async function main() {
       title: 'Corporate Summit 2024',
       description: 'Key moments from a major corporate technology summit in Munich.',
       mediaType: 'IMAGE' as const,
-      filePath: '/images/portfolio/events/corporate-summit.jpg',
-      thumbnailPath: '/images/portfolio/events/thumbs/corporate-summit.jpg',
+      filePath: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=1200&h=800&fit=crop',
+      thumbnailPath: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400&h=300&fit=crop',
       tags: '["corporate", "summit", "business", "conference", "munich"]',
       metadata: '{"camera": "Sony A7R IV", "lens": "24-70mm f/2.8", "settings": "f/2.8, 1/160s, ISO 1600", "location": "Munich Convention Center"}',
       status: 'PUBLISHED' as const,
@@ -169,8 +170,8 @@ async function main() {
       title: 'Wedding Celebration',
       description: 'Intimate moments from a beautiful countryside wedding celebration.',
       mediaType: 'IMAGE' as const,
-      filePath: '/images/portfolio/events/wedding-celebration.jpg',
-      thumbnailPath: '/images/portfolio/events/thumbs/wedding-celebration.jpg',
+      filePath: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&h=800&fit=crop',
+      thumbnailPath: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=300&fit=crop',
       tags: '["wedding", "celebration", "countryside", "romantic", "couple"]',
       metadata: '{"camera": "Sony A7R IV", "lens": "85mm f/1.8", "settings": "f/2.8, 1/200s, ISO 400", "location": "Bavarian Countryside"}',
       status: 'PUBLISHED' as const,
@@ -184,8 +185,8 @@ async function main() {
       title: 'Corporate Brand Film',
       description: 'A compelling brand story showcasing innovation and craftsmanship.',
       mediaType: 'VIDEO' as const,
-      filePath: '/videos/portfolio/corporate-brand.mp4',
-      thumbnailPath: '/images/portfolio/videography/thumbs/corporate-brand.jpg',
+      filePath: '/videos/portfolio/placeholder-video.mp4', // Placeholder path
+      thumbnailPath: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=300&fit=crop',
       tags: '["corporate", "brand", "storytelling", "innovation", "craftsmanship"]',
       metadata: '{"camera": "Sony FX3", "lens": "24-70mm f/2.8", "resolution": "4K", "duration": "2:30", "client": "Tech Innovation GmbH"}',
       status: 'PUBLISHED' as const,
@@ -263,55 +264,12 @@ async function main() {
     console.log(`✅ Created newsletter subscriber: ${created.email}`)
   }
 
-  // Create sample analytics events
-  const analyticsEvents = [
-    {
-      eventType: 'page_view',
-      eventData: '{"page": "/portfolio"}',
-      pageUrl: '/portfolio',
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      sessionId: 'session_123'
-    },
-    {
-      eventType: 'portfolio_item_view',
-      eventData: '{"itemId": "' + (await prisma.portfolioItem.findFirst())?.id + '"}',
-      pageUrl: '/portfolio/bavarian-alps',
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-      sessionId: 'session_456'
-    }
-  ]
-
-  for (const event of analyticsEvents) {
-    const created = await prisma.analyticsEvent.create({
-      data: event
-    })
-    console.log(`✅ Created analytics event: ${created.eventType}`)
-  }
-
   console.log('🎉 Database seeding completed successfully!')
-  
-  // Print summary
-  const counts = await Promise.all([
-    prisma.user.count(),
-    prisma.category.count(),
-    prisma.portfolioItem.count(),
-    prisma.inquiry.count(),
-    prisma.newsletterSubscriber.count(),
-    prisma.analyticsEvent.count()
-  ])
-
-  console.log('\n📊 Database Summary:')
-  console.log(`   Users: ${counts[0]}`)
-  console.log(`   Categories: ${counts[1]}`)
-  console.log(`   Portfolio Items: ${counts[2]}`)
-  console.log(`   Inquiries: ${counts[3]}`)
-  console.log(`   Newsletter Subscribers: ${counts[4]}`)
-  console.log(`   Analytics Events: ${counts[5]}`)
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error seeding database:', e)
+    console.error(e)
     process.exit(1)
   })
   .finally(async () => {
