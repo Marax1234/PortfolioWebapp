@@ -7,6 +7,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { UserService } from './services/user-service'
 import { UserRole } from '@prisma/client'
+import { Logger, LogCategory, LogLevel } from './logger'
 
 // Type definitions for NextAuth
 declare module 'next-auth' {
@@ -73,12 +74,47 @@ export const authOptions: NextAuthOptions = {
           type: 'password' 
         },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
+        const requestId = Logger.generateRequestId()
+        const ip = req?.headers?.['x-forwarded-for'] || req?.headers?.['x-real-ip'] || 'unknown'
+        const userAgent = req?.headers?.['user-agent'] || 'unknown'
+
         try {
           if (!credentials?.email || !credentials?.password) {
-            console.error('Missing credentials')
+            Logger.securityLog({
+              level: LogLevel.WARN,
+              category: LogCategory.SECURITY,
+              message: 'Login attempt with missing credentials',
+              eventType: 'LOGIN_FAILURE',
+              severity: 'MEDIUM',
+              requestId,
+              ip: String(ip),
+              userAgent: String(userAgent),
+              details: {
+                reason: 'missing_credentials',
+                hasEmail: !!credentials?.email,
+                hasPassword: !!credentials?.password
+              }
+            })
             return null
           }
+
+          // Log authentication attempt
+          Logger.securityLog({
+            level: LogLevel.INFO,
+            category: LogCategory.SECURITY,
+            message: `Authentication attempt for user: ${credentials.email}`,
+            eventType: 'LOGIN_FAILURE', // Will be updated to SUCCESS if successful
+            severity: 'LOW',
+            requestId,
+            userId: credentials.email,
+            ip: String(ip),
+            userAgent: String(userAgent),
+            details: {
+              email: credentials.email,
+              timestamp: new Date().toISOString()
+            }
+          })
 
           // Rate limiting protection (simple implementation)
           const userService = new UserService()
@@ -88,17 +124,66 @@ export const authOptions: NextAuthOptions = {
           )
 
           if (!user) {
-            console.error('Authentication failed for:', credentials.email)
+            Logger.securityLog({
+              level: LogLevel.WARN,
+              category: LogCategory.SECURITY,
+              message: `Authentication failed for user: ${credentials.email}`,
+              eventType: 'LOGIN_FAILURE',
+              severity: 'MEDIUM',
+              requestId,
+              userId: credentials.email,
+              ip: String(ip),
+              userAgent: String(userAgent),
+              details: {
+                reason: 'invalid_credentials',
+                email: credentials.email,
+                timestamp: new Date().toISOString()
+              }
+            })
             return null
           }
 
           // Only allow ADMIN users
           if (user.role !== 'ADMIN') {
-            console.error('Access denied - not admin:', credentials.email)
+            Logger.securityLog({
+              level: LogLevel.WARN,
+              category: LogCategory.SECURITY,
+              message: `Access denied - insufficient privileges for user: ${credentials.email}`,
+              eventType: 'UNAUTHORIZED_ACCESS',
+              severity: 'HIGH',
+              requestId,
+              userId: user.id,
+              ip: String(ip),
+              userAgent: String(userAgent),
+              details: {
+                reason: 'insufficient_role',
+                email: credentials.email,
+                role: user.role,
+                requiredRole: 'ADMIN',
+                timestamp: new Date().toISOString()
+              }
+            })
             return null
           }
 
-          console.log('Authentication successful for:', credentials.email)
+          // Log successful authentication
+          Logger.securityLog({
+            level: LogLevel.INFO,
+            category: LogCategory.SECURITY,
+            message: `Authentication successful for admin user: ${credentials.email}`,
+            eventType: 'LOGIN_SUCCESS',
+            severity: 'LOW',
+            requestId,
+            userId: user.id,
+            ip: String(ip),
+            userAgent: String(userAgent),
+            details: {
+              email: credentials.email,
+              role: user.role,
+              emailVerified: user.emailVerified,
+              timestamp: new Date().toISOString()
+            }
+          })
           
           return {
             id: user.id,
@@ -109,7 +194,40 @@ export const authOptions: NextAuthOptions = {
             emailVerified: user.emailVerified,
           }
         } catch (error) {
-          console.error('Authentication error:', error)
+          Logger.securityLog({
+            level: LogLevel.ERROR,
+            category: LogCategory.SECURITY,
+            message: `Authentication system error for user: ${credentials?.email || 'unknown'}`,
+            eventType: 'LOGIN_FAILURE',
+            severity: 'HIGH',
+            requestId,
+            userId: credentials?.email,
+            ip: String(ip),
+            userAgent: String(userAgent),
+            details: {
+              reason: 'system_error',
+              error: error instanceof Error ? error.message : String(error),
+              email: credentials?.email,
+              timestamp: new Date().toISOString()
+            }
+          })
+
+          Logger.errorLog({
+            level: LogLevel.ERROR,
+            category: LogCategory.ERROR,
+            message: 'NextAuth authentication error',
+            requestId,
+            error: {
+              name: error instanceof Error ? error.name : 'UnknownError',
+              message: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : undefined
+            },
+            context: {
+              operation: 'nextauth_credentials_authorize',
+              inputData: { email: credentials?.email }
+            }
+          })
+
           return null
         }
       },
@@ -154,14 +272,97 @@ export const authOptions: NextAuthOptions = {
   // Events for logging
   events: {
     async signIn({ user, account, profile, isNewUser }) {
-      console.log(`User signed in: ${user.email}`)
+      const requestId = Logger.generateRequestId()
+      
+      Logger.securityLog({
+        level: LogLevel.INFO,
+        category: LogCategory.SECURITY,
+        message: `User session created: ${user.email}`,
+        eventType: 'LOGIN_SUCCESS',
+        severity: 'LOW',
+        requestId,
+        userId: user.id,
+        details: {
+          email: user.email,
+          role: (user as any).role,
+          provider: account?.provider || 'credentials',
+          isNewUser: Boolean(isNewUser),
+          timestamp: new Date().toISOString()
+        }
+      })
+
+      Logger.info('User session established', {
+        userId: user.id,
+        email: user.email,
+        provider: account?.provider,
+        isNewUser: Boolean(isNewUser),
+        requestId
+      })
     },
+
     async signOut({ session, token }) {
-      console.log(`User signed out: ${session?.user?.email || 'unknown'}`)
+      const requestId = Logger.generateRequestId()
+      const userEmail = session?.user?.email || token?.email || 'unknown'
+      const userId = session?.user?.id || token?.id
+
+      Logger.securityLog({
+        level: LogLevel.INFO,
+        category: LogCategory.SECURITY,
+        message: `User session terminated: ${userEmail}`,
+        eventType: 'LOGIN_SUCCESS', // Using SUCCESS as logout events are expected
+        severity: 'LOW',
+        requestId,
+        userId,
+        details: {
+          email: userEmail,
+          sessionEnd: true,
+          timestamp: new Date().toISOString()
+        }
+      })
+
+      Logger.info('User session terminated', {
+        userId,
+        email: userEmail,
+        requestId
+      })
     },
+
     async createUser({ user }) {
-      console.log(`New user created: ${user.email}`)
+      const requestId = Logger.generateRequestId()
+      
+      Logger.securityLog({
+        level: LogLevel.INFO,
+        category: LogCategory.SECURITY,
+        message: `New user account created: ${user.email}`,
+        eventType: 'LOGIN_SUCCESS',
+        severity: 'LOW',
+        requestId,
+        userId: user.id,
+        details: {
+          email: user.email,
+          role: (user as any).role,
+          emailVerified: (user as any).emailVerified,
+          accountCreation: true,
+          timestamp: new Date().toISOString()
+        }
+      })
+
+      Logger.info('New user account created', {
+        userId: user.id,
+        email: user.email,
+        role: (user as any).role,
+        requestId
+      })
     },
+
+    async session({ session, token }) {
+      // Log session checks for monitoring (debug level to avoid spam)
+      Logger.debug('Session verified', {
+        userId: session?.user?.id || token?.id,
+        email: session?.user?.email || token?.email,
+        role: session?.user?.role || token?.role
+      })
+    }
   },
 
   // Error handling

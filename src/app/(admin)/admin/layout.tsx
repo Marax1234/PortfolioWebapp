@@ -53,6 +53,12 @@ const navigationItems = [
     href: '/admin/analytics',
     icon: BarChart3
   },
+  // Add Logs page navigation
+  {
+    name: 'Logs',
+    href: '/admin/logs',
+    icon: FileText
+  },
   {
     name: 'Settings',
     href: '/admin/settings',
