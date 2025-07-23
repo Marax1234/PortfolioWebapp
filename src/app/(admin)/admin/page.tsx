@@ -114,8 +114,23 @@ export default function AdminDashboard() {
 
         setStats(dashboardStats)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard statistics')
         console.error('Dashboard error:', err)
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard statistics'
+        setError(errorMessage)
+        
+        // Set fallback stats to prevent null access errors
+        setStats({
+          totalPortfolioItems: 0,
+          publishedItems: 0,
+          draftItems: 0,
+          reviewItems: 0,
+          archivedItems: 0,
+          totalCategories: 0,
+          activeCategories: 0,
+          featuredItems: 0,
+          totalViews: 0,
+          recentActivity: ['Dashboard loaded with errors', 'Please check your connection']
+        })
       } finally {
         setIsLoading(false)
       }
@@ -317,28 +332,28 @@ export default function AdminDashboard() {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">Published</span>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.publishedItems}</span>
+                  <span className="text-sm font-medium">{stats?.publishedItems || 0}</span>
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">Drafts</span>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.draftItems}</span>
+                  <span className="text-sm font-medium">{stats?.draftItems || 0}</span>
                   <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                 </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">In Review</span>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.reviewItems}</span>
+                  <span className="text-sm font-medium">{stats?.reviewItems || 0}</span>
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-600">Archived</span>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.archivedItems}</span>
+                  <span className="text-sm font-medium">{stats?.archivedItems || 0}</span>
                   <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
                 </div>
               </div>

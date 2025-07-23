@@ -112,17 +112,44 @@ function SignInContent() {
     setAuthError(null)
 
     try {
-      const result = await signIn('credentials', {
+      console.log('Attempting login with:', {
         email: formData.email.toLowerCase().trim(),
-        password: formData.password,
-        redirect: false,
         callbackUrl
       })
 
+      // Use NextAuth signIn with redirect: false for better control
+      const result = await signIn('credentials', {
+        email: formData.email.toLowerCase().trim(),
+        password: formData.password,
+        redirect: false
+      })
+
+      console.log('Login result:', result)
+
       if (result?.error) {
-        setAuthError('Invalid email or password. Please check your credentials.')
+        console.error('Login error:', result.error)
+        // Show specific error messages
+        switch (result.error) {
+          case 'CredentialsSignin':
+            setAuthError('Invalid email or password. Please check your credentials.')
+            break
+          case 'Configuration':
+            setAuthError('Authentication service error. Please try again later.')
+            break
+          default:
+            setAuthError(`Login failed: ${result.error}`)
+        }
+      } else if (result?.ok && result?.url) {
+        console.log('Login successful, redirecting to:', result.url)
+        // Use the URL from NextAuth result
+        window.location.href = result.url
       } else if (result?.ok) {
-        router.push(callbackUrl)
+        console.log('Login successful, using fallback redirect to:', callbackUrl)
+        // Fallback to callback URL
+        window.location.href = callbackUrl
+      } else {
+        console.error('Unexpected login result:', result)
+        setAuthError('Login failed. Please try again.')
       }
     } catch (error) {
       console.error('Sign in error:', error)
@@ -236,7 +263,25 @@ function SignInContent() {
             {/* Development Credentials Helper */}
             {process.env.NODE_ENV === 'development' && (
               <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-xs text-blue-800 font-medium mb-1">Development Credentials:</p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-blue-800 font-medium">Development Credentials:</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => {
+                      setFormData({
+                        email: "kilian@example.com",
+                        password: "AdminPass123!"
+                      })
+                      setErrors({})
+                    }}
+                    disabled={isLoading}
+                  >
+                    Auto-Fill
+                  </Button>
+                </div>
                 <p className="text-xs text-blue-700">Email: kilian@example.com</p>
                 <p className="text-xs text-blue-700">Password: AdminPass123!</p>
               </div>

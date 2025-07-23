@@ -48,7 +48,7 @@ const createPortfolioFormSchema = z.object({
   description: z.string()
     .max(500, "Description must be less than 500 characters")
     .optional(),
-  categoryId: z.string().nullable(),
+  categoryId: z.string(),
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
   featured: z.boolean().default(false),
   mediaType: z.enum(['IMAGE', 'VIDEO']),
@@ -86,7 +86,7 @@ export default function CreatePortfolioItem() {
     defaultValues: {
       title: "",
       description: "",
-      categoryId: null,
+      categoryId: "none",
       status: "DRAFT",
       featured: false,
       mediaType: "IMAGE",
@@ -180,7 +180,7 @@ export default function CreatePortfolioItem() {
         mediaType: data.mediaType,
         filePath: data.filePath,
         thumbnailPath: data.mediaType === 'IMAGE' ? data.filePath : null,
-        categoryId: data.categoryId,
+        categoryId: data.categoryId === 'none' ? null : data.categoryId,
         status: data.status,
         featured: data.featured,
         tags: JSON.stringify(data.tags),
@@ -414,7 +414,7 @@ export default function CreatePortfolioItem() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">No Category</SelectItem>
+                              <SelectItem value="none">No Category</SelectItem>
                               {categories.map(category => (
                                 <SelectItem key={category.id} value={category.id}>
                                   {category.name}

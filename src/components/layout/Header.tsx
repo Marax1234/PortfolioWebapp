@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { Menu, X, Camera, LogIn, Settings } from "lucide-react"
+import { Menu, X, LogIn, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { useCurrentUser } from "@/components/auth/session-check"
 import { LogoutButton } from "@/components/auth/logout-button"
+import Image from "next/image"
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -31,7 +32,16 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <Camera className="h-6 w-6" />
+              <Image
+                src="/images/logo.png"
+                alt="Portfolio Logo"
+                width={40}
+                height={40}
+                className="rounded-full"
+                onError={() => {
+                  // Fallback if logo doesn't exist
+                }}
+              />
               <span className="font-bold text-lg">Kilian Siebert</span>
             </Link>
           </div>
@@ -62,7 +72,7 @@ export function Header() {
                       Admin
                     </Link>
                   </Button>
-                  <LogoutButton variant="ghost" />
+                  <LogoutButton variant="dropdown" />
                 </div>
               ) : (
                 <Button asChild size="sm">
@@ -121,7 +131,7 @@ export function Header() {
                       Admin Dashboard
                     </Link>
                     <div className="px-3">
-                      <LogoutButton variant="ghost" className="w-full justify-start" />
+                      <LogoutButton variant="dropdown" className="w-full justify-start" />
                     </div>
                   </div>
                 ) : (

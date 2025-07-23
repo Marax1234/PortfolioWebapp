@@ -48,7 +48,7 @@ const portfolioFormSchema = z.object({
   description: z.string()
     .max(500, "Description must be less than 500 characters")
     .optional(),
-  categoryId: z.string().nullable(),
+  categoryId: z.string(),
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED']),
   featured: z.boolean().default(false),
   tags: z.string().transform((str) => {
@@ -123,7 +123,7 @@ export default function EditPortfolioItem() {
       form.reset({
         title: item.title,
         description: item.description || "",
-        categoryId: item.categoryId,
+        categoryId: item.categoryId || 'none',
         status: item.status as 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED',
         featured: item.featured,
         tags: Array.isArray(item.tags) ? item.tags.join(', ') : "",
@@ -153,7 +153,7 @@ export default function EditPortfolioItem() {
       const updateData = {
         title: data.title,
         description: data.description || null,
-        categoryId: data.categoryId,
+        categoryId: data.categoryId === 'none' ? null : data.categoryId,
         status: data.status,
         featured: data.featured,
         tags: JSON.stringify(data.tags),
@@ -356,7 +356,7 @@ export default function EditPortfolioItem() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">No Category</SelectItem>
+                              <SelectItem value="none">No Category</SelectItem>
                               {categories.map(category => (
                                 <SelectItem key={category.id} value={category.id}>
                                   {category.name}
