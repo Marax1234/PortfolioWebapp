@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -49,17 +50,11 @@ const createPortfolioFormSchema = z.object({
     .max(500, "Description must be less than 500 characters")
     .optional(),
   categoryId: z.string(),
-  status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
-  featured: z.boolean().default(false),
+  status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED']),
+  featured: z.boolean(),
   mediaType: z.enum(['IMAGE', 'VIDEO']),
   filePath: z.string().min(1, "File is required"),
-  tags: z.string().transform((str) => {
-    try {
-      return str.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-    } catch {
-      return []
-    }
-  }),
+  tags: z.array(z.string()),
   metadata: z.object({
     photographer: z.string().optional(),
     location: z.string().optional(),
@@ -91,7 +86,7 @@ export default function CreatePortfolioItem() {
       featured: false,
       mediaType: "IMAGE",
       filePath: "",
-      tags: "",
+      tags: [],
       metadata: {
         photographer: "Kilian Siebert",
         location: "",
@@ -375,7 +370,11 @@ export default function CreatePortfolioItem() {
                           <FormLabel>Tags</FormLabel>
                           <FormControl>
                             <Input 
-                              {...field} 
+                              value={Array.isArray(field.value) ? field.value.join(', ') : ''}
+                              onChange={(e) => {
+                                const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+                                field.onChange(tags)
+                              }}
                               placeholder="nature, landscape, photography (comma separated)"
                             />
                           </FormControl>
@@ -585,9 +584,11 @@ export default function CreatePortfolioItem() {
                     <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
                       {previewUrl ? (
                         mediaType === 'IMAGE' ? (
-                          <img 
+                          <Image 
                             src={previewUrl} 
                             alt="Preview"
+                            width={400}
+                            height={400}
                             className="w-full h-full object-cover"
                           />
                         ) : (

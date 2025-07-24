@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter, useParams } from "next/navigation"
+import Image from "next/image"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -50,14 +51,8 @@ const portfolioFormSchema = z.object({
     .optional(),
   categoryId: z.string(),
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED']),
-  featured: z.boolean().default(false),
-  tags: z.string().transform((str) => {
-    try {
-      return str.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-    } catch {
-      return []
-    }
-  }),
+  featured: z.boolean(),
+  tags: z.array(z.string()),
   metadata: z.object({
     photographer: z.string().optional(),
     location: z.string().optional(),
@@ -86,10 +81,10 @@ export default function EditPortfolioItem() {
     defaultValues: {
       title: "",
       description: "",
-      categoryId: null,
+      categoryId: "",
       status: "DRAFT",
       featured: false,
-      tags: "",
+      tags: [],
       metadata: {
         photographer: "",
         location: "",
@@ -101,11 +96,7 @@ export default function EditPortfolioItem() {
     },
   })
 
-  useEffect(() => {
-    loadData()
-  }, [itemId])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -123,17 +114,17 @@ export default function EditPortfolioItem() {
       form.reset({
         title: item.title,
         description: item.description || "",
-        categoryId: item.categoryId || 'none',
+        categoryId: item.category?.id || 'none',
         status: item.status as 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED',
         featured: item.featured,
-        tags: Array.isArray(item.tags) ? item.tags.join(', ') : "",
+        tags: Array.isArray(item.tags) ? item.tags : [],
         metadata: {
-          photographer: item.metadata?.photographer || "",
-          location: item.metadata?.location || "",
-          camera: item.metadata?.camera || "",
-          lens: item.metadata?.lens || "",
-          settings: item.metadata?.settings || "",
-          shootDate: item.metadata?.shootDate || "",
+          photographer: (item.metadata?.photographer as string) || "",
+          location: (item.metadata?.location as string) || "",
+          camera: (item.metadata?.camera as string) || "",
+          lens: (item.metadata?.lens as string) || "",
+          settings: (item.metadata?.settings as string) || "",
+          shootDate: (item.metadata?.shootDate as string) || "",
         },
       })
     } catch (err) {
@@ -142,7 +133,11 @@ export default function EditPortfolioItem() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [itemId, form])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const onSubmit = async (data: PortfolioFormData) => {
     try {
@@ -317,7 +312,11 @@ export default function EditPortfolioItem() {
                           <FormLabel>Tags</FormLabel>
                           <FormControl>
                             <Input 
-                              {...field} 
+                              value={Array.isArray(field.value) ? field.value.join(', ') : ''}
+                              onChange={(e) => {
+                                const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+                                field.onChange(tags)
+                              }}
                               placeholder="nature, landscape, photography (comma separated)"
                             />
                           </FormControl>
@@ -527,9 +526,11 @@ export default function EditPortfolioItem() {
                     <CardContent>
                       <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
                         {portfolioItem.thumbnailPath ? (
-                          <img 
+                          <Image 
                             src={portfolioItem.thumbnailPath} 
                             alt={portfolioItem.title}
+                            width={300}
+                            height={300}
                             className="w-full h-full object-cover"
                           />
                         ) : (

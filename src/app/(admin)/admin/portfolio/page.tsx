@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -57,12 +58,7 @@ export default function PortfolioManagement() {
   const [sortBy, setSortBy] = useState<string>("createdAt")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
-  // Load data
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
@@ -77,15 +73,31 @@ export default function PortfolioManagement() {
         PortfolioApi.fetchCategories()
       ])
 
-      setPortfolioItems(portfolioResponse.items)
+      // Map PortfolioItem[] to PortfolioItemWithCategory[] with proper category typing
+      const itemsWithCategory: PortfolioItemWithCategory[] = portfolioResponse.items.map(item => ({
+        ...item,
+        category: item.category ? {
+          ...item.category,
+          sortOrder: 0, // Default values for missing Category properties
+          portfolioItemCount: 0,
+          isActive: true,
+          coverImage: undefined
+        } : undefined
+      }))
+      setPortfolioItems(itemsWithCategory)
       setCategories(categoriesData)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load data')
-      console.error('Portfolio management error:', err)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to load data')
+      console.error('Portfolio management error:', error)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [sortBy, sortOrder])
+
+  // Load data
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   // Filter and sort portfolio items
   const filteredItems = portfolioItems
@@ -95,7 +107,7 @@ export default function PortfolioManagement() {
         item.description?.toLowerCase().includes(searchQuery.toLowerCase())
       
       const matchesStatus = statusFilter === "all" || item.status === statusFilter
-      const matchesCategory = categoryFilter === "all" || item.categoryId === categoryFilter
+      const matchesCategory = categoryFilter === "all" || item.category?.id === categoryFilter
       
       return matchesSearch && matchesStatus && matchesCategory
     })
@@ -131,8 +143,9 @@ export default function PortfolioManagement() {
       console.log('Delete item:', id)
       // await PortfolioApi.deletePortfolioItem(id)
       // loadData()
-    } catch (err) {
+    } catch (error) {
       setError('Failed to delete portfolio item')
+      console.error('Delete error:', error)
     }
   }
 
@@ -142,8 +155,9 @@ export default function PortfolioManagement() {
       console.log('Toggle featured:', id, !currentFeatured)
       // await PortfolioApi.updatePortfolioItem(id, { featured: !currentFeatured })
       // loadData()
-    } catch (err) {
+    } catch (error) {
       setError('Failed to update portfolio item')
+      console.error('Update error:', error)
     }
   }
 
@@ -351,9 +365,11 @@ export default function PortfolioManagement() {
                   {/* Thumbnail */}
                   <div className="relative w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0">
                     {item.thumbnailPath ? (
-                      <img 
+                      <Image 
                         src={item.thumbnailPath} 
                         alt={item.title}
+                        width={64}
+                        height={64}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -382,7 +398,7 @@ export default function PortfolioManagement() {
                         <Calendar className="w-3 h-3 inline mr-1" />
                         {formatDate(item.createdAt)}
                       </span>
-                      <span>{getCategoryName(item.categoryId)}</span>
+                      <span>{getCategoryName(item.category?.id || null)}</span>
                       <span>{item.viewCount} views</span>
                     </div>
                     {item.description && (
