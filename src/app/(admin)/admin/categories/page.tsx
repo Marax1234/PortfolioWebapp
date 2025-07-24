@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
 import {
   Form,
   FormControl,
@@ -62,8 +63,8 @@ const categoryFormSchema = z.object({
   slug: z.string()
     .min(1, "Slug is required")
     .regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
-  isActive: z.boolean().default(true),
-  sortOrder: z.number().min(0).default(0),
+  isActive: z.boolean(),
+  sortOrder: z.number().min(0),
 })
 
 type CategoryFormData = z.infer<typeof categoryFormSchema>
@@ -77,8 +78,12 @@ export default function CategoryManagement() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [editingCategory, setEditingCategory] = useState<ExtendedCategory | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<ExtendedCategory | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  
 
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categoryFormSchema),
@@ -107,8 +112,8 @@ export default function CategoryManagement() {
 
       // Count portfolio items per category
       const categoryCounts = portfolioResponse.items.reduce((acc, item) => {
-        if (item.categoryId) {
-          acc[item.categoryId] = (acc[item.categoryId] || 0) + 1
+        if (item.category?.id) {
+          acc[item.category.id] = (acc[item.category.id] || 0) + 1
         }
         return acc
       }, {} as Record<string, number>)
@@ -157,7 +162,7 @@ export default function CategoryManagement() {
     setIsDialogOpen(true)
   }
 
-  const openEditDialog = (category: Category) => {
+  const openEditDialog = (category: ExtendedCategory) => {
     setEditingCategory(category)
     form.reset({
       name: category.name,
@@ -184,14 +189,11 @@ export default function CategoryManagement() {
 
       if (editingCategory) {
         console.log('Updating category:', editingCategory.id, categoryData)
-        // await PortfolioApi.updateCategory(editingCategory.id, categoryData)
+        await PortfolioApi.updateCategory(editingCategory.id, categoryData)
       } else {
         console.log('Creating category:', categoryData)
-        // await PortfolioApi.createCategory(categoryData)
+        await PortfolioApi.createCategory(categoryData)
       }
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
 
       setIsDialogOpen(false)
       loadCategories()
@@ -203,40 +205,44 @@ export default function CategoryManagement() {
     }
   }
 
-  const handleDelete = async (category: Category) => {
-    const portfolioCount = categories.find(c => c.id === category.id)?.portfolioCount || 0
-    
-    if (portfolioCount > 0) {
-      alert(`Cannot delete category "${category.name}" because it contains ${portfolioCount} portfolio items. Please move or delete the items first.`)
-      return
-    }
+  const handleDeleteClick = (category: ExtendedCategory) => {
+    setCategoryToDelete(category)
+    setDeleteDialogOpen(true)
+  }
 
-    if (!confirm(`Are you sure you want to delete the category "${category.name}"?`)) return
+  const handleDeleteConfirm = async () => {
+    if (!categoryToDelete) return
 
     try {
-      console.log('Deleting category:', category.id)
-      // await PortfolioApi.deleteCategory(category.id)
+      setIsDeleting(true)
+      console.log('Deleting category:', categoryToDelete.id)
+      await PortfolioApi.deleteCategory(categoryToDelete.id)
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
+      setDeleteDialogOpen(false)
+      setCategoryToDelete(null)
       loadCategories()
-    } catch (err) {
+    } catch (error) {
       setError('Failed to delete category')
+      console.error('Delete category error:', error)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
-  const toggleCategoryStatus = async (category: Category) => {
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false)
+    setCategoryToDelete(null)
+  }
+
+  const toggleCategoryStatus = async (category: ExtendedCategory) => {
     try {
       console.log('Toggling category status:', category.id, !category.isActive)
-      // await PortfolioApi.updateCategory(category.id, { isActive: !category.isActive })
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await PortfolioApi.updateCategory(category.id, { isActive: !category.isActive })
       
       loadCategories()
-    } catch (err) {
+    } catch (error) {
       setError('Failed to update category status')
+      console.error('Toggle category status error:', error)
     }
   }
 
@@ -366,7 +372,7 @@ export default function CategoryManagement() {
             <div className="space-y-4">
               {categories
                 .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map((category, index) => (
+                .map((category) => (
                 <div key={category.id} className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-slate-50 transition-colors">
                   {/* Icon */}
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
@@ -433,8 +439,7 @@ export default function CategoryManagement() {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-red-600"
-                        onClick={() => handleDelete(category)}
-                        disabled={(category.portfolioCount || 0) > 0}
+                        onClick={() => handleDeleteClick(category)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete
@@ -592,6 +597,35 @@ export default function CategoryManagement() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      {categoryToDelete && (
+        <DeleteConfirmationDialog
+          isOpen={deleteDialogOpen}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          isLoading={isDeleting}
+          title="Delete Category"
+          description={
+            <div className="space-y-2">
+              <p>
+                You are about to delete <strong>&ldquo;{categoryToDelete.name}&rdquo;</strong>. This action cannot be undone.
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                This will permanently remove the category and all associated data.
+              </p>
+            </div>
+          }
+          itemName={categoryToDelete.name}
+          warningMessage={
+            (categoryToDelete.portfolioCount || 0) > 0
+              ? `This category contains ${categoryToDelete.portfolioCount} portfolio items. Please move or delete them first before removing this category.`
+              : undefined
+          }
+          disabled={(categoryToDelete.portfolioCount || 0) > 0}
+          destructiveAction={(categoryToDelete.portfolioCount || 0) > 0 ? "Cannot Delete" : "Delete Category"}
+        />
+      )}
     </div>
   )
 }

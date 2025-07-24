@@ -21,8 +21,6 @@ import {
   TrendingUp, 
   RefreshCw,
   Search,
-  Filter,
-  Calendar,
   Clock,
   User,
   ExternalLink
@@ -41,7 +39,7 @@ interface LogEntry {
   url?: string
   statusCode?: number
   responseTime?: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 interface SecurityEvent {
@@ -51,7 +49,7 @@ interface SecurityEvent {
   message: string
   ip?: string
   userId?: string
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 }
 
 interface PerformanceMetric {
@@ -82,7 +80,6 @@ export default function LogsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [levelFilter, setLevelFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
-  const [timeFilter, setTimeFilter] = useState<string>('1h')
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [activeTab, setActiveTab] = useState<'logs' | 'security' | 'performance'>('logs')
 
@@ -93,7 +90,7 @@ export default function LogsPage() {
     const routes = ['/api/portfolio', '/api/categories', '/api/contact', '/api/auth/signin']
     const methods = ['GET', 'POST', 'PUT', 'DELETE']
     
-    return Array.from({ length: 100 }, (_, i) => {
+    return Array.from({ length: 100 }, () => {
       const timestamp = new Date(Date.now() - Math.random() * 3600000).toISOString()
       const level = levels[Math.floor(Math.random() * levels.length)]
       const category = categories[Math.floor(Math.random() * categories.length)]
@@ -125,7 +122,7 @@ export default function LogsPage() {
     const eventTypes = ['LOGIN_SUCCESS', 'LOGIN_FAILURE', 'UNAUTHORIZED_ACCESS', 'SUSPICIOUS_ACTIVITY']
     const severities: SecurityEvent['severity'][] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
     
-    return Array.from({ length: 20 }, (_, i) => ({
+    return Array.from({ length: 20 }, () => ({
       timestamp: new Date(Date.now() - Math.random() * 3600000).toISOString(),
       eventType: eventTypes[Math.floor(Math.random() * eventTypes.length)],
       severity: severities[Math.floor(Math.random() * severities.length)],
@@ -142,7 +139,7 @@ export default function LogsPage() {
   const generateMockPerformanceMetrics = useCallback((): PerformanceMetric[] => {
     const routes = ['/api/portfolio', '/api/categories', '/api/contact']
     
-    return Array.from({ length: 50 }, (_, i) => ({
+    return Array.from({ length: 50 }, () => ({
       timestamp: new Date(Date.now() - Math.random() * 3600000).toISOString(),
       route: routes[Math.floor(Math.random() * routes.length)],
       responseTime: Math.floor(Math.random() * 2000) + 50,

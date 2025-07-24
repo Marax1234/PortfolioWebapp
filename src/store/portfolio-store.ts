@@ -36,6 +36,7 @@ export interface Category {
   coverImage?: string
   sortOrder: number
   portfolioItemCount: number
+  isActive: boolean
 }
 
 export interface PaginationInfo {

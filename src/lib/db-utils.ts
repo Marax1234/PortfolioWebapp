@@ -160,6 +160,22 @@ export class CategoryQueries {
   }
 
   /**
+   * Get all categories (including inactive) with item counts - for admin
+   */
+  static async getAllWithCounts() {
+    return prisma.category.findMany({
+      include: {
+        _count: {
+          select: {
+            portfolioItems: true
+          }
+        }
+      },
+      orderBy: { sortOrder: 'asc' }
+    })
+  }
+
+  /**
    * Get category by slug
    */
   static async getBySlug(slug: string) {
@@ -174,6 +190,102 @@ export class CategoryQueries {
           }
         }
       }
+    })
+  }
+
+  /**
+   * Get category by ID
+   */
+  static async getById(id: string) {
+    return prisma.category.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            portfolioItems: true
+          }
+        }
+      }
+    })
+  }
+
+  /**
+   * Create new category
+   */
+  static async create(data: {
+    name: string
+    slug: string
+    description?: string | null
+    isActive?: boolean
+    sortOrder?: number
+  }) {
+    return prisma.category.create({
+      data: {
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        isActive: data.isActive ?? true,
+        sortOrder: data.sortOrder ?? 0,
+      },
+      include: {
+        _count: {
+          select: {
+            portfolioItems: true
+          }
+        }
+      }
+    })
+  }
+
+  /**
+   * Update category
+   */
+  static async update(id: string, data: {
+    name?: string
+    slug?: string
+    description?: string | null
+    isActive?: boolean
+    sortOrder?: number
+  }) {
+    return prisma.category.update({
+      where: { id },
+      data,
+      include: {
+        _count: {
+          select: {
+            portfolioItems: true
+          }
+        }
+      }
+    })
+  }
+
+  /**
+   * Delete category (only if no portfolio items)
+   */
+  static async delete(id: string) {
+    // First check if category has portfolio items
+    const category = await prisma.category.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            portfolioItems: true
+          }
+        }
+      }
+    })
+
+    if (!category) {
+      throw new Error('Category not found')
+    }
+
+    if (category._count.portfolioItems > 0) {
+      throw new Error(`Cannot delete category with ${category._count.portfolioItems} portfolio items`)
+    }
+
+    return prisma.category.delete({
+      where: { id }
     })
   }
 }

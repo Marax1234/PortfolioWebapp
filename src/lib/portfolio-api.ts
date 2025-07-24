@@ -156,6 +156,66 @@ export class PortfolioApi {
   }
 
   /**
+   * Create new category
+   */
+  static async createCategory(data: {
+    name: string
+    slug: string
+    description?: string | null
+    isActive?: boolean
+    sortOrder?: number
+  }): Promise<Category> {
+    const endpoint = '/api/categories'
+    const response: ApiResponse<Category> = await apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to create category')
+    }
+
+    return response.data
+  }
+
+  /**
+   * Update category
+   */
+  static async updateCategory(id: string, data: {
+    name?: string
+    slug?: string
+    description?: string | null
+    isActive?: boolean
+    sortOrder?: number
+  }): Promise<Category> {
+    const endpoint = `/api/categories/${id}`
+    const response: ApiResponse<Category> = await apiRequest(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to update category')
+    }
+
+    return response.data
+  }
+
+  /**
+   * Delete category
+   */
+  static async deleteCategory(id: string): Promise<void> {
+    const endpoint = `/api/categories/${id}`
+    const response: ApiResponse<{ message: string }> = await apiRequest(endpoint, {
+      method: 'DELETE'
+    })
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to delete category')
+    }
+  }
+
+  /**
    * Fetch featured portfolio items
    */
   static async fetchFeaturedItems(limit: number = 6): Promise<PortfolioItem[]> {
