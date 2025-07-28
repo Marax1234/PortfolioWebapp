@@ -38,6 +38,8 @@ import {
   Star
 } from "lucide-react"
 import { PortfolioApi } from "@/lib/portfolio-api"
+import { FileUpload, type UploadedFile } from "@/components/ui/file-upload"
+import type { ProcessedFile } from "@/lib/storage"
 import type { PortfolioItem, Category } from "@/store/portfolio-store"
 
 // Form validation schema
@@ -74,7 +76,10 @@ export default function EditPortfolioItem() {
   const [portfolioItem, setPortfolioItem] = useState<PortfolioItem | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([])
+  const [showReplaceMedia, setShowReplaceMedia] = useState(false)
 
   const form = useForm<PortfolioFormData>({
     resolver: zodResolver(portfolioFormSchema),
@@ -139,13 +144,68 @@ export default function EditPortfolioItem() {
     loadData()
   }, [loadData])
 
+  const handleFilesChange = (_files: UploadedFile[]) => {
+    // Files are handled by the upload function
+  }
+
+  const handleFileUpload = async (files: UploadedFile[]) => {
+    if (files.length === 0) return
+
+    try {
+      setIsUploading(true)
+      setError(null)
+
+      // Create FormData for file upload
+      const formData = new FormData()
+      files.forEach(file => {
+        formData.append('files', file)
+      })
+
+      // Upload files to processing API
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Upload failed')
+      }
+
+      setProcessedFiles(result.data.processedFiles)
+
+      // Mark files as completed
+      files.forEach(file => {
+        file.status = 'completed'
+        file.progress = 100
+      })
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload files')
+      console.error('Upload error:', err)
+      
+      // Mark files as error
+      files.forEach(file => {
+        file.status = 'error'
+        file.error = 'Upload failed'
+      })
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const onSubmit = async (data: PortfolioFormData) => {
     try {
       setIsSaving(true)
       setError(null)
 
       // Transform form data for API
-      const updateData = {
+      const updateData: Record<string, string | number | boolean | null> = {
         title: data.title,
         description: data.description || null,
         categoryId: data.categoryId === 'none' ? null : data.categoryId,
@@ -154,6 +214,15 @@ export default function EditPortfolioItem() {
         tags: JSON.stringify(data.tags),
         metadata: JSON.stringify(data.metadata),
         updatedAt: new Date().toISOString(),
+      }
+
+      // If new media was uploaded, update the media paths
+      if (processedFiles.length > 0) {
+        const newFile = processedFiles[0] // Use first file for replacement
+        updateData.mediaType = newFile.mediaType || 'IMAGE'
+        updateData.filePath = newFile.publicPath
+        updateData.thumbnailPath = newFile.thumbnailPath || null
+        // Add webp and avif paths if available (would need to extend API schema)
       }
 
       console.log('Updating portfolio item:', updateData)
@@ -555,6 +624,59 @@ export default function EditPortfolioItem() {
                           <span>{new Date(portfolioItem.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
+                      
+                      {/* Replace Media Button */}
+                      <div className="mt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowReplaceMedia(!showReplaceMedia)}
+                          disabled={isUploading || isSaving}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Replace Media
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Replace Media Upload */}
+                {showReplaceMedia && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Replace Media</CardTitle>
+                      <CardDescription>
+                        Upload a new file to replace the current media
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <FileUpload
+                        maxFiles={1}
+                        maxFileSize={10 * 1024 * 1024} // 10MB
+                        allowedTypes={[
+                          'image/jpeg',
+                          'image/png', 
+                          'image/webp',
+                          'image/gif',
+                          'video/mp4',
+                          'video/quicktime'
+                        ]}
+                        multiple={false}
+                        onFilesChange={handleFilesChange}
+                        onUpload={handleFileUpload}
+                        disabled={isUploading || isSaving}
+                        uploadText="Click to upload replacement file"
+                      />
+                      
+                      {processedFiles.length > 0 && (
+                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <p className="text-sm text-green-800">
+                            New media processed successfully! The file will be updated when you save changes.
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}

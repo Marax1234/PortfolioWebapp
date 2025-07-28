@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { FormHint } from "@/components/ui/form-hint"
 import {
   Form,
   FormControl,
@@ -30,7 +31,6 @@ import {
 import {
   Save,
   ArrowLeft,
-  Upload,
   AlertTriangle,
   Loader2,
   Star,
@@ -38,22 +38,23 @@ import {
   Video
 } from "lucide-react"
 import { PortfolioApi } from "@/lib/portfolio-api"
+import { FileUpload, type UploadedFile } from "@/components/ui/file-upload"
+import type { ProcessedFile } from "@/lib/storage"
 import type { Category } from "@/store/portfolio-store"
 
 // Form validation schema
 const createPortfolioFormSchema = z.object({
   title: z.string()
-    .min(1, "Title is required")
-    .min(3, "Title must be at least 3 characters")
-    .max(100, "Title must be less than 100 characters"),
+    .min(1, "Titel ist erforderlich")
+    .min(3, "Titel muss mindestens 3 Zeichen lang sein")
+    .max(100, "Titel darf maximal 100 Zeichen lang sein"),
   description: z.string()
-    .max(500, "Description must be less than 500 characters")
+    .max(500, "Beschreibung darf maximal 500 Zeichen lang sein")
     .optional(),
-  categoryId: z.string(),
+  categoryId: z.string()
+    .min(1, "Bitte wählen Sie eine Kategorie aus"),
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED']),
   featured: z.boolean(),
-  mediaType: z.enum(['IMAGE', 'VIDEO']),
-  filePath: z.string().min(1, "File is required"),
   tags: z.array(z.string()),
   metadata: z.object({
     photographer: z.string().optional(),
@@ -63,6 +64,10 @@ const createPortfolioFormSchema = z.object({
     settings: z.string().optional(),
     shootDate: z.string().optional(),
   }).optional(),
+})
+.refine((data) => data.categoryId !== "none", {
+  message: "Bitte wählen Sie eine Kategorie aus",
+  path: ["categoryId"]
 })
 
 type CreatePortfolioFormData = z.infer<typeof createPortfolioFormSchema>
@@ -74,7 +79,8 @@ export default function CreatePortfolioItem() {
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([])
+  const [hasUploadedFiles, setHasUploadedFiles] = useState(false)
 
   const form = useForm<CreatePortfolioFormData>({
     resolver: zodResolver(createPortfolioFormSchema),
@@ -84,8 +90,6 @@ export default function CreatePortfolioItem() {
       categoryId: "none",
       status: "DRAFT",
       featured: false,
-      mediaType: "IMAGE",
-      filePath: "",
       tags: [],
       metadata: {
         photographer: "Kilian Siebert",
@@ -116,95 +120,150 @@ export default function CreatePortfolioItem() {
     }
   }
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  const handleFilesChange = (files: UploadedFile[]) => {
+    // Auto-generate title from first file if empty
+    if (files.length > 0 && !form.getValues('title')) {
+      const firstFile = files[0]
+      const titleFromFile = firstFile.name
+        .replace(/\.[^/.]+$/, '') // Remove extension
+        .replace(/[_-]/g, ' ') // Replace underscores/hyphens with spaces
+        .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize words
+      form.setValue('title', titleFromFile)
+    }
+  }
+
+  const handleFileUpload = async (files: UploadedFile[]) => {
+    if (files.length === 0) return
 
     try {
       setIsUploading(true)
       setError(null)
 
-      // Validate file type
-      const isImage = file.type.startsWith('image/')
-      const isVideo = file.type.startsWith('video/')
-      
-      if (!isImage && !isVideo) {
-        throw new Error('Please select an image or video file')
+      // Create FormData for file upload
+      const formData = new FormData()
+      files.forEach(file => {
+        formData.append('files', file)
+      })
+
+      // Upload files to processing API
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`)
       }
 
-      // Set media type based on file
-      form.setValue('mediaType', isImage ? 'IMAGE' : 'VIDEO')
-
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file)
-      setPreviewUrl(previewUrl)
-
-      // In a real app, you would upload the file to your storage service
-      // For now, we'll simulate the upload and use a placeholder path
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const result = await response.json()
       
-      const simulatedPath = `/images/portfolio/uploaded-${Date.now()}.${file.name.split('.').pop()}`
-      form.setValue('filePath', simulatedPath)
-
-      // Auto-generate title from filename if empty
-      if (!form.getValues('title')) {
-        const titleFromFile = file.name
-          .replace(/\.[^/.]+$/, '') // Remove extension
-          .replace(/[_-]/g, ' ') // Replace underscores/hyphens with spaces
-          .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize words
-        form.setValue('title', titleFromFile)
+      if (!result.success) {
+        throw new Error(result.error || 'Upload failed')
       }
+
+      setProcessedFiles(result.data.processedFiles)
+      setHasUploadedFiles(true)
+
+      // Mark files as completed
+      files.forEach(file => {
+        file.status = 'completed'
+        file.progress = 100
+      })
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload file')
+      setError(err instanceof Error ? err.message : 'Failed to upload files')
       console.error('Upload error:', err)
+      
+      // Mark files as error
+      files.forEach(file => {
+        file.status = 'error'
+        file.error = 'Upload failed'
+      })
     } finally {
       setIsUploading(false)
     }
   }
 
-  const onSubmit = async (data: CreatePortfolioFormData) => {
+  const onSubmit = async (formData: CreatePortfolioFormData) => {
     try {
       setIsSaving(true)
       setError(null)
 
-      // Transform form data for API
-      const portfolioData = {
-        title: data.title,
-        description: data.description || null,
-        mediaType: data.mediaType,
-        filePath: data.filePath,
-        thumbnailPath: data.mediaType === 'IMAGE' ? data.filePath : null,
-        categoryId: data.categoryId === 'none' ? null : data.categoryId,
-        status: data.status,
-        featured: data.featured,
-        tags: JSON.stringify(data.tags),
-        metadata: JSON.stringify(data.metadata),
-        sortOrder: 0,
-        viewCount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      // Validate that we have processed files
+      if (processedFiles.length === 0) {
+        setError('Bitte laden Sie mindestens eine Datei hoch, bevor Sie das Portfolio-Element erstellen.')
+        setIsSaving(false)
+        return
       }
 
-      console.log('Creating portfolio item:', portfolioData)
+      // Create portfolio items for each processed file
+      const createdItems = []
       
-      // TODO: Implement actual API call
-      // const newItem = await PortfolioApi.createPortfolioItem(portfolioData)
-      
-      // For now, just simulate success
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      for (let i = 0; i < processedFiles.length; i++) {
+        const processedFile = processedFiles[i]
+        
+        // Create title for this item (use form title for first item, or generate for others)
+        const itemTitle = i === 0 
+          ? formData.title 
+          : `${formData.title} ${i + 1}`
+
+        const portfolioData = {
+          title: itemTitle,
+          description: formData.description || null,
+          mediaType: processedFile.mediaType,
+          filePath: processedFile.publicPath,
+          thumbnailPath: processedFile.thumbnailPath || null,
+          webpPath: processedFile.webpPath || null,
+          avifPath: processedFile.avifPath || null,
+          categoryId: formData.categoryId === 'none' ? null : formData.categoryId,
+          status: formData.status,
+          featured: formData.featured && i === 0, // Only first item can be featured
+          tags: formData.tags,
+          metadata: {
+            ...formData.metadata,
+            originalFileName: processedFile.original.originalName,
+            fileSize: processedFile.original.size,
+            dimensions: processedFile.original.width && processedFile.original.height 
+              ? { width: processedFile.original.width, height: processedFile.original.height }
+              : null
+          },
+          sortOrder: i
+        }
+
+        console.log('Creating portfolio item:', portfolioData)
+
+        // Create portfolio item via API
+        const response = await fetch('/api/portfolio', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(portfolioData)
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to create portfolio item: ${response.statusText}`)
+        }
+
+        const result = await response.json()
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to create portfolio item')
+        }
+
+        createdItems.push(result.data)
+      }
+
+      console.log(`Successfully created ${createdItems.length} portfolio items`)
       router.push('/admin/portfolio')
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create portfolio item')
+      setError(err instanceof Error ? err.message : 'Failed to create portfolio items')
       console.error('Create error:', err)
     } finally {
       setIsSaving(false)
     }
   }
 
-  const mediaType = form.watch('mediaType')
-  const filePath = form.watch('filePath')
 
   return (
     <div className="space-y-6">
@@ -261,69 +320,45 @@ export default function CreatePortfolioItem() {
                 {/* File Upload */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Upload Media</CardTitle>
+                    <CardTitle>Medien hochladen *</CardTitle>
                     <CardDescription>
-                      Upload an image or video for your portfolio
+                      Laden Sie Bilder oder Videos für Ihr Portfolio hoch. Sie können mehrere Dateien gleichzeitig hochladen.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-slate-400 transition-colors">
-                        <input
-                          type="file"
-                          id="file-upload"
-                          accept="image/*,video/*"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                          disabled={isUploading}
-                        />
-                        <label
-                          htmlFor="file-upload"
-                          className="cursor-pointer flex flex-col items-center space-y-4"
-                        >
-                          {isUploading ? (
-                            <>
-                              <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
-                              <p className="text-sm text-slate-600">Uploading...</p>
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="w-8 h-8 text-slate-400" />
-                              <div>
-                                <p className="text-sm font-medium text-slate-900">
-                                  Click to upload or drag and drop
-                                </p>
-                                <p className="text-xs text-slate-500">
-                                  Images (PNG, JPG, GIF) or Videos (MP4, MOV) up to 10MB
-                                </p>
-                              </div>
-                            </>
-                          )}
-                        </label>
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="filePath"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} type="hidden" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FileUpload
+                      maxFiles={10}
+                      maxFileSize={10 * 1024 * 1024} // 10MB
+                      allowedTypes={[
+                        'image/jpeg',
+                        'image/png', 
+                        'image/webp',
+                        'image/gif',
+                        'video/mp4',
+                        'video/quicktime'
+                      ]}
+                      multiple={true}
+                      onFilesChange={handleFilesChange}
+                      onUpload={handleFileUpload}
+                      disabled={isUploading || isSaving}
+                      uploadText="Klicken Sie zum Hochladen oder ziehen Sie Dateien hierher"
+                      dragText="Ziehen Sie Dateien hierher zum Hochladen"
+                      dropText="Dateien hier ablegen"
+                    />
+                    {!hasUploadedFiles && (
+                      <FormHint>
+                        <strong>Hinweis:</strong> Sie müssen mindestens eine Datei hochladen, bevor Sie das Portfolio-Element erstellen können.
+                      </FormHint>
+                    )}
                   </CardContent>
                 </Card>
 
                 {/* Basic Information */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Basic Information</CardTitle>
+                    <CardTitle>Grundinformationen</CardTitle>
                     <CardDescription>
-                      Add details about your portfolio item
+                      Fügen Sie Details zu Ihrem Portfolio-Element hinzu
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -332,10 +367,17 @@ export default function CreatePortfolioItem() {
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Title *</FormLabel>
+                          <FormLabel>Titel *</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Enter portfolio item title" />
+                            <Input 
+                              {...field} 
+                              placeholder="Portfolio-Element Titel eingeben" 
+                              className={!field.value ? "border-red-300" : ""}
+                            />
                           </FormControl>
+                          <FormDescription>
+                            3-100 Zeichen. Beschreibender Name für Ihr Portfolio-Element
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -346,16 +388,16 @@ export default function CreatePortfolioItem() {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Description</FormLabel>
+                          <FormLabel>Beschreibung</FormLabel>
                           <FormControl>
                             <Textarea 
                               {...field} 
-                              placeholder="Describe your portfolio item..."
+                              placeholder="Beschreiben Sie Ihr Portfolio-Element..."
                               rows={4}
                             />
                           </FormControl>
                           <FormDescription>
-                            Optional description that will be shown with your portfolio item
+                            Optionale Beschreibung (max. 500 Zeichen) die mit Ihrem Portfolio-Element angezeigt wird
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -367,7 +409,7 @@ export default function CreatePortfolioItem() {
                       name="tags"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tags</FormLabel>
+                          <FormLabel>Schlagwörter</FormLabel>
                           <FormControl>
                             <Input 
                               value={Array.isArray(field.value) ? field.value.join(', ') : ''}
@@ -375,11 +417,11 @@ export default function CreatePortfolioItem() {
                                 const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
                                 field.onChange(tags)
                               }}
-                              placeholder="nature, landscape, photography (comma separated)"
+                              placeholder="natur, landschaft, fotografie (kommagetrennt)"
                             />
                           </FormControl>
                           <FormDescription>
-                            Add tags separated by commas to help organize your content
+                            Fügen Sie Tags hinzu (durch Kommas getrennt) um Ihren Inhalt zu organisieren
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -402,18 +444,18 @@ export default function CreatePortfolioItem() {
                       name="categoryId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Category</FormLabel>
+                          <FormLabel>Kategorie *</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value || ""}
                           >
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select category" />
+                              <SelectTrigger className={!field.value || field.value === "none" ? "border-red-300" : ""}>
+                                <SelectValue placeholder="Kategorie auswählen" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="none">No Category</SelectItem>
+                              <SelectItem value="none" disabled>Kategorie auswählen</SelectItem>
                               {categories.map(category => (
                                 <SelectItem key={category.id} value={category.id}>
                                   {category.name}
@@ -421,6 +463,9 @@ export default function CreatePortfolioItem() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormDescription>
+                            Wählen Sie eine Kategorie für Ihr Portfolio-Element aus
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -557,7 +602,7 @@ export default function CreatePortfolioItem() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSaving || !filePath}>
+                  <Button type="submit" disabled={isSaving || !hasUploadedFiles}>
                     {isSaving ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -566,7 +611,8 @@ export default function CreatePortfolioItem() {
                     ) : (
                       <>
                         <Save className="w-4 h-4 mr-2" />
-                        Create Portfolio Item
+                        Create Portfolio {processedFiles.length > 1 ? 'Items' : 'Item'}
+                        {processedFiles.length > 0 && ` (${processedFiles.length})`}
                       </>
                     )}
                   </Button>
@@ -578,40 +624,57 @@ export default function CreatePortfolioItem() {
                 {/* Preview */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Preview</CardTitle>
+                    <CardTitle>Processed Files</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
-                      {previewUrl ? (
-                        mediaType === 'IMAGE' ? (
-                          <Image 
-                            src={previewUrl} 
-                            alt="Preview"
-                            width={400}
-                            height={400}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <video 
-                            src={previewUrl}
-                            className="w-full h-full object-cover"
-                            controls={false}
-                            muted
-                          />
-                        )
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="text-center">
-                            {mediaType === 'IMAGE' ? (
-                              <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                            ) : (
-                              <Video className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                            )}
-                            <p className="text-sm text-slate-500">No media uploaded</p>
+                    {processedFiles.length > 0 ? (
+                      <div className="space-y-3">
+                        {processedFiles.map((file, index) => (
+                          <div key={index} className="border rounded-lg p-3">
+                            <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden mb-2">
+                              {file.mediaType === 'IMAGE' ? (
+                                <Image 
+                                  src={file.publicPath} 
+                                  alt="Preview"
+                                  width={300}
+                                  height={300}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Video className="w-8 h-8 text-slate-400" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-xs text-slate-600 space-y-1">
+                              <p><strong>Type:</strong> {file.mediaType}</p>
+                              <p><strong>Size:</strong> {Math.round(file.original.size / 1024)}KB</p>
+                              {file.original.width && file.original.height && (
+                                <p><strong>Dimensions:</strong> {file.original.width}x{file.original.height}</p>
+                              )}
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {file.thumbnailPath && (
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Thumbnail</span>
+                                )}
+                                {file.webpPath && (
+                                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">WebP</span>
+                                )}
+                                {file.avifPath && (
+                                  <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">AVIF</span>
+                                )}
+                              </div>
+                            </div>
                           </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="aspect-square bg-slate-100 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+                          <p className="text-sm text-slate-500">No files processed yet</p>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 

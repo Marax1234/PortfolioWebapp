@@ -134,6 +134,50 @@ export class PortfolioQueries {
       take: limit
     })
   }
+
+  /**
+   * Create new portfolio item
+   */
+  static async createPortfolioItem(data: {
+    title: string
+    description?: string | null
+    mediaType: 'IMAGE' | 'VIDEO'
+    filePath: string
+    thumbnailPath?: string | null
+    categoryId?: string | null
+    tags?: string
+    metadata?: string
+    status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED'
+    featured?: boolean
+    sortOrder?: number
+    viewCount?: number
+    createdAt: string
+    updatedAt: string
+    publishedAt?: string | null
+  }) {
+    return prisma.portfolioItem.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        mediaType: data.mediaType,
+        filePath: data.filePath,
+        thumbnailPath: data.thumbnailPath,
+        categoryId: data.categoryId,
+        tags: data.tags || '[]',
+        metadata: data.metadata || '{}',
+        status: data.status ?? 'DRAFT',
+        featured: data.featured ?? false,
+        sortOrder: data.sortOrder ?? 0,
+        viewCount: data.viewCount ?? 0,
+        createdAt: new Date(data.createdAt),
+        updatedAt: new Date(data.updatedAt),
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null
+      },
+      include: {
+        category: true
+      }
+    })
+  }
 }
 
 /**
