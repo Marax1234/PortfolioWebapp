@@ -3,46 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Camera, Mountain, Users, Video } from "lucide-react";
-
-// Mock data for portfolio preview
-const portfolioPreview = [
-  {
-    id: 1,
-    src: "/images/portfolio/portfolio-1.jpg",
-    alt: "Nature Photography",
-    category: "Nature",
-  },
-  {
-    id: 2,
-    src: "/images/portfolio/portfolio-2.jpg",
-    alt: "Travel Photography",
-    category: "Travel",
-  },
-  {
-    id: 3,
-    src: "/images/portfolio/portfolio-3.jpg",
-    alt: "Event Photography",
-    category: "Event",
-  },
-  {
-    id: 4,
-    src: "/images/portfolio/portfolio-4.jpg",
-    alt: "Corporate Videography",
-    category: "Videography",
-  },
-  {
-    id: 5,
-    src: "/images/portfolio/portfolio-5.jpg",
-    alt: "Nature Landscapes",
-    category: "Nature",
-  },
-  {
-    id: 6,
-    src: "/images/portfolio/portfolio-6.jpg",
-    alt: "Travel Adventures",
-    category: "Travel",
-  },
-];
+import { PortfolioPreview } from "@/components/portfolio/PortfolioPreview";
 
 const services = [
   {
@@ -113,48 +74,7 @@ export default function Home() {
       </section>
 
       {/* Portfolio Preview */}
-      <section className="py-16 md:py-24 bg-muted/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Recent Work</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              A glimpse into my latest photography projects across travel, events, and nature.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {portfolioPreview.map((item) => (
-              <Card key={item.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-0">
-                  <div className="relative aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] overflow-hidden">
-                    <Image
-                      src={item.src}
-                      alt={item.alt}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                    <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                        {item.category}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          <div className="text-center">
-            <Button asChild size="lg" variant="outline">
-              <Link href="/portfolio">
-                View Full Portfolio
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <PortfolioPreview maxItems={6} />
 
       {/* Services Section */}
       <section className="py-16 md:py-24">
