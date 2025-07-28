@@ -156,13 +156,13 @@ export function PortfolioGrid({
         <div className="relative">
           <div 
             ref={containerRef}
-            className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-2"
+            className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 gap-3"
           >
             {items.map((item, index) => (
               <div
                 key={`portfolio-item-${item.id}-${index}`}
                 className={`
-                  break-inside-avoid mb-2 w-full
+                  break-inside-avoid mb-3 w-full
                   transition-all duration-300 ease-out
                   ${isInitialLoad ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}
                   hover:scale-[1.01] hover:z-10

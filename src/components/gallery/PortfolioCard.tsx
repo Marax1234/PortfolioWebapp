@@ -61,12 +61,12 @@ export function PortfolioCard({
     }, 0)
     
     const variants = [
-      { width: 400, height: 250 },  // Short landscape
-      { width: 400, height: 320 },  // Medium
-      { width: 400, height: 500 },  // Tall portrait
-      { width: 400, height: 380 },  // Medium-tall
-      { width: 400, height: 280 },  // Short-medium
-      { width: 400, height: 450 },  // Tall
+      { width: 400, height: 280 },  // Short landscape
+      { width: 400, height: 360 },  // Medium
+      { width: 400, height: 520 },  // Tall portrait  
+      { width: 400, height: 420 },  // Medium-tall
+      { width: 400, height: 320 },  // Short-medium
+      { width: 400, height: 480 },  // Tall
     ]
     
     return variants[Math.abs(hash) % variants.length]
@@ -117,7 +117,7 @@ export function PortfolioCard({
               } ${
                 isHovered ? 'scale-105' : 'scale-100'
               }`}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 16vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, (max-width: 1536px) 20vw, 16vw"
               priority={priority}
               placeholder="blur"
               blurDataURL={generateBlurDataURL()}

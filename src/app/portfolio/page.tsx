@@ -6,7 +6,7 @@ import { SimpleCategoryFilter } from "@/components/gallery/SimpleCategoryFilter"
 export default function PortfolioPage() {
   return (
     <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px]">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Portfolio</h1>
