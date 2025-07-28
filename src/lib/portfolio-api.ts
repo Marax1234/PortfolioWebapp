@@ -285,6 +285,8 @@ export function usePortfolioApi() {
     append: boolean = false
   ) => {
     try {
+      const finalParams = { ...filters, ...params }
+      
       if (!append) {
         setLoading(true)
       } else {
@@ -292,15 +294,17 @@ export function usePortfolioApi() {
       }
       clearError()
 
-      const response = await PortfolioApi.fetchPortfolioItems({
-        ...filters,
-        ...params
-      })
+      const response = await PortfolioApi.fetchPortfolioItems(finalParams)
+
+      // Ensure unique items by ID
+      const uniqueItems = response.items.filter((item, index, arr) => 
+        arr.findIndex(i => i.id === item.id) === index
+      )
 
       if (append) {
-        addItems(response.items)
+        addItems(uniqueItems)
       } else {
-        setItems(response.items)
+        setItems(uniqueItems)
       }
       
       setPagination(response.pagination)

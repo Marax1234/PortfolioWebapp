@@ -1,62 +1,103 @@
-13:31:15.395 info  Fetching portfolio item by ID Fetching portfolio item by ID {
-  "metadata": {
-    "service": "portfolio-webapp",
-    "environment": "development",
-    "version": "0.1.0",
-    "category": "database",
-    "requestId": "c2536565-9fd2-4d8b-b6f4-cd2cf0318e6d",
-    "operation": "READ",
-    "table": "PortfolioItem",
-    "queryTime": 0,
-    "metadata": {
-      "portfolioId": "cmdn0qso80001p4os2ixu2grc"
-    }
-  }
-}
-prisma:query SELECT `main`.`portfolio_items`.`id`, `main`.`portfolio_items`.`title`, `main`.`portfolio_items`.`description`, `main`.`portfolio_items`.`mediaType`, `main`.`portfolio_items`.`filePath`, `main`.`portfolio_items`.`thumbnailPath`, `main`.`portfolio_items`.`tags`, `main`.`portfolio_items`.`metadata`, `main`.`portfolio_items`.`status`, `main`.`portfolio_items`.`featured`, `main`.`portfolio_items`.`sortOrder`, `main`.`portfolio_items`.`viewCount`, `main`.`portfolio_items`.`createdAt`, `main`.`portfolio_items`.`updatedAt`, `main`.`portfolio_items`.`publishedAt`, `main`.`portfolio_items`.`categoryId`, `main`.`portfolio_items`.`userId` FROM `main`.`portfolio_items` WHERE (`main`.`portfolio_items`.`id` = ? AND `main`.`portfolio_items`.`status` = ?) LIMIT ? OFFSET ?
-13:31:15.396 info  Portfolio item not found Portfolio item not found {
+14:49:49.481 info  Portfolio items fetch request Portfolio items fetch request {
   "metadata": {
     "service": "portfolio-webapp",
     "environment": "development",
     "version": "0.1.0",
     "category": "api",
-    "requestId": "c2536565-9fd2-4d8b-b6f4-cd2cf0318e6d",
+    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
     "method": "GET",
-    "url": "http://localhost:3000/api/portfolio/cmdn0qso80001p4os2ixu2grc",
+    "url": "http://localhost:3000/api/portfolio?orderBy=createdAt&orderDirection=desc&category=nature&page=1",
     "ip": "unknown",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
-    "statusCode": 404,
-    "responseTime": 3,
+    "statusCode": 0,
+    "responseTime": 0,
     "metadata": {
-      "portfolioId": "cmdn0qso80001p4os2ixu2grc",
-      "dbQueryTime": 1
+      "searchParams": {
+        "orderBy": "createdAt",
+        "orderDirection": "desc",
+        "category": "nature",
+        "page": "1"
+      },
+      "timestamp": "2025-07-28T12:49:49.480Z"
     }
   }
 }
-13:31:15.396 error  NOT_FOUND_ERROR: Portfolio item not found NOT_FOUND_ERROR: Portfolio item not found {
+14:49:49.481 debug  Parsed portfolio query parameters {
   "metadata": {
     "service": "portfolio-webapp",
     "environment": "development",
     "version": "0.1.0",
-    "category": "error",
-    "requestId": "c2536565-9fd2-4d8b-b6f4-cd2cf0318e6d",
-    "ip": "unknown",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
-    "method": "GET",
-    "url": "http://localhost:3000/api/portfolio/cmdn0qso80001p4os2ixu2grc",
-    "error": {
-      "name": "AppError",
-      "message": "Portfolio item not found",
-      "stack": "AppError: Portfolio item not found\n    at ErrorHandler.createNotFoundError (/home/marax/PortfolioWebapp/.next/server/chunks/[root-of-the-server]__fe1416b1._.js:1517:16)\n    at GET (/home/marax/PortfolioWebapp/.next/server/chunks/[root-of-the-server]__52f5e038._.js:1638:172)\n    at async AppRouteRouteModule.do (/home/marax/PortfolioWebapp/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:38782)\n    at async AppRouteRouteModule.handle (/home/marax/PortfolioWebapp/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:45984)\n    at async responseGenerator (/home/marax/PortfolioWebapp/.next/server/chunks/node_modules_40583ce4._.js:28700:38)\n    at async AppRouteRouteModule.handleResponse (/home/marax/PortfolioWebapp/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:1:183725)\n    at async handleResponse (/home/marax/PortfolioWebapp/.next/server/chunks/node_modules_40583ce4._.js:28762:32)\n    at async handler (/home/marax/PortfolioWebapp/.next/server/chunks/node_modules_40583ce4._.js:28814:13)\n    at async doRender (/home/marax/PortfolioWebapp/node_modules/next/dist/server/base-server.js:1586:34)\n    at async DevServer.renderToResponseWithComponentsImpl (/home/marax/PortfolioWebapp/node_modules/next/dist/server/base-server.js:1928:13)\n    at async DevServer.renderPageComponent (/home/marax/PortfolioWebapp/node_modules/next/dist/server/base-server.js:2394:24)\n    at async DevServer.renderToResponseImpl (/home/marax/PortfolioWebapp/node_modules/next/dist/server/base-server.js:2434:32)\n    at async DevServer.pipeImpl (/home/marax/PortfolioWebapp/node_modules/next/dist/server/base-server.js:1034:25)\n    at async NextNodeServer.handleCatchallRenderRequest (/home/marax/PortfolioWebapp/node_modules/next/dist/server/next-server.js:393:17)\n    at async DevServer.handleRequestImpl (/home/marax/PortfolioWebapp/node_modules/next/dist/server/base-server.js:925:17)\n    at async /home/marax/PortfolioWebapp/node_modules/next/dist/server/dev/next-dev-server.js:398:20\n    at async Span.traceAsyncFn (/home/marax/PortfolioWebapp/node_modules/next/dist/trace/trace.js:157:20)\n    at async DevServer.handleRequest (/home/marax/PortfolioWebapp/node_modules/next/dist/server/dev/next-dev-server.js:394:24)\n    at async invokeRender (/home/marax/PortfolioWebapp/node_modules/next/dist/server/lib/router-server.js:239:21)\n    at async handleRequest (/home/marax/PortfolioWebapp/node_modules/next/dist/server/lib/router-server.js:436:24)\n    at async requestHandlerImpl (/home/marax/PortfolioWebapp/node_modules/next/dist/server/lib/router-server.js:464:13)\n    at async Server.requestListener (/home/marax/PortfolioWebapp/node_modules/next/dist/server/lib/start-server.js:218:13)",
-      "code": "NOT_FOUND"
-    },
-    "context": {
-      "route": "/api/portfolio/[id]",
-      "operation": "fetch_portfolio_item",
-      "inputData": {
-        "id": "cmdn0qso80001p4os2ixu2grc"
+    "category": "nature",
+    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
+    "page": 1,
+    "limit": 12,
+    "orderBy": "createdAt",
+    "orderDirection": "desc"
+  }
+}
+14:49:49.481 info  Fetching portfolio items Fetching portfolio items {
+  "metadata": {
+    "service": "portfolio-webapp",
+    "environment": "development",
+    "version": "0.1.0",
+    "category": "database",
+    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
+    "operation": "READ",
+    "table": "PortfolioItem",
+    "queryTime": 0,
+    "metadata": {
+      "filters": {
+        "page": 1,
+        "limit": 12,
+        "category": "nature",
+        "orderBy": "createdAt",
+        "orderDirection": "desc"
       }
     }
   }
 }
- GET /api/portfolio/cmdn0qso80001p4os2ixu2grc 404 in 55ms
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT COUNT(*) AS `_count._all` FROM (SELECT `main`.`portfolio_items`.`id` FROM `main`.`portfolio_items` LEFT JOIN `main`.`categories` AS `j0` ON (`j0`.`id`) = (`main`.`portfolio_items`.`categoryId`) WHERE (`main`.`portfolio_items`.`status` = ? AND (`j0`.`slug` = ? AND (`j0`.`id` IS NOT NULL))) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT `main`.`portfolio_items`.`id`, `main`.`portfolio_items`.`title`, `main`.`portfolio_items`.`description`, `main`.`portfolio_items`.`mediaType`, `main`.`portfolio_items`.`filePath`, `main`.`portfolio_items`.`thumbnailPath`, `main`.`portfolio_items`.`tags`, `main`.`portfolio_items`.`metadata`, `main`.`portfolio_items`.`status`, `main`.`portfolio_items`.`featured`, `main`.`portfolio_items`.`sortOrder`, `main`.`portfolio_items`.`viewCount`, `main`.`portfolio_items`.`createdAt`, `main`.`portfolio_items`.`updatedAt`, `main`.`portfolio_items`.`publishedAt`, `main`.`portfolio_items`.`categoryId`, `main`.`portfolio_items`.`userId` FROM `main`.`portfolio_items` LEFT JOIN `main`.`categories` AS `j0` ON (`j0`.`id`) = (`main`.`portfolio_items`.`categoryId`) WHERE (`main`.`portfolio_items`.`status` = ? AND (`j0`.`slug` = ? AND (`j0`.`id` IS NOT NULL))) ORDER BY `main`.`portfolio_items`.`createdAt` DESC LIMIT ? OFFSET ?
+prisma:query SELECT `main`.`categories`.`id`, `main`.`categories`.`name`, `main`.`categories`.`slug`, `main`.`categories`.`description`, `main`.`categories`.`coverImage`, `main`.`categories`.`sortOrder`, `main`.`categories`.`isActive`, `main`.`categories`.`createdAt` FROM `main`.`categories` WHERE `main`.`categories`.`id` IN (?) LIMIT ? OFFSET ?
+14:49:49.483 info  Portfolio items fetched successfully Portfolio items fetched successfully {
+  "metadata": {
+    "service": "portfolio-webapp",
+    "environment": "development",
+    "version": "0.1.0",
+    "category": "database",
+    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
+    "operation": "READ",
+    "table": "PortfolioItem",
+    "queryTime": 1,
+    "rowsAffected": 3,
+    "metadata": {
+      "totalItems": 3,
+      "pagesRemaining": 0
+    }
+  }
+}
+14:49:49.483 info  Portfolio items fetched successfully Portfolio items fetched successfully {
+  "metadata": {
+    "service": "portfolio-webapp",
+    "environment": "development",
+    "version": "0.1.0",
+    "category": "api",
+    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
+    "method": "GET",
+    "url": "http://localhost:3000/api/portfolio?orderBy=createdAt&orderDirection=desc&category=nature&page=1",
+    "ip": "unknown",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
+    "statusCode": 200,
+    "responseTime": 2,
+    "metadata": {
+      "itemsReturned": 3,
+      "totalItems": 3,
+      "currentPage": 1,
+      "dbQueryTime": 1,
+      "cached": false
+    }
+  }
+}
+ GET /api/portfolio?orderBy=createdAt&orderDirection=desc&category=nature&page=1 200 in 31ms

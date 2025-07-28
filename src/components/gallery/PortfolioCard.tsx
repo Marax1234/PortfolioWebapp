@@ -2,7 +2,6 @@
 
 import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Eye, Play, Heart } from "lucide-react"
 import type { PortfolioItem } from "@/store/portfolio-store"
@@ -14,6 +13,7 @@ interface PortfolioCardProps {
   className?: string
   onMount?: (element: HTMLElement, id: string) => void
   adaptiveHeight?: boolean
+  variableHeight?: boolean
 }
 
 function generateBlurDataURL(width: number = 10, height: number = 10): string {
@@ -38,7 +38,8 @@ export function PortfolioCard({
   priority = false,
   className = "",
   onMount,
-  adaptiveHeight = false
+  adaptiveHeight = false,
+  variableHeight = false
 }: PortfolioCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -49,9 +50,29 @@ export function PortfolioCard({
   const categoryName = item.category?.name || 'Uncategorized'
   const isVideo = item.mediaType === 'VIDEO'
 
-  // Extract dimensions from metadata or use defaults
+  // Extract dimensions from metadata or use defaults with variable height
   const metadata = item.metadata as { dimensions?: { width: number; height: number } } || {}
-  const dimensions = metadata.dimensions || { width: 800, height: 600 }
+  
+  // Create variable heights for masonry effect
+  const getVariableHeight = (id: string) => {
+    const hash = id.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0)
+      return a & a
+    }, 0)
+    
+    const variants = [
+      { width: 400, height: 250 },  // Short landscape
+      { width: 400, height: 320 },  // Medium
+      { width: 400, height: 500 },  // Tall portrait
+      { width: 400, height: 380 },  // Medium-tall
+      { width: 400, height: 280 },  // Short-medium
+      { width: 400, height: 450 },  // Tall
+    ]
+    
+    return variants[Math.abs(hash) % variants.length]
+  }
+  
+  const dimensions = variableHeight ? getVariableHeight(item.id) : (metadata.dimensions || { width: 800, height: 600 })
   const aspectRatio = dimensions.width / dimensions.height
 
   // Register with masonry layout when mounted
@@ -62,47 +83,51 @@ export function PortfolioCard({
   }, [item.id, onMount])
   
   return (
-    <Card 
+    <div 
       ref={cardRef}
-      className={`group overflow-hidden cursor-pointer transition-all duration-500 ease-out transform-gpu ${
+      className={`group overflow-hidden cursor-pointer transition-all duration-300 ease-out transform-gpu rounded-lg ${
         isHovered 
-          ? 'shadow-2xl scale-[1.02] -translate-y-2' 
-          : 'shadow-lg hover:shadow-xl'
+          ? 'shadow-xl' 
+          : 'shadow-sm hover:shadow-md'
       } ${className}`}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={adaptiveHeight ? { height: 'auto' } : undefined}
+      style={{ height: 'auto' }}
     >
-      <CardContent className="p-0">
+      <div className="relative overflow-hidden rounded-lg bg-gray-100">
         <div 
-          className="relative overflow-hidden bg-muted/30"
-          style={adaptiveHeight ? { paddingBottom: `${(1/aspectRatio) * 100}%` } : undefined}
+          className="relative"
+          style={{ 
+            height: variableHeight ? `${dimensions.height}px` : 'auto',
+            aspectRatio: !variableHeight ? aspectRatio : undefined
+          }}
         >
           {!imageError ? (
             <Image
               src={imageSrc}
               alt={item.title}
-              width={dimensions.width}
-              height={dimensions.height}
-              className={`w-full transition-all duration-700 ease-out transform-gpu ${
-                adaptiveHeight ? 'absolute inset-0 object-cover' : 'h-auto object-cover'
+              fill={variableHeight}
+              width={!variableHeight ? dimensions.width : undefined}
+              height={!variableHeight ? dimensions.height : undefined}
+              className={`w-full h-full transition-all duration-500 ease-out ${
+                variableHeight ? 'object-cover' : 'object-cover'
               } ${
                 imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
               } ${
-                isHovered ? 'scale-110' : 'scale-100'
+                isHovered ? 'scale-105' : 'scale-100'
               }`}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 16vw"
               priority={priority}
               placeholder="blur"
               blurDataURL={generateBlurDataURL()}
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
-              quality={85}
+              quality={90}
             />
           ) : (
-            <div className="w-full aspect-[4/3] bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground text-sm">Image not found</p>
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+              <p className="text-gray-500 text-sm">Image not found</p>
             </div>
           )}
           
@@ -162,7 +187,7 @@ export function PortfolioCard({
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

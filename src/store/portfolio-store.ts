@@ -122,7 +122,7 @@ export const usePortfolioStore = create<PortfolioState>()(
       isLoading: false,
       isLoadingMore: false,
       error: null,
-      view: 'grid',
+      view: 'masonry',
       lightboxOpen: false,
       lightboxIndex: 0,
 
@@ -130,9 +130,14 @@ export const usePortfolioStore = create<PortfolioState>()(
       setItems: (items) => set({ items }, false, 'setItems'),
       
       addItems: (newItems) => 
-        set((state) => ({ 
-          items: [...state.items, ...newItems] 
-        }), false, 'addItems'),
+        set((state) => {
+          // Prevent duplicates by filtering out items that already exist
+          const existingIds = new Set(state.items.map(item => item.id))
+          const uniqueNewItems = newItems.filter(item => !existingIds.has(item.id))
+          return { 
+            items: [...state.items, ...uniqueNewItems] 
+          }
+        }, false, 'addItems'),
       
       setCategories: (categories) => set({ categories }, false, 'setCategories'),
       

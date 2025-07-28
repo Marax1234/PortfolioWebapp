@@ -5,7 +5,7 @@ import { usePortfolioStore } from "@/store/portfolio-store"
 import { usePortfolioApi } from "@/lib/portfolio-api"
 import { useMasonry } from "@/hooks/useMasonry"
 import { Button } from "@/components/ui/button"
-import { Loader2, Grid, LayoutGrid, Filter } from "lucide-react"
+import { Loader2, Filter } from "lucide-react"
 import { PortfolioCard } from "./PortfolioCard"
 import { Lightbox } from "./Lightbox"
 
@@ -18,51 +18,49 @@ interface PortfolioGridProps {
 
 export function PortfolioGrid({ 
   className = "",
-  enableInfiniteScroll = true,
-  showViewToggle = true,
-  showFilters: _showFilters = true
+  enableInfiniteScroll = true
 }: PortfolioGridProps) {
   const {
     items,
     isLoading,
     isLoadingMore,
     error,
-    view,
     pagination,
     lightboxOpen,
-    setView,
     openLightbox,
     incrementViewCount
   } = usePortfolioStore()
+  
+  // Force masonry view for clean layout
+  const view = 'masonry'
 
   const { loadPortfolioItems, loadMoreItems } = usePortfolioApi()
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   
-  // Masonry layout hook
+  
+  // Masonry layout hook with minimal gaps
   const { containerRef, isLoading: isMasonryLoading, addItem, recalculate } = useMasonry({
-    gap: 24,
-    minColumnWidth: 280,
+    gap: 8,
+    minColumnWidth: 250,
     maxColumns: 5,
     responsive: {
-      640: { columns: 1, gap: 16 },    // sm - single column on mobile
-      768: { columns: 2, gap: 20 },    // md
-      1024: { columns: 3, gap: 24 },   // lg  
-      1280: { columns: 4, gap: 28 },   // xl
-      1536: { columns: 5, gap: 32 },   // 2xl
+      640: { columns: 2, gap: 6 },     // sm - two columns on mobile
+      768: { columns: 3, gap: 8 },     // md
+      1024: { columns: 4, gap: 8 },    // lg  
+      1280: { columns: 5, gap: 10 },   // xl
+      1536: { columns: 6, gap: 12 },   // 2xl
     }
   })
 
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
-  // Initial load
+  // Initial load - simplified and more reliable
   useEffect(() => {
-    if (items.length === 0) {
-      loadPortfolioItems().finally(() => setIsInitialLoad(false))
-    } else {
+    loadPortfolioItems().finally(() => {
       setIsInitialLoad(false)
-    }
-  }, [loadPortfolioItems, items.length])
+    })
+  }, [loadPortfolioItems])
 
   // Recalculate masonry when items change or view changes
   useEffect(() => {
@@ -118,12 +116,6 @@ export function PortfolioGrid({
     }
   }, [addItem, view])
 
-  const getGridClassName = () => {
-    if (view === 'masonry') {
-      return "masonry-container" // Custom class for masonry layout
-    }
-    return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"
-  }
 
   if (error) {
     return (
@@ -136,34 +128,9 @@ export function PortfolioGrid({
     )
   }
 
+  
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* Header with View Toggle */}
-      {showViewToggle && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {pagination ? `${pagination.total} items` : `${items.length} items`}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={view === 'grid' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setView('grid')}
-            >
-              <Grid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={view === 'masonry' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setView('masonry')}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+    <div className={`${className}`}>
 
       {/* Loading State */}
       {(isLoading && items.length === 0) || isInitialLoad && (
@@ -183,25 +150,22 @@ export function PortfolioGrid({
         </div>
       )}
 
-      {/* Portfolio Grid */}
+
+      {/* Portfolio Grid - Masonry Layout */}
       {items.length > 0 && (
         <div className="relative">
           <div 
-            ref={view === 'masonry' ? containerRef : null}
-            className={`
-              ${getGridClassName()} 
-              ${view === 'masonry' ? 'min-h-[400px]' : ''} 
-              transition-all duration-500 ease-out
-            `}
+            ref={containerRef}
+            className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-2"
           >
             {items.map((item, index) => (
               <div
-                key={`${item.id}-${view}`} // Key change triggers re-mount for smooth transition
+                key={`portfolio-item-${item.id}-${index}`}
                 className={`
-                  ${view === 'masonry' ? 'masonry-item' : ''} 
-                  transition-all duration-500 ease-out
-                  ${isInitialLoad ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}
-                  hover:scale-[1.02] hover:z-10
+                  break-inside-avoid mb-2 w-full
+                  transition-all duration-300 ease-out
+                  ${isInitialLoad ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}
+                  hover:scale-[1.01] hover:z-10
                 `}
                 style={
                   !isInitialLoad ? { 
@@ -213,8 +177,9 @@ export function PortfolioGrid({
                   item={item}
                   onClick={() => handleItemClick(index, item.id)}
                   onMount={handleItemMount}
-                  adaptiveHeight={view === 'masonry'}
-                  priority={index < 6} // Prioritize first 6 images
+                  adaptiveHeight={true}
+                  priority={index < 8}
+                  variableHeight={true}
                 />
               </div>
             ))}
@@ -246,13 +211,23 @@ export function PortfolioGrid({
       )}
 
       {/* Empty State */}
-      {!isLoading && items.length === 0 && (
+      {!isLoading && !isInitialLoad && items.length === 0 && (
         <div className="text-center py-12">
           <Filter className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground mb-2">No portfolio items found</p>
           <p className="text-sm text-muted-foreground">
             Try adjusting your filters or check back later.
           </p>
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-4 bg-gray-100 rounded text-xs text-left max-w-md mx-auto">
+              <strong>Debug Info:</strong><br/>
+              Items: {items.length}<br/>
+              Loading: {isLoading.toString()}<br/>
+              Initial Load: {isInitialLoad.toString()}<br/>
+              Error: {error || 'none'}<br/>
+              Pagination: {pagination ? `Page ${pagination.page}/${pagination.totalPages}` : 'none'}
+            </div>
+          )}
         </div>
       )}
 
