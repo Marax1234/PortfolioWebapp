@@ -1,11 +1,87 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Mail, Phone, MapPin, User, Clock, Award } from "lucide-react"
+import { Mail, Phone, MapPin, User, Clock, Award, CheckCircle, AlertCircle } from "lucide-react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { useState } from "react"
+
+// Form validation schema
+const contactSchema = z.object({
+  name: z.string().min(1, 'Name ist erforderlich').max(100, 'Name zu lang'),
+  email: z.string().email('Gültige Email ist erforderlich'),
+  phone: z.string().optional(),
+  subject: z.string().min(1, 'Betreff ist erforderlich').max(200, 'Betreff zu lang'),
+  message: z.string().min(10, 'Nachricht muss mindestens 10 Zeichen haben').max(2000, 'Nachricht zu lang'),
+  category: z.enum(['NATURE', 'TRAVEL', 'EVENT', 'VIDEOGRAPHY', 'OTHER']).default('OTHER'),
+  budgetRange: z.string().optional(),
+  eventDate: z.string().optional(),
+  location: z.string().optional(),
+  gdprConsent: z.boolean().refine(val => val === true, {
+    message: 'Datenschutzerklärung muss akzeptiert werden'
+  })
+})
+
+type ContactFormData = z.infer<typeof contactSchema>
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema)
+  })
+
+  const onSubmit = async (data: ContactFormData) => {
+    setIsSubmitting(true)
+    setSubmitStatus('idle')
+    setErrorMessage('')
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          subject: data.subject,
+          message: data.message,
+          category: data.category,
+          budget: data.budgetRange,
+          timeline: data.eventDate,
+        }),
+      })
+
+      if (response.ok) {
+        setSubmitStatus('success')
+        reset()
+      } else {
+        const errorData = await response.json()
+        setSubmitStatus('error')
+        setErrorMessage(errorData.message || 'Ein Fehler ist aufgetreten')
+      }
+    } catch (error) {
+      setSubmitStatus('error')
+      setErrorMessage('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,65 +101,165 @@ export default function ContactPage() {
                 <CardTitle className="text-2xl">Nachricht Senden</CardTitle>
               </CardHeader>
               <CardContent>
-                <form className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {submitStatus === 'success' && (
+                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md flex items-center gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                     <div>
-                      <Label htmlFor="firstName">Vorname</Label>
-                      <Input id="firstName" name="firstName" type="text" required />
+                      <p className="text-green-800 font-medium">Nachricht erfolgreich gesendet!</p>
+                      <p className="text-green-700 text-sm">Vielen Dank für Ihre Anfrage. Ich melde mich innerhalb von 24 Stunden bei Ihnen.</p>
                     </div>
+                  </div>
+                )}
+
+                {submitStatus === 'error' && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600" />
                     <div>
-                      <Label htmlFor="lastName">Nachname</Label>
-                      <Input id="lastName" name="lastName" type="text" required />
+                      <p className="text-red-800 font-medium">Fehler beim Senden</p>
+                      <p className="text-red-700 text-sm">{errorMessage}</p>
                     </div>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <div>
+                    <Label htmlFor="name">Vollständiger Name</Label>
+                    <Input 
+                      id="name" 
+                      type="text" 
+                      {...register('name')}
+                      className={errors.name ? 'border-red-500' : ''}
+                    />
+                    {errors.name && (
+                      <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                    )}
                   </div>
                   
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" required />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      {...register('email')}
+                      className={errors.email ? 'border-red-500' : ''}
+                    />
+                    {errors.email && (
+                      <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                    )}
                   </div>
                   
                   <div>
                     <Label htmlFor="phone">Telefon (Optional)</Label>
-                    <Input id="phone" name="phone" type="tel" />
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      {...register('phone')}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="subject">Betreff</Label>
+                    <Input 
+                      id="subject" 
+                      type="text" 
+                      placeholder="z.B. Hochzeitsfotografie, Imagefilm, etc."
+                      {...register('subject')}
+                      className={errors.subject ? 'border-red-500' : ''}
+                    />
+                    {errors.subject && (
+                      <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>
+                    )}
                   </div>
                   
                   <div>
-                    <Label htmlFor="service">Service</Label>
+                    <Label htmlFor="category">Service Kategorie</Label>
                     <select 
-                      id="service" 
-                      name="service" 
+                      id="category"
+                      {...register('category')}
                       className="w-full p-3 border rounded-md bg-background"
-                      required
                     >
-                      <option value="">Service auswählen</option>
-                      <option value="nature">Naturfotografie</option>
-                      <option value="travel">Reisefotografie</option>
-                      <option value="event">Eventfotografie</option>
-                      <option value="portrait">Portraits</option>
-                      <option value="corporate-video">Imagefilm</option>
-                      <option value="social-media">Social-Media-Inhalte</option>
-                      <option value="other">Anderes</option>
+                      <option value="OTHER">Anderes</option>
+                      <option value="NATURE">Naturfotografie</option>
+                      <option value="TRAVEL">Reisefotografie</option>
+                      <option value="EVENT">Eventfotografie</option>
+                      <option value="VIDEOGRAPHY">Videografie/Imagefilm</option>
                     </select>
+                    {errors.category && (
+                      <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
+                    )}
                   </div>
-                  
+
                   <div>
-                    <Label htmlFor="eventDate">Datum des Events (falls zutreffend)</Label>
-                    <Input id="eventDate" name="eventDate" type="date" />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="message">Erzählen Sie mir von Ihrem Projekt</Label>
-                    <Textarea 
-                      id="message" 
-                      name="message" 
-                      rows={5}
-                      placeholder="Bitte beschreiben Sie Ihr Projekt, Ihre Vision, den Ort und andere wichtige Details..."
-                      required 
+                    <Label htmlFor="budgetRange">Budget Rahmen (Optional)</Label>
+                    <Input 
+                      id="budgetRange" 
+                      type="text" 
+                      placeholder="z.B. 500-1000€, Nach Absprache"
+                      {...register('budgetRange')}
                     />
                   </div>
                   
-                  <Button type="submit" className="w-full" size="lg">
-                    Nachricht Senden
+                  <div>
+                    <Label htmlFor="eventDate">Event Datum (Optional)</Label>
+                    <Input 
+                      id="eventDate" 
+                      type="date" 
+                      {...register('eventDate')}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="location">Ort (Optional)</Label>
+                    <Input 
+                      id="location" 
+                      type="text" 
+                      placeholder="z.B. München, Online, etc."
+                      {...register('location')}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="message">Projektbeschreibung</Label>
+                    <Textarea 
+                      id="message" 
+                      rows={5}
+                      placeholder="Bitte beschreiben Sie Ihr Projekt, Ihre Vision, spezielle Anforderungen und andere wichtige Details..."
+                      {...register('message')}
+                      className={errors.message ? 'border-red-500' : ''}
+                    />
+                    {errors.message && (
+                      <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-start space-x-2">
+                    <input
+                      type="checkbox"
+                      id="gdprConsent"
+                      {...register('gdprConsent')}
+                      className="mt-1"
+                    />
+                    <div>
+                      <Label htmlFor="gdprConsent" className="text-sm leading-relaxed cursor-pointer">
+                        Ich stimme der Verarbeitung meiner personenbezogenen Daten gemäß der{' '}
+                        <a href="/privacy" className="text-blue-600 hover:underline" target="_blank">
+                          Datenschutzerklärung
+                        </a>{' '}
+                        zu. Meine Daten werden ausschließlich zur Bearbeitung meiner Anfrage verwendet.
+                      </Label>
+                      {errors.gdprConsent && (
+                        <p className="text-red-500 text-sm mt-1">{errors.gdprConsent.message}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    size="lg"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Wird gesendet...' : 'Nachricht Senden'}
                   </Button>
                 </form>
               </CardContent>
@@ -107,7 +283,7 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>kilian.seibert@web.de</span>
+                  <span>mhiller2005@gmail.com</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin className="h-4 w-4 text-muted-foreground" />

@@ -14,7 +14,8 @@ import {
   Settings,
   FileText,
   BarChart3,
-  PlusCircle
+  PlusCircle,
+  MessageSquare
 } from "lucide-react"
 
 interface AdminLayoutProps {
@@ -46,7 +47,7 @@ const navigationItems = [
   {
     name: 'Inquiries',
     href: '/admin/inquiries',
-    icon: Users
+    icon: MessageSquare
   },
   {
     name: 'Analytics',

@@ -170,7 +170,7 @@ export class ErrorHandler {
 
     // Handle Zod validation errors
     if (error instanceof ZodError) {
-      const details = error.errors.reduce((acc, err) => {
+      const details = (error.errors || []).reduce((acc, err) => {
         acc[err.path.join('.')] = err.message
         return acc
       }, {} as Record<string, string>)

@@ -93,3 +93,33 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 - Winston logging configured for security events and errors
 - Jest testing framework with coverage reporting
 - File uploads handled via `/api/upload` endpoint
+
+## Email Configuration
+
+The contact form and inquiry system supports email notifications:
+
+### Development Mode
+- Without SMTP configuration: Emails are simulated and logged only
+- Inquiry data is still saved to database
+- Check server logs to see email content
+
+### Production Setup
+Configure SMTP settings in `.env.local`:
+```bash
+# Admin email for notifications
+ADMIN_EMAIL="mhiller2005@gmail.com"
+
+# SMTP Configuration (choose one provider)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASSWORD="your-app-password"
+EMAIL_FROM="your-email@gmail.com"
+```
+
+### Supported Email Features
+- **Contact Form Notifications**: Admin receives inquiry notifications
+- **Customer Confirmations**: Automatic confirmation emails to customers
+- **Admin Replies**: Send custom replies from admin dashboard
+- **Professional Templates**: HTML emails with branding
