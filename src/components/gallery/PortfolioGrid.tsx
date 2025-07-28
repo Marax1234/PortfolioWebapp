@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useCallback, useRef } from "react"
+import { useEffect, useCallback, useRef, useState } from "react"
 import { usePortfolioStore } from "@/store/portfolio-store"
 import { usePortfolioApi } from "@/lib/portfolio-api"
+import { useMasonry } from "@/hooks/useMasonry"
 import { Button } from "@/components/ui/button"
 import { Loader2, Grid, LayoutGrid, Filter } from "lucide-react"
 import { PortfolioCard } from "./PortfolioCard"
@@ -35,15 +36,51 @@ export function PortfolioGrid({
   } = usePortfolioStore()
 
   const { loadPortfolioItems, loadMoreItems } = usePortfolioApi()
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  
+  // Masonry layout hook
+  const { containerRef, isLoading: isMasonryLoading, addItem, recalculate } = useMasonry({
+    gap: 24,
+    minColumnWidth: 280,
+    maxColumns: 5,
+    responsive: {
+      640: { columns: 1, gap: 16 },    // sm - single column on mobile
+      768: { columns: 2, gap: 20 },    // md
+      1024: { columns: 3, gap: 24 },   // lg  
+      1280: { columns: 4, gap: 28 },   // xl
+      1536: { columns: 5, gap: 32 },   // 2xl
+    }
+  })
+
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
   // Initial load
   useEffect(() => {
     if (items.length === 0) {
-      loadPortfolioItems()
+      loadPortfolioItems().finally(() => setIsInitialLoad(false))
+    } else {
+      setIsInitialLoad(false)
     }
   }, [loadPortfolioItems, items.length])
+
+  // Recalculate masonry when items change or view changes
+  useEffect(() => {
+    if (items.length > 0 && view === 'masonry') {
+      // Small delay to ensure DOM is updated
+      const timeout = setTimeout(() => {
+        recalculate()
+      }, 100)
+      return () => clearTimeout(timeout)
+    }
+  }, [items, view, recalculate])
+
+  // Handle view mode changes
+  useEffect(() => {
+    if (view === 'masonry') {
+      recalculate()
+    }
+  }, [view, recalculate])
 
   // Infinite scroll setup
   const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -75,11 +112,17 @@ export function PortfolioGrid({
     openLightbox(index)
   }, [incrementViewCount, openLightbox])
 
+  const handleItemMount = useCallback((element: HTMLElement, id: string) => {
+    if (view === 'masonry') {
+      addItem(element, id)
+    }
+  }, [addItem, view])
+
   const getGridClassName = () => {
     if (view === 'masonry') {
-      return "columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6"
+      return "masonry-container" // Custom class for masonry layout
     }
-    return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+    return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6"
   }
 
   if (error) {
@@ -123,27 +166,59 @@ export function PortfolioGrid({
       )}
 
       {/* Loading State */}
-      {isLoading && items.length === 0 && (
+      {(isLoading && items.length === 0) || isInitialLoad && (
         <div className="text-center py-12">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">Loading portfolio items...</p>
         </div>
       )}
 
+      {/* Masonry Loading Overlay */}
+      {view === 'masonry' && isMasonryLoading && items.length > 0 && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Organizing layout...</span>
+          </div>
+        </div>
+      )}
+
       {/* Portfolio Grid */}
       {items.length > 0 && (
-        <div className={getGridClassName()}>
-          {items.map((item, index) => (
-            <div
-              key={item.id}
-              className={view === 'masonry' ? 'break-inside-avoid' : ''}
-            >
-              <PortfolioCard
-                item={item}
-                onClick={() => handleItemClick(index, item.id)}
-              />
-            </div>
-          ))}
+        <div className="relative">
+          <div 
+            ref={view === 'masonry' ? containerRef : null}
+            className={`
+              ${getGridClassName()} 
+              ${view === 'masonry' ? 'min-h-[400px]' : ''} 
+              transition-all duration-500 ease-out
+            `}
+          >
+            {items.map((item, index) => (
+              <div
+                key={`${item.id}-${view}`} // Key change triggers re-mount for smooth transition
+                className={`
+                  ${view === 'masonry' ? 'masonry-item' : ''} 
+                  transition-all duration-500 ease-out
+                  ${isInitialLoad ? 'opacity-0 translate-y-4 scale-95' : 'opacity-100 translate-y-0 scale-100'}
+                  hover:scale-[1.02] hover:z-10
+                `}
+                style={
+                  !isInitialLoad ? { 
+                    transitionDelay: `${Math.min(index * 30, 800)}ms` 
+                  } : undefined
+                }
+              >
+                <PortfolioCard
+                  item={item}
+                  onClick={() => handleItemClick(index, item.id)}
+                  onMount={handleItemMount}
+                  adaptiveHeight={view === 'masonry'}
+                  priority={index < 6} // Prioritize first 6 images
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

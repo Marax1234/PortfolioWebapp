@@ -120,3 +120,104 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Masonry Layout Styles */
+  .masonry-container {
+    position: relative;
+    width: 100%;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .masonry-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: auto;
+    transition: 
+      transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.4s ease-out,
+      filter 0.3s ease-out;
+    will-change: transform;
+  }
+
+  /* Smooth grid-to-masonry transition */
+  .grid-to-masonry-enter {
+    animation: gridToMasonry 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .masonry-to-grid-enter {
+    animation: masonryToGrid 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes gridToMasonry {
+    from {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(0.95);
+      opacity: 0.7;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes masonryToGrid {
+    from {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(0.95);
+      opacity: 0.7;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Staggered fade-in animation for masonry items */
+  .masonry-item:nth-child(1) { animation-delay: 0ms; }
+  .masonry-item:nth-child(2) { animation-delay: 50ms; }
+  .masonry-item:nth-child(3) { animation-delay: 100ms; }
+  .masonry-item:nth-child(4) { animation-delay: 150ms; }
+  .masonry-item:nth-child(5) { animation-delay: 200ms; }
+  .masonry-item:nth-child(6) { animation-delay: 250ms; }
+  .masonry-item:nth-child(7) { animation-delay: 300ms; }
+  .masonry-item:nth-child(8) { animation-delay: 350ms; }
+  .masonry-item:nth-child(9) { animation-delay: 400ms; }
+  .masonry-item:nth-child(10) { animation-delay: 450ms; }
+
+  /* Fade in up animation */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(2rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

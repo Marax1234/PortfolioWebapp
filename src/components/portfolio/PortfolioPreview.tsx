@@ -109,15 +109,24 @@ export function PortfolioPreview({
           </div>
         )}
         
-        {/* Portfolio Grid */}
+        {/* Portfolio Grid with staggered animation */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {featuredItems.map((item, index) => (
-            <PortfolioCard
+            <div
               key={item.id}
-              item={item}
-              onClick={() => handleItemClick(item)}
-              priority={index < 3} // Prioritize first 3 images for loading
-            />
+              className="opacity-0 translate-y-8 animate-fade-in-up"
+              style={{ 
+                animationDelay: `${index * 100}ms`,
+                animationFillMode: 'forwards'
+              }}
+            >
+              <PortfolioCard
+                item={item}
+                onClick={() => handleItemClick(item)}
+                priority={index < 3} // Prioritize first 3 images for loading
+                adaptiveHeight={false} // Keep standard grid for preview
+              />
+            </div>
           ))}
         </div>
         

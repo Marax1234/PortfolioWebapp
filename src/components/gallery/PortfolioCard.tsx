@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Eye, Play, Heart } from "lucide-react"
@@ -12,6 +12,8 @@ interface PortfolioCardProps {
   onClick: () => void
   priority?: boolean
   className?: string
+  onMount?: (element: HTMLElement, id: string) => void
+  adaptiveHeight?: boolean
 }
 
 function generateBlurDataURL(width: number = 10, height: number = 10): string {
@@ -34,10 +36,14 @@ export function PortfolioCard({
   item, 
   onClick, 
   priority = false,
-  className = ""
+  className = "",
+  onMount,
+  adaptiveHeight = false
 }: PortfolioCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   const imageSrc = item.thumbnailPath || item.filePath
   const categoryName = item.category?.name || 'Uncategorized'
@@ -46,29 +52,47 @@ export function PortfolioCard({
   // Extract dimensions from metadata or use defaults
   const metadata = item.metadata as { dimensions?: { width: number; height: number } } || {}
   const dimensions = metadata.dimensions || { width: 800, height: 600 }
+  const aspectRatio = dimensions.width / dimensions.height
+
+  // Register with masonry layout when mounted
+  useEffect(() => {
+    if (cardRef.current && onMount) {
+      onMount(cardRef.current, item.id)
+    }
+  }, [item.id, onMount])
   
   return (
     <Card 
-      className={`group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1 ${className}`}
+      ref={cardRef}
+      className={`group overflow-hidden cursor-pointer transition-all duration-500 ease-out transform-gpu ${
+        isHovered 
+          ? 'shadow-2xl scale-[1.02] -translate-y-2' 
+          : 'shadow-lg hover:shadow-xl'
+      } ${className}`}
       onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={adaptiveHeight ? { height: 'auto' } : undefined}
     >
       <CardContent className="p-0">
-        <div className="relative overflow-hidden bg-muted/30">
+        <div 
+          className="relative overflow-hidden bg-muted/30"
+          style={adaptiveHeight ? { paddingBottom: `${(1/aspectRatio) * 100}%` } : undefined}
+        >
           {!imageError ? (
             <Image
               src={imageSrc}
               alt={item.title}
               width={dimensions.width}
               height={dimensions.height}
-              className={`w-full h-auto object-cover transition-all duration-300 group-hover:scale-110 ${
-                imageLoaded ? 'opacity-100' : 'opacity-0'
+              className={`w-full transition-all duration-700 ease-out transform-gpu ${
+                adaptiveHeight ? 'absolute inset-0 object-cover' : 'h-auto object-cover'
+              } ${
+                imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+              } ${
+                isHovered ? 'scale-110' : 'scale-100'
               }`}
-              sizes="(
-                max-width: 640px) 100vw, 
-                (max-width: 1024px) 50vw, 
-                (max-width: 1280px) 33vw, 
-                25vw
-              "
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
               priority={priority}
               placeholder="blur"
               blurDataURL={generateBlurDataURL()}
@@ -82,9 +106,11 @@ export function PortfolioCard({
             </div>
           )}
           
-          {/* Loading skeleton */}
+          {/* Loading skeleton with shimmer effect */}
           {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 bg-muted animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-r from-muted via-muted/50 to-muted animate-pulse">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            </div>
           )}
 
           {/* Media type indicator */}
@@ -107,11 +133,15 @@ export function PortfolioCard({
             </div>
           )}
 
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />
+          {/* Hover overlay with smooth gradient */}
+          <div className={`absolute inset-0 transition-all duration-500 ease-out ${
+            isHovered ? 'bg-black/40' : 'bg-black/0'
+          }`} />
           
-          {/* Content overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 text-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/80 to-transparent">
+          {/* Content overlay with staggered animation */}
+          <div className={`absolute bottom-0 left-0 right-0 p-4 text-white transition-all duration-500 ease-out ${
+            isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+          } bg-gradient-to-t from-black/90 via-black/60 to-transparent`}>
             <h3 className="font-semibold text-sm mb-1 line-clamp-1">{item.title}</h3>
             
             {item.description && (
