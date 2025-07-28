@@ -44,7 +44,7 @@ export interface RecentActivity {
 
 export interface DailyViews {
   date: string
-  count: number
+  value: number
 }
 
 export interface TimeRangeStats {

@@ -623,16 +623,27 @@ export class AnalyticsQueries {
     //   return acc
     // }, {} as Record<string, number>)
 
-    // Category performance
-    const categoryPerformance = categories.map(category => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      itemCount: category._count.portfolioItems,
-      totalViews: topViewedItems
-        .filter(item => item.categoryId === category.id)
-        .reduce((sum, item) => sum + item.viewCount, 0)
-    }))
+    // Category performance - get actual view counts per category
+    const categoryPerformance = await Promise.all(
+      categories.map(async (category) => {
+        const categoryViews = await prisma.portfolioItem.aggregate({
+          _sum: { viewCount: true },
+          where: {
+            categoryId: category.id,
+            status: 'PUBLISHED'
+          }
+        })
+        
+        return {
+          id: category.id,
+          name: category.name,
+          slug: category.slug,
+          itemCount: category._count.portfolioItems,
+          totalViews: categoryViews._sum.viewCount || 0
+        }
+      })
+    )
+    
 
     return {
       overview: {
@@ -694,7 +705,9 @@ export class AnalyticsQueries {
       }
     })
     
-    return Object.entries(days).map(([date, count]) => ({ date, count }))
+    
+    // Return with 'value' instead of 'count' for frontend compatibility
+    return Object.entries(days).map(([date, count]) => ({ date, value: count }))
   }
 
   /**

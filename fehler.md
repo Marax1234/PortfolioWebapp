@@ -1,103 +1,80 @@
-14:49:49.481 info  Portfolio items fetch request Portfolio items fetch request {
-  "metadata": {
-    "service": "portfolio-webapp",
-    "environment": "development",
-    "version": "0.1.0",
-    "category": "api",
-    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
-    "method": "GET",
-    "url": "http://localhost:3000/api/portfolio?orderBy=createdAt&orderDirection=desc&category=nature&page=1",
-    "ip": "unknown",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
-    "statusCode": 0,
-    "responseTime": 0,
-    "metadata": {
-      "searchParams": {
-        "orderBy": "createdAt",
-        "orderDirection": "desc",
-        "category": "nature",
-        "page": "1"
-      },
-      "timestamp": "2025-07-28T12:49:49.480Z"
-    }
-  }
+🔍 DEBUG categoryPerformance: {
+  categoriesCount: 4,
+  categoryData: [
+    { name: 'Nature Photography', itemCount: 3, totalViews: 1236 },
+    { name: 'Travel Photography', itemCount: 2, totalViews: 226 },
+    { name: 'Event Photography', itemCount: 2, totalViews: 212 },
+    { name: 'Videography', itemCount: 1, totalViews: 116 }
+  ]
 }
-14:49:49.481 debug  Parsed portfolio query parameters {
-  "metadata": {
-    "service": "portfolio-webapp",
-    "environment": "development",
-    "version": "0.1.0",
-    "category": "nature",
-    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
-    "page": 1,
-    "limit": 12,
-    "orderBy": "createdAt",
-    "orderDirection": "desc"
-  }
+🔍 DEBUG groupEventsByDay: {
+  totalEvents: 994,
+  dateRange: {
+    startDate: '2025-06-28T16:25:45.355Z',
+    endDate: '2025-07-28T16:25:45.355Z'
+  },
+  daysCount: 31,
+  nonZeroDays: 31,
+  sampleDays: [
+    { date: '2025-06-28', count: 6 },
+    { date: '2025-06-29', count: 18 },
+    { date: '2025-06-30', count: 16 },
+    { date: '2025-07-01', count: 16 },
+    { date: '2025-07-02', count: 26 }
+  ]
 }
-14:49:49.481 info  Fetching portfolio items Fetching portfolio items {
+18:25:45.418 info  Analytics dashboard data fetched successfully Analytics dashboard data fetched successfully {
   "metadata": {
     "service": "portfolio-webapp",
     "environment": "development",
     "version": "0.1.0",
     "category": "database",
-    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
+    "requestId": "d63de153-c419-41c5-a009-10cd90bac9a8",
     "operation": "READ",
-    "table": "PortfolioItem",
-    "queryTime": 0,
+    "table": "AnalyticsEvent, PortfolioItem, Category",
+    "queryTime": 63,
+    "rowsAffected": 3435,
     "metadata": {
-      "filters": {
-        "page": 1,
-        "limit": 12,
-        "category": "nature",
-        "orderBy": "createdAt",
-        "orderDirection": "desc"
-      }
+      "totalViews": 1790,
+      "uniqueVisitors": 3435,
+      "topContentCount": 5,
+      "trafficSourcesCount": 10
     }
   }
 }
-prisma:query SELECT 1
-prisma:query SELECT 1
-prisma:query SELECT COUNT(*) AS `_count._all` FROM (SELECT `main`.`portfolio_items`.`id` FROM `main`.`portfolio_items` LEFT JOIN `main`.`categories` AS `j0` ON (`j0`.`id`) = (`main`.`portfolio_items`.`categoryId`) WHERE (`main`.`portfolio_items`.`status` = ? AND (`j0`.`slug` = ? AND (`j0`.`id` IS NOT NULL))) LIMIT ? OFFSET ?) AS `sub`
-prisma:query SELECT `main`.`portfolio_items`.`id`, `main`.`portfolio_items`.`title`, `main`.`portfolio_items`.`description`, `main`.`portfolio_items`.`mediaType`, `main`.`portfolio_items`.`filePath`, `main`.`portfolio_items`.`thumbnailPath`, `main`.`portfolio_items`.`tags`, `main`.`portfolio_items`.`metadata`, `main`.`portfolio_items`.`status`, `main`.`portfolio_items`.`featured`, `main`.`portfolio_items`.`sortOrder`, `main`.`portfolio_items`.`viewCount`, `main`.`portfolio_items`.`createdAt`, `main`.`portfolio_items`.`updatedAt`, `main`.`portfolio_items`.`publishedAt`, `main`.`portfolio_items`.`categoryId`, `main`.`portfolio_items`.`userId` FROM `main`.`portfolio_items` LEFT JOIN `main`.`categories` AS `j0` ON (`j0`.`id`) = (`main`.`portfolio_items`.`categoryId`) WHERE (`main`.`portfolio_items`.`status` = ? AND (`j0`.`slug` = ? AND (`j0`.`id` IS NOT NULL))) ORDER BY `main`.`portfolio_items`.`createdAt` DESC LIMIT ? OFFSET ?
-prisma:query SELECT `main`.`categories`.`id`, `main`.`categories`.`name`, `main`.`categories`.`slug`, `main`.`categories`.`description`, `main`.`categories`.`coverImage`, `main`.`categories`.`sortOrder`, `main`.`categories`.`isActive`, `main`.`categories`.`createdAt` FROM `main`.`categories` WHERE `main`.`categories`.`id` IN (?) LIMIT ? OFFSET ?
-14:49:49.483 info  Portfolio items fetched successfully Portfolio items fetched successfully {
-  "metadata": {
-    "service": "portfolio-webapp",
-    "environment": "development",
-    "version": "0.1.0",
-    "category": "database",
-    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
-    "operation": "READ",
-    "table": "PortfolioItem",
-    "queryTime": 1,
-    "rowsAffected": 3,
-    "metadata": {
-      "totalItems": 3,
-      "pagesRemaining": 0
-    }
-  }
-}
-14:49:49.483 info  Portfolio items fetched successfully Portfolio items fetched successfully {
+18:25:45.418 info  Analytics dashboard data fetched successfully Analytics dashboard data fetched successfully {
   "metadata": {
     "service": "portfolio-webapp",
     "environment": "development",
     "version": "0.1.0",
     "category": "api",
-    "requestId": "c867c962-339a-4e7e-a245-c83ffb2a2a51",
+    "requestId": "d63de153-c419-41c5-a009-10cd90bac9a8",
     "method": "GET",
-    "url": "http://localhost:3000/api/portfolio?orderBy=createdAt&orderDirection=desc&category=nature&page=1",
+    "url": "http://localhost:3000/api/analytics?period=30d",
     "ip": "unknown",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0",
     "statusCode": 200,
-    "responseTime": 2,
+    "responseTime": 65,
     "metadata": {
-      "itemsReturned": 3,
-      "totalItems": 3,
-      "currentPage": 1,
-      "dbQueryTime": 1,
+      "adminUser": "kilian@example.com",
+      "dataPoints": {
+        "totalViews": 1790,
+        "uniqueVisitors": 3435,
+        "portfolioItems": 8,
+        "categories": 4
+      },
+      "timeRange": {
+        "startDate": "2025-06-28T16:25:45.355Z",
+        "endDate": "2025-07-28T16:25:45.355Z",
+        "totalEvents": 3435
+      },
+      "dbQueryTime": 63,
       "cached": false
     }
   }
 }
- GET /api/portfolio?orderBy=createdAt&orderDirection=desc&category=nature&page=1 200 in 31ms
+ GET /api/analytics?period=30d 200 in 311ms
+prisma:query SELECT SUM(`viewCount`) FROM (SELECT `main`.`portfolio_items`.`viewCount` FROM `main`.`portfolio_items` WHERE (`main`.`portfolio_items`.`categoryId` = ? AND `main`.`portfolio_items`.`status` = ?) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`viewCount`) FROM (SELECT `main`.`portfolio_items`.`viewCount` FROM `main`.`portfolio_items` WHERE (`main`.`portfolio_items`.`categoryId` = ? AND `main`.`portfolio_items`.`status` = ?) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`viewCount`) FROM (SELECT `main`.`portfolio_items`.`viewCount` FROM `main`.`portfolio_items` WHERE (`main`.`portfolio_items`.`categoryId` = ? AND `main`.`portfolio_items`.`status` = ?) LIMIT ? OFFSET ?) AS `sub`
+prisma:query SELECT SUM(`viewCount`) FROM (SELECT `main`.`portfolio_items`.`viewCount` FROM `main`.`portfolio_items` WHERE (`main`.`portfolio_items`.`categoryId` = ? AND `main`.`portfolio_items`.`status` = ?) LIMIT ? OFFSET ?) AS `sub`
