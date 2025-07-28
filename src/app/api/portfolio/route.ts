@@ -215,11 +215,11 @@ const createPortfolioSchema = z.object({
   thumbnailPath: z.string().nullable().optional(),
   webpPath: z.string().nullable().optional(),
   avifPath: z.string().nullable().optional(),
-  categoryId: z.string().uuid().nullable().optional(),
+  categoryId: z.string().nullable().optional(),
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED']).default('DRAFT'),
   featured: z.boolean().default(false),
   tags: z.array(z.string()).default([]),
-  metadata: z.record(z.any()).nullable().optional(),
+  metadata: z.any().nullable().optional(),
   sortOrder: z.number().default(0)
 })
 
@@ -246,17 +246,36 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json()
+    console.log('Received request body:', JSON.stringify(body, null, 2))
     
     // Validate request data
+    try {
+      const validationResult = createPortfolioSchema.safeParse(body)
+      console.log('Validation result:', { 
+        success: validationResult.success, 
+        error: validationResult.error, 
+        errorType: validationResult.error?.constructor?.name,
+        issues: validationResult.error?.issues,
+        errors: validationResult.error?.errors 
+      })
+    } catch (zodError) {
+      console.log('Zod parsing threw error:', zodError)
+      throw zodError
+    }
+    
+    // Run validation again for actual use
     const validationResult = createPortfolioSchema.safeParse(body)
     
     if (!validationResult.success) {
-      const errors = validationResult.error.errors.map(err => 
+      const errorDetails = validationResult.error?.errors || []
+      const errors = errorDetails.map(err => 
         `${err.path.join('.')}: ${err.message}`
       ).join(', ')
       
+      console.log('Validation failed:', { errors: errorDetails, body })
+      
       const error = ErrorHandler.createValidationError(`Invalid portfolio data: ${errors}`, {
-        validationErrors: validationResult.error.errors
+        validationErrors: errorDetails
       })
       
       return ErrorHandler.handleError(error, {

@@ -20,7 +20,7 @@ export const DEFAULT_STORAGE_CONFIG: StorageConfig = {
   allowedImageTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'],
   allowedVideoTypes: ['video/mp4', 'video/quicktime', 'video/x-msvideo'],
   uploadDir: 'uploads/portfolio',
-  publicDir: 'public/uploads/portfolio'
+  publicDir: path.join(process.cwd(), 'public/uploads/portfolio')
 }
 
 export interface FileMetadata {
@@ -56,6 +56,8 @@ export class StorageManager {
    * Initialize storage directories
    */
   async initializeDirectories(): Promise<void> {
+    console.log('Initializing storage directories with config:', this.config)
+    
     const directories = [
       this.config.publicDir,
       path.join(this.config.publicDir, 'originals'),
@@ -65,10 +67,14 @@ export class StorageManager {
       path.join(this.config.publicDir, 'temp')
     ]
 
+    console.log('Creating directories:', directories)
+
     for (const dir of directories) {
       try {
         await fs.access(dir)
+        console.log('Directory exists:', dir)
       } catch {
+        console.log('Creating directory:', dir)
         await fs.mkdir(dir, { recursive: true })
       }
     }
@@ -128,8 +134,16 @@ export class StorageManager {
     subDir: 'originals' | 'thumbnails' | 'webp' | 'avif' | 'temp' = 'originals'
   ): Promise<string> {
     const filePath = path.join(this.config.publicDir, subDir, fileName)
-    await fs.writeFile(filePath, buffer)
-    return filePath
+    console.log('Saving file:', { fileName, subDir, filePath, bufferSize: buffer.length })
+    
+    try {
+      await fs.writeFile(filePath, buffer)
+      console.log('File saved successfully:', filePath)
+      return filePath
+    } catch (error) {
+      console.error('Failed to save file:', { filePath, error })
+      throw error
+    }
   }
 
   /**

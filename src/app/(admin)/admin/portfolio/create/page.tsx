@@ -120,7 +120,7 @@ export default function CreatePortfolioItem() {
     }
   }
 
-  const handleFilesChange = (files: UploadedFile[]) => {
+  const handleFilesChange = async (files: UploadedFile[]) => {
     // Auto-generate title from first file if empty
     if (files.length > 0 && !form.getValues('title')) {
       const firstFile = files[0]
@@ -129,6 +129,11 @@ export default function CreatePortfolioItem() {
         .replace(/[_-]/g, ' ') // Replace underscores/hyphens with spaces
         .replace(/\b\w/g, l => l.toUpperCase()) // Capitalize words
       form.setValue('title', titleFromFile)
+    }
+
+    // Auto-upload files when they are selected
+    if (files.length > 0) {
+      await handleFileUpload(files)
     }
   }
 
@@ -339,7 +344,6 @@ export default function CreatePortfolioItem() {
                       ]}
                       multiple={true}
                       onFilesChange={handleFilesChange}
-                      onUpload={handleFileUpload}
                       disabled={isUploading || isSaving}
                       uploadText="Klicken Sie zum Hochladen oder ziehen Sie Dateien hierher"
                       dragText="Ziehen Sie Dateien hierher zum Hochladen"

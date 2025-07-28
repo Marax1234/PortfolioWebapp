@@ -76,6 +76,60 @@ export class PortfolioQueries {
   }
 
   /**
+   * Get all portfolio items for admin (includes DRAFT, REVIEW, etc.)
+   */
+  static async getAllItems({
+    page = 1,
+    limit = 12,
+    category,
+    status,
+    featured,
+    orderBy = 'createdAt',
+    orderDirection = 'desc'
+  }: {
+    page?: number
+    limit?: number
+    category?: string
+    status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED'
+    featured?: boolean
+    orderBy?: 'createdAt' | 'publishedAt' | 'viewCount' | 'title'
+    orderDirection?: 'asc' | 'desc'
+  } = {}) {
+    const skip = (page - 1) * limit
+
+    const where: Prisma.PortfolioItemWhereInput = {
+      ...(status && { status }),
+      ...(category && { category: { slug: category } }),
+      ...(featured !== undefined && { featured })
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.portfolioItem.findMany({
+        where,
+        include: {
+          category: true
+        },
+        orderBy: { [orderBy]: orderDirection },
+        skip,
+        take: limit
+      }),
+      prisma.portfolioItem.count({ where })
+    ])
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1
+      }
+    }
+  }
+
+  /**
    * Get single portfolio item by ID
    */
   static async getById(id: string) {
@@ -98,6 +152,54 @@ export class PortfolioQueries {
     }
 
     return item
+  }
+
+  /**
+   * Get single portfolio item by ID for admin (any status)
+   */
+  static async getByIdForAdmin(id: string) {
+    const item = await prisma.portfolioItem.findUnique({
+      where: { id },
+      include: {
+        category: true
+      }
+    })
+
+    return item
+  }
+
+  /**
+   * Update portfolio item
+   */
+  static async updatePortfolioItem(id: string, data: Partial<{
+    title: string
+    description: string | null
+    categoryId: string | null
+    status: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED'
+    featured: boolean
+    tags: string
+    metadata: string
+    mediaType: string
+    filePath: string
+    thumbnailPath: string | null
+  }>) {
+    // Add updatedAt timestamp
+    const updateData = {
+      ...data,
+      updatedAt: new Date().toISOString(),
+      // If status is being changed to PUBLISHED and publishedAt is null, set it
+      ...(data.status === 'PUBLISHED' && { publishedAt: new Date().toISOString() })
+    }
+
+    const updatedItem = await prisma.portfolioItem.update({
+      where: { id },
+      data: updateData,
+      include: {
+        category: true
+      }
+    })
+
+    return updatedItem
   }
 
   /**

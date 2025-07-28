@@ -107,7 +107,9 @@ export default function EditPortfolioItem() {
       setError(null)
 
       const [itemResponse, categoriesData] = await Promise.all([
-        PortfolioApi.fetchPortfolioItem(itemId),
+        fetch(`/api/admin/portfolio/${itemId}`)
+          .then(res => res.json())
+          .then(data => ({ item: data.data, relatedItems: [] })),
         PortfolioApi.fetchCategories()
       ])
 
@@ -227,11 +229,23 @@ export default function EditPortfolioItem() {
 
       console.log('Updating portfolio item:', updateData)
       
-      // TODO: Implement actual API call
-      // await PortfolioApi.updatePortfolioItem(itemId, updateData)
-      
-      // For now, just simulate success
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Call the admin update API
+      const response = await fetch(`/api/admin/portfolio/${itemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      })
+
+      if (!response.ok) {
+        throw new Error(`Update failed: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || 'Update failed')
+      }
       
       router.push('/admin/portfolio')
     } catch (err) {

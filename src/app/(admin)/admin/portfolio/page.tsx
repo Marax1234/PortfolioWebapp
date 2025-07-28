@@ -63,13 +63,11 @@ export default function PortfolioManagement() {
       setIsLoading(true)
       setError(null)
 
-      // Load portfolio items and categories in parallel
+      // Load portfolio items and categories in parallel - use admin API for all items
       const [portfolioResponse, categoriesData] = await Promise.all([
-        PortfolioApi.fetchPortfolioItems({
-          orderBy: sortBy as 'createdAt' | 'publishedAt' | 'viewCount' | 'title',
-          orderDirection: sortOrder,
-          limit: 100
-        }),
+        fetch(`/api/admin/portfolio?orderBy=${sortBy}&orderDirection=${sortOrder}&limit=100`)
+          .then(res => res.json())
+          .then(data => ({ items: data.data, pagination: data.pagination })),
         PortfolioApi.fetchCategories()
       ])
 
