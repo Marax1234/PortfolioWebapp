@@ -133,7 +133,12 @@ export function SimpleLineChart({
 
   return (
     <ChartContainer config={chartConfig} className="w-full h-[300px]">
-      <LineChart data={chartData} width={800} height={300}>
+      <LineChart 
+        data={chartData} 
+        width={800} 
+        height={300}
+        margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+      >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis 
           dataKey="date" 
@@ -145,6 +150,7 @@ export function SimpleLineChart({
           tick={{ fontSize: 12 }}
           tickLine={false}
           axisLine={false}
+          width={40}
         />
         <ChartTooltip 
           content={
