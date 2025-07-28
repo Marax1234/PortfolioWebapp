@@ -21,6 +21,11 @@ npm run build        # Production build
 npm run start        # Start production server
 npm run lint         # Run ESLint
 
+# Testing
+npm run test         # Run Jest tests
+npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
+
 # Database
 npm run db:push      # Push schema changes to database
 npm run db:migrate   # Create and run migrations
@@ -49,12 +54,14 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 - `/api/portfolio` - Portfolio CRUD operations with image upload
 - `/api/categories` - Category management
 - `/api/contact` - Contact form submission handling
+- `/api/upload` - File upload handling for portfolio items
 
 ### Authentication & Authorization
 - JWT tokens with HTTP-only cookies (24-hour expiry)
 - bcrypt for password hashing
 - Role-based access: ADMIN role required for `/admin/*` routes
 - Protected by middleware in `src/middleware.ts`
+- Comprehensive security logging via winston
 
 ### Key Components
 - **PortfolioGrid** (`src/components/gallery/`): Infinite scroll gallery with masonry/grid toggle
@@ -63,9 +70,10 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 - **AuthProvider** (`src/components/providers/`): Session management wrapper
 
 ### State Management
-- Zustand store in `src/store/` for portfolio state
+- Zustand store in `src/store/portfolio-store.ts` for portfolio state
 - Client-side caching and pagination
 - Optimistic updates for view counts
+- Lightbox state management with keyboard navigation
 
 ### File Structure
 - `src/app/` - Next.js App Router pages with route groups
@@ -82,3 +90,6 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 - Images currently use Unsplash placeholders via `next.config.ts`
 - TypeScript strict mode enabled with path aliases configured
 - Tailwind CSS 4 with custom shadcn/ui component configuration
+- Winston logging configured for security events and errors
+- Jest testing framework with coverage reporting
+- File uploads handled via `/api/upload` endpoint
