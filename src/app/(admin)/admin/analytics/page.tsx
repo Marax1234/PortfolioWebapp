@@ -416,7 +416,7 @@ export default function AnalyticsPage() {
         )}
       </div>
 
-      {/* Traffic Sources Chart */}
+      {/* Traffic Sources Chart - full width */}
       {analytics.trafficSources.length > 0 && (
         <TrafficSourcesChart data={analytics.trafficSources} />
       )}

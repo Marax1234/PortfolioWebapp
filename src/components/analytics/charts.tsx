@@ -36,7 +36,7 @@ interface BarChartProps {
 export function SimpleBarChart({ 
   data, 
   maxValue, 
-  height = 200, 
+  height = 300, 
   showValues = true,
   formatValue = (value) => value.toString()
 }: BarChartProps) {
@@ -66,8 +66,8 @@ export function SimpleBarChart({
   }, {} as ChartConfig)
 
   return (
-    <ChartContainer config={chartConfig} className="h-[200px]">
-      <BarChart data={chartData}>
+    <ChartContainer config={chartConfig} className="w-full h-[300px]">
+      <BarChart data={chartData} width={600} height={300}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis 
           dataKey="name" 
@@ -103,7 +103,7 @@ interface LineChartProps {
 
 export function SimpleLineChart({ 
   data, 
-  height = 200, 
+  height = 300, 
   color = "#3b82f6",
   showDots = true,
   formatValue = (value) => value.toString()
@@ -126,14 +126,14 @@ export function SimpleLineChart({
 
   const chartConfig: ChartConfig = {
     value: {
-      label: "Wert",
+      label: "Aufrufe",
       color: color
     }
   }
 
   return (
-    <ChartContainer config={chartConfig} className="h-[200px]">
-      <LineChart data={chartData}>
+    <ChartContainer config={chartConfig} className="w-full h-[300px]">
+      <LineChart data={chartData} width={800} height={300}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis 
           dataKey="date" 
