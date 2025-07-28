@@ -501,6 +501,242 @@ export class AnalyticsQueries {
       take: limit
     })
   }
+
+  /**
+   * Get analytics dashboard data
+   */
+  static async getDashboardAnalytics({
+    startDate,
+    endDate
+  }: {
+    startDate?: Date
+    endDate?: Date
+  } = {}) {
+    const defaultStartDate = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
+    const defaultEndDate = endDate || new Date()
+
+    // Analytics events in date range
+    const analyticsEvents = await prisma.analyticsEvent.findMany({
+      where: {
+        timestamp: {
+          gte: defaultStartDate,
+          lte: defaultEndDate
+        }
+      },
+      orderBy: { timestamp: 'desc' }
+    })
+
+    // Portfolio items statistics
+    const [
+      totalPortfolioItems,
+      publishedItems,
+      featuredItems,
+      totalViews,
+      topViewedItems,
+      categories,
+      recentItems
+    ] = await Promise.all([
+      // Total portfolio items
+      prisma.portfolioItem.count(),
+      
+      // Published items
+      prisma.portfolioItem.count({
+        where: { status: 'PUBLISHED' }
+      }),
+      
+      // Featured items
+      prisma.portfolioItem.count({
+        where: { 
+          status: 'PUBLISHED',
+          featured: true 
+        }
+      }),
+      
+      // Total views across all items
+      prisma.portfolioItem.aggregate({
+        _sum: { viewCount: true },
+        where: { status: 'PUBLISHED' }
+      }),
+      
+      // Top viewed items
+      prisma.portfolioItem.findMany({
+        where: { status: 'PUBLISHED' },
+        include: { category: true },
+        orderBy: { viewCount: 'desc' },
+        take: 5
+      }),
+      
+      // Categories with item counts
+      prisma.category.findMany({
+        where: { isActive: true },
+        include: {
+          _count: {
+            select: {
+              portfolioItems: {
+                where: { status: 'PUBLISHED' }
+              }
+            }
+          }
+        },
+        orderBy: { sortOrder: 'asc' }
+      }),
+      
+      // Recent items
+      prisma.portfolioItem.findMany({
+        where: { 
+          status: 'PUBLISHED',
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
+          }
+        },
+        include: { category: true },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      })
+    ])
+
+    // Process analytics events
+    const pageViews = analyticsEvents.filter(event => event.eventType === 'page_view')
+    const uniqueVisitors = new Set(analyticsEvents.map(event => event.sessionId || event.ipAddress).filter(Boolean)).size
+    
+    // Traffic sources analysis
+    const trafficSources = analyticsEvents.reduce((acc, event) => {
+      const referrer = event.referrer || 'Direct'
+      let domain = 'Direct'
+      
+      if (referrer !== 'Direct') {
+        try {
+          domain = new URL(referrer).hostname
+        } catch {
+          domain = referrer.length > 50 ? referrer.substring(0, 50) + '...' : referrer
+        }
+      }
+      
+      acc[domain] = (acc[domain] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    // Popular pages (for future use)
+    // const popularPages = pageViews.reduce((acc, event) => {
+    //   const page = event.pageUrl || 'Unknown'
+    //   acc[page] = (acc[page] || 0) + 1
+    //   return acc
+    // }, {} as Record<string, number>)
+
+    // Category performance
+    const categoryPerformance = categories.map(category => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      itemCount: category._count.portfolioItems,
+      totalViews: topViewedItems
+        .filter(item => item.categoryId === category.id)
+        .reduce((sum, item) => sum + item.viewCount, 0)
+    }))
+
+    return {
+      overview: {
+        totalViews: totalViews._sum.viewCount || 0,
+        uniqueVisitors,
+        pageViews: pageViews.length,
+        totalPortfolioItems,
+        publishedItems,
+        featuredItems,
+        totalCategories: categories.length
+      },
+      topContent: topViewedItems.map(item => ({
+        id: item.id,
+        title: item.title,
+        viewCount: item.viewCount,
+        category: item.category?.name || 'Uncategorized',
+        thumbnail: item.thumbnailPath
+      })),
+      trafficSources: Object.entries(trafficSources)
+        .map(([source, count]) => ({ source, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10),
+      categoryPerformance: categoryPerformance.sort((a, b) => b.totalViews - a.totalViews),
+      recentActivity: recentItems.map(item => ({
+        id: item.id,
+        title: item.title,
+        action: 'published',
+        timestamp: item.createdAt,
+        category: item.category?.name || 'Uncategorized'
+      })),
+      timeRangeStats: {
+        startDate: defaultStartDate,
+        endDate: defaultEndDate,
+        totalEvents: analyticsEvents.length,
+        dailyViews: this.groupEventsByDay(pageViews, defaultStartDate, defaultEndDate)
+      }
+    }
+  }
+
+  /**
+   * Group events by day for trend analysis
+   */
+  private static groupEventsByDay(events: { timestamp: Date }[], startDate: Date, endDate: Date) {
+    const days: Record<string, number> = {}
+    
+    // Initialize all days in range with 0
+    const currentDate = new Date(startDate)
+    while (currentDate <= endDate) {
+      const dateString = currentDate.toISOString().split('T')[0]
+      days[dateString] = 0
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+    
+    // Count events per day
+    events.forEach(event => {
+      const dateString = event.timestamp.toISOString().split('T')[0]
+      if (days.hasOwnProperty(dateString)) {
+        days[dateString]++
+      }
+    })
+    
+    return Object.entries(days).map(([date, count]) => ({ date, count }))
+  }
+
+  /**
+   * Get analytics for specific time period
+   */
+  static async getAnalyticsForPeriod(days: number) {
+    const endDate = new Date()
+    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000)
+    
+    return this.getDashboardAnalytics({ startDate, endDate })
+  }
+
+  /**
+   * Get user engagement metrics
+   */
+  static async getUserEngagementMetrics() {
+    const [
+      totalSessions
+      // averageSessionDuration,
+      // bounceRate,
+      // returningVisitors
+    ] = await Promise.all([
+      // Total unique sessions
+      prisma.analyticsEvent.findMany({
+        select: { sessionId: true },
+        distinct: ['sessionId'],
+        where: { sessionId: { not: null } }
+      })
+      
+      // TODO: Implement more sophisticated session tracking
+      // Promise.resolve(0), // averageSessionDuration placeholder
+      // Promise.resolve(0), // bounceRate placeholder  
+      // Promise.resolve(0), // returningVisitors placeholder
+    ])
+
+    return {
+      totalSessions: totalSessions.length,
+      averageSessionDuration: 0, // Would need proper session tracking
+      bounceRate: 0, // Would need proper calculation
+      returningVisitors: 0 // Would need proper calculation
+    }
+  }
 }
 
 /**
