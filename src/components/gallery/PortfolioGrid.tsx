@@ -38,17 +38,17 @@ export function PortfolioGrid({
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   
   
-  // Masonry layout hook with minimal gaps
+  // Masonry layout hook with minimal gaps - max 4 columns
   const { containerRef, isLoading: isMasonryLoading, addItem, recalculate } = useMasonry({
-    gap: 8,
-    minColumnWidth: 250,
-    maxColumns: 5,
+    gap: 12,
+    minColumnWidth: 320,
+    maxColumns: 4,
     responsive: {
-      640: { columns: 2, gap: 6 },     // sm - two columns on mobile
-      768: { columns: 3, gap: 8 },     // md
-      1024: { columns: 4, gap: 8 },    // lg  
-      1280: { columns: 5, gap: 10 },   // xl
-      1536: { columns: 6, gap: 12 },   // 2xl
+      640: { columns: 1, gap: 8 },     // sm - single column on mobile
+      768: { columns: 2, gap: 10 },    // md - two columns on tablet
+      1024: { columns: 3, gap: 12 },   // lg - three columns
+      1280: { columns: 4, gap: 12 },   // xl - max 4 columns on desktop
+      1536: { columns: 4, gap: 12 },   // 2xl - keep 4 columns max
     }
   })
 
@@ -156,7 +156,7 @@ export function PortfolioGrid({
         <div className="relative">
           <div 
             ref={containerRef}
-            className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 gap-3"
+            className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-3"
           >
             {items.map((item, index) => (
               <div
