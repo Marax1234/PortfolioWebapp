@@ -45,11 +45,11 @@ import type { PortfolioItem, Category } from "@/store/portfolio-store"
 // Form validation schema
 const portfolioFormSchema = z.object({
   title: z.string()
-    .min(1, "Title is required")
-    .min(3, "Title must be at least 3 characters")
-    .max(100, "Title must be less than 100 characters"),
+    .min(1, "Titel ist erforderlich")
+    .min(3, "Titel muss mindestens 3 Zeichen lang sein")
+    .max(100, "Titel darf maximal 100 Zeichen lang sein"),
   description: z.string()
-    .max(500, "Description must be less than 500 characters")
+    .max(500, "Beschreibung darf maximal 500 Zeichen lang sein")
     .optional(),
   categoryId: z.string(),
   status: z.enum(['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED']),
@@ -80,6 +80,7 @@ export default function EditPortfolioItem() {
   const [error, setError] = useState<string | null>(null)
   const [processedFiles, setProcessedFiles] = useState<ProcessedFile[]>([])
   const [showReplaceMedia, setShowReplaceMedia] = useState(false)
+  const [tagInput, setTagInput] = useState('')
 
   const form = useForm<PortfolioFormData>({
     resolver: zodResolver(portfolioFormSchema),
@@ -118,13 +119,14 @@ export default function EditPortfolioItem() {
       setCategories(categoriesData)
 
       // Populate form with existing data
+      const existingTags = Array.isArray(item.tags) ? item.tags : []
       form.reset({
         title: item.title,
         description: item.description || "",
         categoryId: item.category?.id || 'none',
         status: item.status as 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED',
         featured: item.featured,
-        tags: Array.isArray(item.tags) ? item.tags : [],
+        tags: existingTags,
         metadata: {
           photographer: (item.metadata?.photographer as string) || "",
           location: (item.metadata?.location as string) || "",
@@ -134,6 +136,9 @@ export default function EditPortfolioItem() {
           shootDate: (item.metadata?.shootDate as string) || "",
         },
       })
+      
+      // Initialize tag input with existing tags
+      setTagInput(existingTags.join(', '))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load portfolio item')
       console.error('Edit portfolio error:', err)
@@ -146,7 +151,7 @@ export default function EditPortfolioItem() {
     loadData()
   }, [loadData])
 
-  const handleFilesChange = (_files: UploadedFile[]) => {
+  const handleFilesChange = () => {
     // Files are handled by the upload function
   }
 
@@ -270,13 +275,13 @@ export default function EditPortfolioItem() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-3xl font-bold">Edit Portfolio Item</h1>
+          <h1 className="text-3xl font-bold">Portfolio-Element bearbeiten</h1>
         </div>
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-        <Button onClick={loadData}>Retry</Button>
+        <Button onClick={loadData}>Wiederholen</Button>
       </div>
     )
   }
@@ -291,10 +296,10 @@ export default function EditPortfolioItem() {
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Edit Portfolio Item</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Portfolio-Element bearbeiten</h1>
             {portfolioItem && (
               <p className="text-slate-600 mt-1">
-                Editing: {portfolioItem.title}
+                Bearbeite: {portfolioItem.title}
               </p>
             )}
           </div>
@@ -303,7 +308,7 @@ export default function EditPortfolioItem() {
           {portfolioItem && (
             <Button variant="outline" onClick={handlePreview}>
               <Eye className="w-4 h-4 mr-2" />
-              Preview
+              Vorschau
             </Button>
           )}
         </div>
@@ -346,9 +351,9 @@ export default function EditPortfolioItem() {
                 {/* Basic Information */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Basic Information</CardTitle>
+                    <CardTitle>Grundinformationen</CardTitle>
                     <CardDescription>
-                      Edit the basic details of your portfolio item
+                      Bearbeiten Sie die grundlegenden Details Ihres Portfolio-Elements
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -359,7 +364,7 @@ export default function EditPortfolioItem() {
                         <FormItem>
                           <FormLabel>Title *</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Enter portfolio item title" />
+                            <Input {...field} placeholder="Portfolio-Element Titel eingeben" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -375,12 +380,12 @@ export default function EditPortfolioItem() {
                           <FormControl>
                             <Textarea 
                               {...field} 
-                              placeholder="Describe your portfolio item..."
+                              placeholder="Beschreiben Sie Ihr Portfolio-Element..."
                               rows={4}
                             />
                           </FormControl>
                           <FormDescription>
-                            Optional description that will be shown with your portfolio item
+                            Optionale Beschreibung, die mit Ihrem Portfolio-Element angezeigt wird
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -390,25 +395,51 @@ export default function EditPortfolioItem() {
                     <FormField
                       control={form.control}
                       name="tags"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tags</FormLabel>
-                          <FormControl>
-                            <Input 
-                              value={Array.isArray(field.value) ? field.value.join(', ') : ''}
-                              onChange={(e) => {
-                                const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
-                                field.onChange(tags)
-                              }}
-                              placeholder="nature, landscape, photography (comma separated)"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Add tags separated by commas to help organize your content
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        // Initialize tagInput with existing tags when form loads
+                        if (tagInput === '' && Array.isArray(field.value) && field.value.length > 0) {
+                          setTagInput(field.value.join(', '))
+                        }
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel>Schlagwörter</FormLabel>
+                            <FormControl>
+                              <Input 
+                                value={tagInput}
+                                onChange={(e) => {
+                                  const input = e.target.value
+                                  setTagInput(input)
+                                  
+                                  // Parse tags and update form field
+                                  const tags = input
+                                    .split(/[,\s]+/) // Split on comma or any whitespace
+                                    .map(tag => tag.trim())
+                                    .filter(tag => tag.length > 0)
+                                  field.onChange(tags)
+                                }}
+                                placeholder="natur, landschaft, fotografie (komma- oder leerzeichengetrennt)"
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Fügen Sie Tags hinzu (durch Kommas oder Leerzeichen getrennt) um Ihren Inhalt zu organisieren
+                            </FormDescription>
+                            {Array.isArray(field.value) && field.value.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {field.value.map((tag, index) => (
+                                  <span 
+                                    key={index} 
+                                    className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )
+                      }}
                     />
                   </CardContent>
                 </Card>
@@ -416,9 +447,9 @@ export default function EditPortfolioItem() {
                 {/* Category & Status */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Organization</CardTitle>
+                    <CardTitle>Organisation</CardTitle>
                     <CardDescription>
-                      Organize and set the status of your portfolio item
+                      Organisieren Sie Ihr Portfolio-Element und setzen Sie den Status
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4 md:grid-cols-2">
@@ -427,18 +458,18 @@ export default function EditPortfolioItem() {
                       name="categoryId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Category</FormLabel>
+                          <FormLabel>Kategorie</FormLabel>
                           <Select
                             onValueChange={field.onChange}
                             value={field.value || ""}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select category" />
+                                <SelectValue placeholder="Kategorie auswählen" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="none">No Category</SelectItem>
+                              <SelectItem value="none">Keine Kategorie</SelectItem>
                               {categories.map(category => (
                                 <SelectItem key={category.id} value={category.id}>
                                   {category.name}
@@ -480,9 +511,9 @@ export default function EditPortfolioItem() {
                 {/* Metadata */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Photography Metadata</CardTitle>
+                    <CardTitle>Fotografie-Metadaten</CardTitle>
                     <CardDescription>
-                      Optional technical details about the shot
+                      Optionale technische Details zur Aufnahme
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4 md:grid-cols-2">
@@ -491,9 +522,9 @@ export default function EditPortfolioItem() {
                       name="metadata.photographer"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Photographer</FormLabel>
+                          <FormLabel>Fotograf</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Photographer name" />
+                            <Input {...field} placeholder="Name des Fotografen" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -505,9 +536,9 @@ export default function EditPortfolioItem() {
                       name="metadata.location"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Location</FormLabel>
+                          <FormLabel>Ort</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Where was this taken?" />
+                            <Input {...field} placeholder="Wo wurde das aufgenommen?" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -519,9 +550,9 @@ export default function EditPortfolioItem() {
                       name="metadata.camera"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Camera</FormLabel>
+                          <FormLabel>Kamera</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Camera model" />
+                            <Input {...field} placeholder="Kamera-Modell" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -533,9 +564,9 @@ export default function EditPortfolioItem() {
                       name="metadata.lens"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Lens</FormLabel>
+                          <FormLabel>Objektiv</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="Lens used" />
+                            <Input {...field} placeholder="Verwendetes Objektiv" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -547,7 +578,7 @@ export default function EditPortfolioItem() {
                       name="metadata.settings"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Settings</FormLabel>
+                          <FormLabel>Einstellungen</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="f/2.8, 1/500s, ISO 100" />
                           </FormControl>
@@ -561,7 +592,7 @@ export default function EditPortfolioItem() {
                       name="metadata.shootDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Shoot Date</FormLabel>
+                          <FormLabel>Aufnahmedatum</FormLabel>
                           <FormControl>
                             <Input {...field} type="date" />
                           </FormControl>
@@ -580,18 +611,18 @@ export default function EditPortfolioItem() {
                     onClick={() => router.back()}
                     disabled={isSaving}
                   >
-                    Cancel
+                    Abbrechen
                   </Button>
                   <Button type="submit" disabled={isSaving}>
                     {isSaving ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
+                        Speichere...
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4 mr-2" />
-                        Save Changes
+                        Änderungen speichern
                       </>
                     )}
                   </Button>
@@ -604,7 +635,7 @@ export default function EditPortfolioItem() {
                 {portfolioItem && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Current Media</CardTitle>
+                      <CardTitle>Aktuelle Medien</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
@@ -624,17 +655,17 @@ export default function EditPortfolioItem() {
                       </div>
                       <div className="mt-3 space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-600">Type:</span>
+                          <span className="text-slate-600">Typ:</span>
                           <Badge variant="outline">
                             {portfolioItem.mediaType}
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-600">Views:</span>
+                          <span className="text-slate-600">Aufrufe:</span>
                           <span>{portfolioItem.viewCount}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-600">Created:</span>
+                          <span className="text-slate-600">Erstellt:</span>
                           <span>{new Date(portfolioItem.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
@@ -649,7 +680,7 @@ export default function EditPortfolioItem() {
                           disabled={isUploading || isSaving}
                         >
                           <Upload className="w-4 h-4 mr-2" />
-                          Replace Media
+                          Medien ersetzen
                         </Button>
                       </div>
                     </CardContent>
@@ -660,9 +691,9 @@ export default function EditPortfolioItem() {
                 {showReplaceMedia && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Replace Media</CardTitle>
+                      <CardTitle>Medien ersetzen</CardTitle>
                       <CardDescription>
-                        Upload a new file to replace the current media
+                        Laden Sie eine neue Datei hoch, um die aktuellen Medien zu ersetzen
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -681,13 +712,13 @@ export default function EditPortfolioItem() {
                         onFilesChange={handleFilesChange}
                         onUpload={handleFileUpload}
                         disabled={isUploading || isSaving}
-                        uploadText="Click to upload replacement file"
+                        uploadText="Klicken zum Hochladen der Ersatzdatei"
                       />
                       
                       {processedFiles.length > 0 && (
                         <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                           <p className="text-sm text-green-800">
-                            New media processed successfully! The file will be updated when you save changes.
+                            Neue Medien erfolgreich verarbeitet! Die Datei wird beim Speichern der Änderungen aktualisiert.
                           </p>
                         </div>
                       )}
@@ -698,7 +729,7 @@ export default function EditPortfolioItem() {
                 {/* Featured Toggle */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Portfolio Settings</CardTitle>
+                    <CardTitle>Portfolio-Einstellungen</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <FormField
@@ -707,9 +738,9 @@ export default function EditPortfolioItem() {
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between">
                           <div className="space-y-0.5">
-                            <FormLabel>Featured Item</FormLabel>
+                            <FormLabel>Hervorgehobenes Element</FormLabel>
                             <FormDescription className="text-xs">
-                              Show this item prominently on your portfolio
+                              Dieses Element prominent in Ihrem Portfolio anzeigen
                             </FormDescription>
                           </div>
                           <FormControl>

@@ -72,7 +72,7 @@ export default function PortfolioManagement() {
       ])
 
       // Map PortfolioItem[] to PortfolioItemWithCategory[] with proper category typing
-      const itemsWithCategory: PortfolioItemWithCategory[] = portfolioResponse.items.map(item => ({
+      const itemsWithCategory: PortfolioItemWithCategory[] = portfolioResponse.items.map((item: PortfolioItem) => ({
         ...item,
         category: item.category ? {
           ...item.category,
