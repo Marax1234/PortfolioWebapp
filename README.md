@@ -103,12 +103,6 @@ npm run db:reset     # Datenbank zurücksetzen
 
 ### Testing
 
-```bash
-npm run test         # Tests ausführen
-npm run test:watch   # Tests im Watch-Mode
-npm run test:coverage # Test-Coverage
-```
-
 ## 🎯 Tech Stack
 
 - **Framework:** Next.js 15.4.2 mit App Router
