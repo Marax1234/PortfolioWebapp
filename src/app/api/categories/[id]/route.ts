@@ -3,44 +3,49 @@
  * PUT /api/categories/[id] - Update category
  * DELETE /api/categories/[id] - Delete category
  */
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server'
-import { CategoryQueries } from '@/lib/db-utils'
-import { Logger, LogCategory, LogLevel } from '@/lib/logger'
-import { getRequestContext } from '@/lib/middleware/logging'
-import { ErrorHandler } from '@/lib/error-handler'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { z } from 'zod'
+import { z } from 'zod';
+
+import { authOptions } from '@/lib/auth';
+import { CategoryQueries } from '@/lib/db-utils';
+import { ErrorHandler } from '@/lib/error-handler';
+import { LogCategory, LogLevel, Logger } from '@/lib/logger';
+import { getRequestContext } from '@/lib/middleware/logging';
 
 // Validation schema for category update
 const categoryUpdateSchema = z.object({
   name: z.string().min(2).max(50).optional(),
-  slug: z.string().regex(/^[a-z0-9-]+$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   description: z.string().max(200).optional().nullable(),
   isActive: z.boolean().optional(),
   sortOrder: z.number().min(0).optional(),
-})
+});
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
+  const { id } = await params;
+  const context = getRequestContext(request);
+  const startTime = Date.now();
 
   try {
     // Check authentication
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
-      )
+      );
     }
 
-    const body = await request.json()
-    const validatedData = categoryUpdateSchema.parse(body)
+    const body = await request.json();
+    const validatedData = categoryUpdateSchema.parse(body);
 
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -54,14 +59,14 @@ export async function PUT(
       statusCode: 0,
       responseTime: 0,
       metadata: {
-        categoryId: params.id,
-        userId: session.user?.id
-      }
-    })
+        categoryId: id,
+        userId: session.user?.id,
+      },
+    });
 
-    const category = await CategoryQueries.update(params.id, validatedData)
+    const category = await CategoryQueries.update(id, validatedData);
 
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -76,65 +81,61 @@ export async function PUT(
       responseTime: totalResponseTime,
       metadata: {
         categoryId: category.id,
-        categoryName: category.name
-      }
-    })
+        categoryName: category.name,
+      },
+    });
 
     const response = NextResponse.json({
       success: true,
-      data: category
-    })
+      data: category,
+    });
 
-    response.headers.set('x-request-id', context.requestId)
-    return response
-
+    response.headers.set('x-request-id', context.requestId);
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.errorLog({
       level: LogLevel.ERROR,
       category: LogCategory.ERROR,
       message: 'Error updating category',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
-        route: `/api/categories/${params.id}`,
+        route: `/api/categories/${id}`,
         operation: 'update_category',
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
-      route: `/api/categories/${params.id}`,
-      operation: 'update_category'
-    })
+      route: `/api/categories/${id}`,
+      operation: 'update_category',
+    });
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
+  const { id } = await params;
+  const context = getRequestContext(request);
+  const startTime = Date.now();
 
   try {
     // Check authentication
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
-      )
+      );
     }
 
     Logger.apiLog({
@@ -149,14 +150,14 @@ export async function DELETE(
       statusCode: 0,
       responseTime: 0,
       metadata: {
-        categoryId: params.id,
-        userId: session.user?.id
-      }
-    })
+        categoryId: id,
+        userId: session.user?.id,
+      },
+    });
 
-    await CategoryQueries.delete(params.id)
+    await CategoryQueries.delete(id);
 
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -170,46 +171,41 @@ export async function DELETE(
       statusCode: 200,
       responseTime: totalResponseTime,
       metadata: {
-        categoryId: params.id
-      }
-    })
+        categoryId: id,
+      },
+    });
 
     const response = NextResponse.json({
       success: true,
-      message: 'Category deleted successfully'
-    })
+      message: 'Category deleted successfully',
+    });
 
-    response.headers.set('x-request-id', context.requestId)
-    return response
-
+    response.headers.set('x-request-id', context.requestId);
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.errorLog({
       level: LogLevel.ERROR,
       category: LogCategory.ERROR,
       message: 'Error deleting category',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
-        route: `/api/categories/${params.id}`,
+        route: `/api/categories/${id}`,
         operation: 'delete_category',
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
-      route: `/api/categories/${params.id}`,
-      operation: 'delete_category'
-    })
+      route: `/api/categories/${id}`,
+      operation: 'delete_category',
+    });
   }
 }

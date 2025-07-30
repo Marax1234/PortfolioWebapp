@@ -3,21 +3,23 @@
  * GET /api/admin/portfolio/[id] - Fetch single portfolio item (any status)
  * PUT /api/admin/portfolio/[id] - Update portfolio item
  */
+import { NextRequest, NextResponse } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server'
-import { PortfolioQueries } from '@/lib/db-utils'
-import { Logger, LogCategory, LogLevel } from '@/lib/logger'
-import { getRequestContext } from '@/lib/middleware/logging'
-import { ErrorHandler } from '@/lib/error-handler'
-import { z } from 'zod'
+import { z } from 'zod';
+
+import { PortfolioQueries } from '@/lib/db-utils';
+import { ErrorHandler } from '@/lib/error-handler';
+import { LogCategory, LogLevel, Logger } from '@/lib/logger';
+import { getRequestContext } from '@/lib/middleware/logging';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
-  const portfolioId = params.id
+  const { id } = await params;
+  const context = getRequestContext(request);
+  const startTime = Date.now();
+  const portfolioId = id;
 
   try {
     Logger.databaseLog({
@@ -29,13 +31,13 @@ export async function GET(
       table: 'PortfolioItem',
       queryTime: 0,
       metadata: {
-        portfolioId
-      }
-    })
+        portfolioId,
+      },
+    });
 
-    const item = await PortfolioQueries.getByIdForAdmin(portfolioId)
+    const item = await PortfolioQueries.getByIdForAdmin(portfolioId);
 
-    const dbQueryTime = Date.now() - startTime
+    const dbQueryTime = Date.now() - startTime;
 
     if (!item) {
       Logger.apiLog({
@@ -51,20 +53,22 @@ export async function GET(
         responseTime: dbQueryTime,
         metadata: {
           portfolioId,
-          dbQueryTime
-        }
-      })
+          dbQueryTime,
+        },
+      });
 
-      const error = ErrorHandler.createNotFoundError('Portfolio item not found', { id: portfolioId })
+      const error = ErrorHandler.createNotFoundError(
+        'Portfolio item not found'
+      );
       return ErrorHandler.handleError(error, {
         ...context,
         route: '/api/admin/portfolio/[id]',
         operation: 'fetch_admin_portfolio_item',
-        inputData: { id: portfolioId }
-      })
+        inputData: { id: portfolioId },
+      });
     }
 
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -81,56 +85,51 @@ export async function GET(
         portfolioId: item.id,
         title: item.title,
         status: item.status,
-        dbQueryTime
-      }
-    })
+        dbQueryTime,
+      },
+    });
 
     // Parse JSON fields
     const itemWithParsedFields = {
       ...item,
       tags: JSON.parse(item.tags || '[]'),
-      metadata: JSON.parse(item.metadata || '{}')
-    }
+      metadata: JSON.parse(item.metadata || '{}'),
+    };
 
     const response = NextResponse.json({
       success: true,
-      data: itemWithParsedFields
-    })
+      data: itemWithParsedFields,
+    });
 
-    response.headers.set('x-request-id', context.requestId)
-    return response
-
+    response.headers.set('x-request-id', context.requestId);
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.errorLog({
       level: LogLevel.ERROR,
       category: LogCategory.ERROR,
       message: 'Error fetching admin portfolio item',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
         route: '/api/admin/portfolio/[id]',
         operation: 'fetch_admin_portfolio_item',
         inputData: { id: portfolioId },
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
       route: '/api/admin/portfolio/[id]',
       operation: 'fetch_admin_portfolio_item',
-      inputData: { id: portfolioId }
-    })
+      inputData: { id: portfolioId },
+    });
   }
 }
 
@@ -145,16 +144,17 @@ const updatePortfolioSchema = z.object({
   metadata: z.string().optional(), // JSON string
   mediaType: z.string().optional(),
   filePath: z.string().optional(),
-  thumbnailPath: z.string().nullable().optional()
-})
+  thumbnailPath: z.string().nullable().optional(),
+});
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
-  const portfolioId = params.id
+  const { id } = await params;
+  const context = getRequestContext(request);
+  const startTime = Date.now();
+  const portfolioId = id;
 
   try {
     Logger.apiLog({
@@ -170,35 +170,38 @@ export async function PUT(
       responseTime: 0,
       metadata: {
         portfolioId,
-        timestamp: new Date().toISOString()
-      }
-    })
+        timestamp: new Date().toISOString(),
+      },
+    });
 
     // Parse request body
-    const body = await request.json()
-    console.log('Update request body:', JSON.stringify(body, null, 2))
+    const body = await request.json();
+    console.log('Update request body:', JSON.stringify(body, null, 2));
 
     // Validate request data
-    const validationResult = updatePortfolioSchema.safeParse(body)
+    const validationResult = updatePortfolioSchema.safeParse(body);
     if (!validationResult.success) {
-      const errorDetails = validationResult.error?.errors || []
-      const errors = errorDetails.map(err => 
-        `${err.path.join('.')}: ${err.message}`
-      ).join(', ')
-      
-      const error = ErrorHandler.createValidationError(`Invalid update data: ${errors}`, {
-        validationErrors: errorDetails
-      })
-      
+      const errorDetails = validationResult.error?.issues || [];
+      const errors = errorDetails
+        .map(err => `${err.path.join('.')}: ${err.message}`)
+        .join(', ');
+
+      const error = ErrorHandler.createValidationError(
+        `Invalid update data: ${errors}`,
+        {
+          validationErrors: errorDetails,
+        }
+      );
+
       return ErrorHandler.handleError(error, {
         ...context,
         route: '/api/admin/portfolio/[id]',
         operation: 'validation',
-        inputData: body
-      })
+        inputData: body,
+      });
     }
 
-    const updateData = validationResult.data
+    const updateData = validationResult.data;
 
     Logger.databaseLog({
       level: LogLevel.INFO,
@@ -210,13 +213,16 @@ export async function PUT(
       queryTime: 0,
       metadata: {
         portfolioId,
-        fieldsToUpdate: Object.keys(updateData)
-      }
-    })
+        fieldsToUpdate: Object.keys(updateData),
+      },
+    });
 
-    const updatedItem = await PortfolioQueries.updatePortfolioItem(portfolioId, updateData)
+    const updatedItem = await PortfolioQueries.updatePortfolioItem(
+      portfolioId,
+      updateData
+    );
 
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -232,55 +238,50 @@ export async function PUT(
       metadata: {
         portfolioId: updatedItem.id,
         title: updatedItem.title,
-        status: updatedItem.status
-      }
-    })
+        status: updatedItem.status,
+      },
+    });
 
     // Parse JSON fields
     const itemWithParsedFields = {
       ...updatedItem,
       tags: JSON.parse(updatedItem.tags || '[]'),
-      metadata: JSON.parse(updatedItem.metadata || '{}')
-    }
+      metadata: JSON.parse(updatedItem.metadata || '{}'),
+    };
 
     const response = NextResponse.json({
       success: true,
-      data: itemWithParsedFields
-    })
+      data: itemWithParsedFields,
+    });
 
-    response.headers.set('x-request-id', context.requestId)
-    return response
-
+    response.headers.set('x-request-id', context.requestId);
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.errorLog({
       level: LogLevel.ERROR,
       category: LogCategory.ERROR,
       message: 'Error updating portfolio item',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
         route: '/api/admin/portfolio/[id]',
         operation: 'update_portfolio_item',
         inputData: { id: portfolioId },
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
       route: '/api/admin/portfolio/[id]',
       operation: 'update_portfolio_item',
-      inputData: { id: portfolioId }
-    })
+      inputData: { id: portfolioId },
+    });
   }
 }
