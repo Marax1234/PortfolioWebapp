@@ -11,7 +11,6 @@ import {
   Eye,
   Filter,
   Mail,
-  MapPin,
   MessageSquare,
   Phone,
   Reply,
@@ -113,7 +112,7 @@ export default function InquiriesPage() {
         await fetchInquiries();
         if (selectedInquiry?.id === inquiryId) {
           setSelectedInquiry(prev =>
-            prev ? { ...prev, status: status as any } : null
+            prev ? { ...prev, status: status as Inquiry['status'] } : null
           );
         }
       }
@@ -508,7 +507,7 @@ export default function InquiriesPage() {
                   </Button>
                   <p className='text-muted-foreground text-xs'>
                     Die Antwort wird an {selectedInquiry.email} gesendet und der
-                    Status auf "Beantwortet" gesetzt.
+                    Status auf &quot;Beantwortet&quot; gesetzt.
                   </p>
                 </CardContent>
               </Card>

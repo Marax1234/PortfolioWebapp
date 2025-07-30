@@ -9,6 +9,8 @@ import { ZodError } from 'zod';
 
 import { LogCategory, LogLevel, Logger } from './logger';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Standard error response interface
  */
@@ -16,7 +18,7 @@ export interface ErrorResponse {
   success: false;
   error: string;
   code?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   requestId?: string;
   timestamp: string;
 }

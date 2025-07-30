@@ -273,7 +273,7 @@ export class RequestLogger {
       | 'PERMISSION_DENIED'
       | 'SUSPICIOUS_ACTIVITY'
       | 'RATE_LIMITED',
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ) {
     const severity = eventType === 'SUSPICIOUS_ACTIVITY' ? 'HIGH' : 'MEDIUM';
 
@@ -298,7 +298,7 @@ export class RequestLogger {
   /**
    * Create a wrapped API handler with automatic request/response logging
    */
-  static withLogging<T extends any[], R>(
+  static withLogging<T extends unknown[]>(
     handler: (...args: T) => Promise<NextResponse>,
     options?: {
       skipRequestLog?: boolean;
@@ -308,7 +308,7 @@ export class RequestLogger {
   ) {
     return async (
       request: NextRequest,
-      ...args: any[]
+      ...args: T
     ): Promise<NextResponse> => {
       const context = this.createContext(request);
 
@@ -358,7 +358,7 @@ export class RequestLogger {
 /**
  * Middleware function to add request ID to all requests
  */
-export function addRequestId(request: NextRequest): NextResponse {
+export function addRequestId(): NextResponse {
   const requestId = Logger.generateRequestId();
   const response = NextResponse.next();
 

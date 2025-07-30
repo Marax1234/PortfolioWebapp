@@ -564,16 +564,6 @@ Alle Templates sind mobile-responsive und beinhalten:
 - Kontakt-Informationen
 - Rechtliche Compliance-Texte
 
-## 🧪 Testing
-
-### Verfügbare Test-Commands
-
-```bash
-npm run test         # Tests ausführen
-npm run test:watch   # Tests im Watch-Mode
-npm run test:coverage # Tests mit Coverage-Report
-```
-
 ### Testing-Framework
 
 - Jest als Testing-Framework mit Coverage-Reporting

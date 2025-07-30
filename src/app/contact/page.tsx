@@ -104,7 +104,7 @@ export default function ContactPage() {
         setSubmitStatus('error');
         setErrorMessage(errorData.message || 'Ein Fehler ist aufgetreten');
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus('error');
       setErrorMessage(
         'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.'

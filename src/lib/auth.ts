@@ -275,7 +275,7 @@ export const authOptions: NextAuthOptions = {
 
   // Events for logging
   events: {
-    async signIn({ user, account, profile, isNewUser }) {
+    async signIn({ user, account, isNewUser }) {
       const requestId = Logger.generateRequestId();
 
       Logger.securityLog({
@@ -288,7 +288,7 @@ export const authOptions: NextAuthOptions = {
         userId: user.id,
         details: {
           email: user.email,
-          role: (user as any).role,
+          role: user.role,
           provider: account?.provider || 'credentials',
           isNewUser: Boolean(isNewUser),
           timestamp: new Date().toISOString(),
@@ -344,8 +344,8 @@ export const authOptions: NextAuthOptions = {
         userId: user.id,
         details: {
           email: user.email,
-          role: (user as any).role,
-          emailVerified: (user as any).emailVerified,
+          role: user.role,
+          emailVerified: user.emailVerified,
           accountCreation: true,
           timestamp: new Date().toISOString(),
         },
@@ -354,7 +354,7 @@ export const authOptions: NextAuthOptions = {
       Logger.info('New user account created', {
         userId: user.id,
         email: user.email,
-        role: (user as any).role,
+        role: user.role,
         requestId,
       });
     },

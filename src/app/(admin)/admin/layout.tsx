@@ -13,7 +13,6 @@ import {
   MessageSquare,
   PlusCircle,
   Settings,
-  Users,
 } from 'lucide-react';
 
 import { LogoutButton } from '@/components/auth/logout-button';

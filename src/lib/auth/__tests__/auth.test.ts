@@ -85,7 +85,7 @@ describe('NextAuth Configuration', () => {
     });
 
     it('should have correct credential fields', () => {
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as { credentials: Record<string, unknown>; };
       expect(provider.credentials).toEqual({
         email: {
           label: 'Email',
@@ -102,7 +102,7 @@ describe('NextAuth Configuration', () => {
 
   describe('Credentials Authorization', () => {
     it('should reject authorization with missing credentials', async () => {
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as { credentials: Record<string, unknown>; };
       const mockReq = {
         headers: { 'x-forwarded-for': '127.0.0.1', 'user-agent': 'test' },
       };
@@ -113,7 +113,7 @@ describe('NextAuth Configuration', () => {
     });
 
     it('should reject authorization with missing email', async () => {
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as { credentials: Record<string, unknown>; };
       const mockReq = {
         headers: { 'x-forwarded-for': '127.0.0.1', 'user-agent': 'test' },
       };
@@ -127,7 +127,7 @@ describe('NextAuth Configuration', () => {
     });
 
     it('should reject authorization with missing password', async () => {
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as { credentials: Record<string, unknown>; };
       const mockReq = {
         headers: { 'x-forwarded-for': '127.0.0.1', 'user-agent': 'test' },
       };
@@ -141,7 +141,7 @@ describe('NextAuth Configuration', () => {
     });
 
     it('should reject authorization for invalid credentials', async () => {
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as { credentials: Record<string, unknown>; };
       const mockReq = {
         headers: { 'x-forwarded-for': '127.0.0.1', 'user-agent': 'test' },
       };
@@ -165,7 +165,7 @@ describe('NextAuth Configuration', () => {
     });
 
     it('should reject authorization for non-admin users', async () => {
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as { credentials: Record<string, unknown>; };
       const mockReq = {
         headers: { 'x-forwarded-for': '127.0.0.1', 'user-agent': 'test' },
       };
@@ -190,7 +190,7 @@ describe('NextAuth Configuration', () => {
     });
 
     it('should authorize valid admin user', async () => {
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as { credentials: Record<string, unknown>; };
       const mockReq = {
         headers: { 'x-forwarded-for': '127.0.0.1', 'user-agent': 'test' },
       };
@@ -223,7 +223,7 @@ describe('NextAuth Configuration', () => {
     });
 
     it('should handle authentication service errors', async () => {
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as { credentials: Record<string, unknown>; };
       const mockReq = {
         headers: { 'x-forwarded-for': '127.0.0.1', 'user-agent': 'test' },
       };
@@ -261,7 +261,7 @@ describe('NextAuth Configuration', () => {
       const result = await authOptions.callbacks!.jwt!({
         token,
         user: mockUser,
-      } as any);
+      } as { user: { id: string; email: string; role: string; } });
 
       expect(result).toEqual({
         id: 'user-1',
@@ -282,7 +282,7 @@ describe('NextAuth Configuration', () => {
 
       const result = await authOptions.callbacks!.jwt!({
         token: existingToken,
-      } as any);
+      } as { user: { id: string; email: string; role: string; } });
 
       expect(result).toEqual(existingToken);
     });
@@ -300,14 +300,14 @@ describe('NextAuth Configuration', () => {
       };
 
       const mockSession = {
-        user: {} as any,
+        user: {} as { id: string; email: string; role: string; },
         expires: '2024-12-31',
       };
 
       const result = await authOptions.callbacks!.session!({
         session: mockSession,
         token: mockToken,
-      } as any);
+      } as { user: { id: string; email: string; role: string; } });
 
       expect(result.user).toEqual({
         id: 'user-1',
@@ -321,14 +321,14 @@ describe('NextAuth Configuration', () => {
 
     it('should handle missing token gracefully', async () => {
       const mockSession = {
-        user: {} as any,
+        user: {} as { id: string; email: string; role: string; },
         expires: '2024-12-31',
       };
 
       const result = await authOptions.callbacks!.session!({
         session: mockSession,
         token: null,
-      } as any);
+      } as { user: { id: string; email: string; role: string; } });
 
       expect(result).toEqual(mockSession);
     });

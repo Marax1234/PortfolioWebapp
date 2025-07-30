@@ -299,7 +299,7 @@ export async function sendContactFormConfirmation(
  * Send custom reply from admin to customer
  */
 export async function sendCustomReply(
-  inquiry: any,
+  inquiry: { id: string; name: string; email: string; subject?: string; category: string; },
   replyMessage: string,
   adminName = 'Kilian Siebert'
 ): Promise<void> {

@@ -285,7 +285,7 @@ export class StorageManager {
           stats.byType[dir].count++;
           stats.byType[dir].size += fileStat.size;
         }
-      } catch (error) {
+      } catch {
         // Directory doesn't exist or permission error
         continue;
       }

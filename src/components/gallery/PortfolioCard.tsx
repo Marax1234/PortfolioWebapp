@@ -42,7 +42,6 @@ export function PortfolioCard({
   priority = false,
   className = '',
   onMount,
-  adaptiveHeight = false,
   variableHeight = false,
 }: PortfolioCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);

@@ -53,7 +53,7 @@ npm run dev
 
 ## 📁 Projekt-Struktur
 
-```
+```text
 src/
 ├── app/                 # Next.js App Router
 │   ├── (admin)/         # Admin-Bereich
@@ -79,6 +79,17 @@ npm run dev          # Entwicklungsserver starten
 npm run build        # Production Build
 npm run start        # Production Server
 npm run lint         # Code-Linting
+npm run lint:fix     # ESLint-Fehler automatisch beheben
+```
+
+### Code-Qualität & Formatierung
+
+```bash
+npm run format       # Code mit Prettier formatieren
+npm run format:check # Formatierung prüfen
+npm run type-check   # TypeScript-Typen prüfen
+npm run check-all    # Alle Checks ausführen (TypeScript + ESLint + Prettier)
+npm run fix-all      # Alle automatisch behebbaren Probleme fixen
 ```
 
 ### Datenbank

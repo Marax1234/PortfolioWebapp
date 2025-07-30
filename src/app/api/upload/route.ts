@@ -5,12 +5,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { ErrorHandler } from '@/lib/error-handler';
-import { ImageProcessor, imageProcessor } from '@/lib/image-processor';
+import { imageProcessor } from '@/lib/image-processor';
 import { LogCategory, LogLevel, Logger } from '@/lib/logger';
 import { getRequestContext } from '@/lib/middleware/logging';
-import { StorageManager, storageManager } from '@/lib/storage';
+import { storageManager } from '@/lib/storage';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+// const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES = 10;
 
 export async function POST(request: NextRequest) {

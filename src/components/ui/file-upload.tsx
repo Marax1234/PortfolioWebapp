@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useRef, useState } from 'react';
+import Image from 'next/image';
 
 import {
   AlertCircle,
@@ -76,7 +77,6 @@ export function FileUpload({
   onUpload,
   disabled = false,
   uploadText = 'Click to upload or drag and drop',
-  dragText = 'Drag files here to upload',
   dropText = 'Drop files here',
 }: FileUploadProps) {
   const [files, setFiles] = useState<UploadedFile[]>([]);
@@ -364,9 +364,11 @@ export function FileUpload({
                   {/* Preview */}
                   <div className='flex-shrink-0'>
                     {file.preview ? (
-                      <img
+                      <Image
                         src={file.preview}
                         alt={file.name}
+                        width={48}
+                        height={48}
                         className='h-12 w-12 rounded object-cover'
                       />
                     ) : (

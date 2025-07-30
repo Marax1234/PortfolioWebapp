@@ -63,10 +63,10 @@ export async function PATCH(
     });
 
     // Parse and validate request body
-    let body: any;
+    let body: unknown;
     try {
       body = await request.json();
-    } catch (parseError) {
+    } catch {
       const error = ErrorHandler.createValidationError(
         'Invalid JSON in request body'
       );

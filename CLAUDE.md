@@ -23,10 +23,7 @@ npm run build        # Production build
 npm run start        # Start production server
 npm run lint         # Run ESLint
 
-# Testing
-npm run test         # Run Jest tests
-npm run test:watch   # Run tests in watch mode
-npm run test:coverage # Run tests with coverage report
+
 
 # Database
 npm run db:push      # Push schema changes to database
@@ -99,7 +96,6 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 - TypeScript strict mode enabled with path aliases configured
 - Tailwind CSS 4 with custom shadcn/ui component configuration
 - Winston logging configured for security events and errors
-- Jest testing framework with coverage reporting
 - File uploads handled via `/api/upload` endpoint
 
 ## Email Configuration

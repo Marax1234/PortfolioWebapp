@@ -11,7 +11,6 @@ import {
   LineChart,
   Pie,
   PieChart,
-  ResponsiveContainer,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -72,9 +71,6 @@ interface BarChartProps {
 
 export function SimpleBarChart({
   data,
-  maxValue,
-  height = 300,
-  showValues = true,
   formatValue = value => value.toString(),
 }: BarChartProps) {
   if (data.length === 0) {
@@ -136,9 +132,7 @@ interface LineChartProps {
 
 export function SimpleLineChart({
   data,
-  height = 300,
   color = '#3b82f6',
-  showDots = true,
   formatValue = value => value.toString(),
 }: LineChartProps) {
   if (data.length === 0) {
@@ -215,7 +209,6 @@ interface DonutChartProps {
 export function SimpleDonutChart({
   data,
   size = 200,
-  thickness = 20,
   showLegend = true,
   formatValue = value => value.toString(),
 }: DonutChartProps) {
@@ -266,9 +259,9 @@ export function SimpleDonutChart({
     };
   }, {} as ChartConfig);
 
-  const COLORS = data.map(
-    (_, index) => `hsl(${(index * 137.5) % 360}, 70%, 50%)`
-  );
+  // const COLORS = data.map(
+  //   (_, index) => `hsl(${(index * 137.5) % 360}, 70%, 50%)`
+  // );
 
   return (
     <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-6'>

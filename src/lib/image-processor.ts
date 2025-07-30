@@ -5,7 +5,6 @@
 import sharp from 'sharp';
 
 import {
-  FileMetadata,
   ProcessedFile,
   StorageManager,
   storageManager,
@@ -186,7 +185,7 @@ export class ImageProcessor {
 
     // Process original image (optimize)
     const optimizedBuffer = await this.optimizeImage(buffer, opts);
-    const originalPath = await this.storage.saveFile(
+    await this.storage.saveFile(
       optimizedBuffer,
       baseName,
       'originals'
@@ -355,7 +354,7 @@ export class ImageProcessor {
    */
   async extractDominantColors(
     buffer: Buffer,
-    count: number = 5
+    // count = 5
   ): Promise<string[]> {
     try {
       const { dominant } = await sharp(buffer)

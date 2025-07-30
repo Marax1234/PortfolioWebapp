@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PortfolioQueries } from '@/lib/db-utils';
 import { ErrorHandler } from '@/lib/error-handler';
 import { LogCategory, LogLevel, Logger } from '@/lib/logger';
-import { RequestLogger, getRequestContext } from '@/lib/middleware/logging';
+import { getRequestContext } from '@/lib/middleware/logging';
 
 export async function GET(request: NextRequest) {
   const context = getRequestContext(request);

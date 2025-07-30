@@ -314,7 +314,7 @@ export class Logger {
   /**
    * Log general information
    */
-  static info(message: string, metadata?: Record<string, any>) {
+  static info(message: string, metadata?: Record<string, unknown>) {
     logger.info(message, {
       category: LogCategory.SYSTEM,
       timestamp: new Date().toISOString(),
@@ -325,7 +325,7 @@ export class Logger {
   /**
    * Log warnings
    */
-  static warn(message: string, metadata?: Record<string, any>) {
+  static warn(message: string, metadata?: Record<string, unknown>) {
     logger.warn(message, {
       category: LogCategory.SYSTEM,
       timestamp: new Date().toISOString(),
@@ -336,7 +336,7 @@ export class Logger {
   /**
    * Log debug information (development only)
    */
-  static debug(message: string, metadata?: Record<string, any>) {
+  static debug(message: string, metadata?: Record<string, unknown>) {
     logger.debug(message, {
       category: LogCategory.SYSTEM,
       timestamp: new Date().toISOString(),
@@ -350,7 +350,7 @@ export class Logger {
   static error(
     message: string,
     error?: Error | unknown,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) {
     const errorDetails =
       error instanceof Error

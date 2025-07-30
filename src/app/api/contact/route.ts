@@ -29,7 +29,6 @@ const contactSchema = z.object({
   location: z.string().optional(),
 });
 
-type ContactFormData = z.infer<typeof contactSchema>;
 
 export async function POST(request: NextRequest) {
   try {

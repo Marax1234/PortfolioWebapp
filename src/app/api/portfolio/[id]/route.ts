@@ -118,7 +118,7 @@ export async function GET(
     });
 
     // Get related items if category exists
-    let relatedItems: any[] = [];
+    let relatedItems: unknown[] = [];
     let relatedQueryTime = 0;
 
     if (portfolioItem.categoryId) {
