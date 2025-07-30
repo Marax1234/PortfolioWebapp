@@ -4,11 +4,7 @@
  */
 import sharp from 'sharp';
 
-import {
-  ProcessedFile,
-  StorageManager,
-  storageManager,
-} from './storage';
+import { ProcessedFile, StorageManager, storageManager } from './storage';
 
 export interface ImageProcessingOptions {
   quality?: number;
@@ -185,11 +181,7 @@ export class ImageProcessor {
 
     // Process original image (optimize)
     const optimizedBuffer = await this.optimizeImage(buffer, opts);
-    await this.storage.saveFile(
-      optimizedBuffer,
-      baseName,
-      'originals'
-    );
+    await this.storage.saveFile(optimizedBuffer, baseName, 'originals');
 
     const result: ProcessedFile = {
       original: {
@@ -353,14 +345,15 @@ export class ImageProcessor {
    * Extract dominant colors from image
    */
   async extractDominantColors(
-    buffer: Buffer,
+    buffer: Buffer
     // count = 5
   ): Promise<string[]> {
     try {
-      const { dominant } = await sharp(buffer)
+      const stats = await sharp(buffer)
         .resize(100, 100, { fit: 'cover' })
-        .raw()
-        .toBuffer({ resolveWithObject: true });
+        .stats();
+
+      const { dominant } = stats;
 
       // This is a simplified implementation
       // In a real app, you might want to use a more sophisticated color extraction library

@@ -28,8 +28,9 @@ const categoryUpdateSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const context = getRequestContext(request);
   const startTime = Date.now();
 
@@ -58,12 +59,12 @@ export async function PUT(
       statusCode: 0,
       responseTime: 0,
       metadata: {
-        categoryId: params.id,
+        categoryId: id,
         userId: session.user?.id,
       },
     });
 
-    const category = await CategoryQueries.update(params.id, validatedData);
+    const category = await CategoryQueries.update(id, validatedData);
 
     const totalResponseTime = Date.now() - startTime;
 
@@ -99,25 +100,21 @@ export async function PUT(
       category: LogCategory.ERROR,
       message: 'Error updating category',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
-        route: `/api/categories/${params.id}`,
+        route: `/api/categories/${id}`,
         operation: 'update_category',
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 
     return ErrorHandler.handleError(error, {
       ...context,
-      route: `/api/categories/${params.id}`,
+      route: `/api/categories/${id}`,
       operation: 'update_category',
     });
   }
@@ -125,8 +122,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const context = getRequestContext(request);
   const startTime = Date.now();
 
@@ -152,12 +150,12 @@ export async function DELETE(
       statusCode: 0,
       responseTime: 0,
       metadata: {
-        categoryId: params.id,
+        categoryId: id,
         userId: session.user?.id,
       },
     });
 
-    await CategoryQueries.delete(params.id);
+    await CategoryQueries.delete(id);
 
     const totalResponseTime = Date.now() - startTime;
 
@@ -173,7 +171,7 @@ export async function DELETE(
       statusCode: 200,
       responseTime: totalResponseTime,
       metadata: {
-        categoryId: params.id,
+        categoryId: id,
       },
     });
 
@@ -192,25 +190,21 @@ export async function DELETE(
       category: LogCategory.ERROR,
       message: 'Error deleting category',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
-        route: `/api/categories/${params.id}`,
+        route: `/api/categories/${id}`,
         operation: 'delete_category',
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 
     return ErrorHandler.handleError(error, {
       ...context,
-      route: `/api/categories/${params.id}`,
+      route: `/api/categories/${id}`,
       operation: 'delete_category',
     });
   }

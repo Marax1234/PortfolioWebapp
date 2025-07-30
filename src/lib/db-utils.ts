@@ -189,8 +189,8 @@ export class PortfolioQueries {
       thumbnailPath: string | null;
     }>
   ) {
-    // Add updatedAt timestamp
-    const updateData = {
+    // Add updatedAt timestamp and handle null values
+    const updateData: Record<string, unknown> = {
       ...data,
       updatedAt: new Date().toISOString(),
       // If status is being changed to PUBLISHED and publishedAt is null, set it
@@ -198,6 +198,14 @@ export class PortfolioQueries {
         publishedAt: new Date().toISOString(),
       }),
     };
+
+    // Convert null to undefined for Prisma compatibility
+    if (updateData.categoryId === null) {
+      updateData.categoryId = undefined;
+    }
+    if (updateData.thumbnailPath === null) {
+      updateData.thumbnailPath = undefined;
+    }
 
     const updatedItem = await prisma.portfolioItem.update({
       where: { id },

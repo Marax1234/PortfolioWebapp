@@ -121,7 +121,6 @@ export class ErrorHandler {
         route: context?.route,
         operation: context?.operation,
         inputData: this.sanitizeInputData(context?.inputData),
-        metadata: context?.metadata,
       },
     });
 
@@ -173,7 +172,7 @@ export class ErrorHandler {
 
     // Handle Zod validation errors
     if (error instanceof ZodError) {
-      const details = (error.errors || []).reduce(
+      const details = (error.issues || []).reduce(
         (acc, err) => {
           acc[err.path.join('.')] = err.message;
           return acc;
@@ -507,6 +506,32 @@ export class ErrorHandler {
       ErrorType.FILE_UPLOAD_ERROR,
       400,
       'FILE_UPLOAD_ERROR',
+      details
+    );
+  }
+
+  static createAuthenticationError(
+    message: string = 'Authentication required',
+    details?: Record<string, any>
+  ): AppError {
+    return new AppError(
+      message,
+      ErrorType.AUTHENTICATION_ERROR,
+      401,
+      'AUTHENTICATION_ERROR',
+      details
+    );
+  }
+
+  static createExternalServiceError(
+    message: string,
+    details?: Record<string, any>
+  ): AppError {
+    return new AppError(
+      message,
+      ErrorType.EXTERNAL_SERVICE_ERROR,
+      503,
+      'EXTERNAL_SERVICE_ERROR',
       details
     );
   }

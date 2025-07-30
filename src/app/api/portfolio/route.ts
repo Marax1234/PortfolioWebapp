@@ -192,6 +192,7 @@ export async function GET(request: NextRequest) {
       category: LogCategory.ERROR,
       message: 'Error fetching portfolio items',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -201,11 +202,6 @@ export async function GET(request: NextRequest) {
         route: '/api/portfolio',
         operation: 'fetch_portfolio_items',
         inputData: context.searchParams,
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 
@@ -268,7 +264,7 @@ export async function POST(request: NextRequest) {
         error: validationResult.error,
         errorType: validationResult.error?.constructor?.name,
         issues: validationResult.error?.issues,
-        errors: validationResult.error?.errors,
+        errors: validationResult.error?.issues,
       });
     } catch (zodError) {
       console.log('Zod parsing threw error:', zodError);
@@ -279,7 +275,7 @@ export async function POST(request: NextRequest) {
     const validationResult = createPortfolioSchema.safeParse(body);
 
     if (!validationResult.success) {
-      const errorDetails = validationResult.error?.errors || [];
+      const errorDetails = validationResult.error?.issues || [];
       const errors = errorDetails
         .map(err => `${err.path.join('.')}: ${err.message}`)
         .join(', ');
@@ -408,6 +404,7 @@ export async function POST(request: NextRequest) {
       category: LogCategory.ERROR,
       message: 'Error creating portfolio item',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -416,12 +413,7 @@ export async function POST(request: NextRequest) {
       context: {
         route: '/api/portfolio',
         operation: 'create_portfolio_item',
-        inputData: request.body,
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
+        inputData: undefined, // Cannot log request.body as it's a ReadableStream
       },
     });
 

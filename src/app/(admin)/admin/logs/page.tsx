@@ -1,8 +1,3 @@
-/**
- * Admin Logs Dashboard
- * Development dashboard for viewing structured logs
- */
-
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -39,11 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-/**
- * Admin Logs Dashboard
- * Development dashboard for viewing structured logs
- */
 
 interface LogEntry {
   timestamp: string;

@@ -36,7 +36,7 @@ const createTransporter = () => {
     return null; // Return null to simulate email sending
   }
 
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
@@ -299,7 +299,17 @@ export async function sendContactFormConfirmation(
  * Send custom reply from admin to customer
  */
 export async function sendCustomReply(
-  inquiry: { id: string; name: string; email: string; subject?: string; category: string; },
+  inquiry: {
+    id: string;
+    name: string;
+    email: string;
+    subject?: string | null;
+    category: string;
+    message?: string;
+    createdAt?: Date;
+    budgetRange?: string | null;
+    eventDate?: string | null;
+  },
   replyMessage: string,
   adminName = 'Kilian Siebert'
 ): Promise<void> {
@@ -352,14 +362,13 @@ export async function sendCustomReply(
 
             <div class="original">
               <h3>📋 Ihre ursprüngliche Anfrage:</h3>
-              <p><strong>Datum:</strong> ${new Date(inquiry.createdAt).toLocaleString('de-DE')}</p>
-              <p><strong>Betreff:</strong> ${inquiry.subject}</p>
+              ${inquiry.createdAt ? `<p><strong>Datum:</strong> ${new Date(inquiry.createdAt).toLocaleString('de-DE')}</p>` : ''}
+              ${inquiry.subject ? `<p><strong>Betreff:</strong> ${inquiry.subject}</p>` : ''}
               <p><strong>Kategorie:</strong> ${categoryLabels[inquiry.category] || inquiry.category}</p>
               ${inquiry.budgetRange ? `<p><strong>Budget:</strong> ${inquiry.budgetRange}</p>` : ''}
               ${inquiry.eventDate ? `<p><strong>Event Datum:</strong> ${new Date(inquiry.eventDate).toLocaleDateString('de-DE')}</p>` : ''}
               <hr style="margin: 10px 0;">
-              <p><strong>Ihre Nachricht:</strong></p>
-              <p style="font-style: italic;">${inquiry.message}</p>
+              ${inquiry.message ? `<p><strong>Ihre Nachricht:</strong></p><p style="font-style: italic;">${inquiry.message}</p>` : ''}
               <p><strong>Referenz-ID:</strong> ${inquiry.id}</p>
             </div>
 

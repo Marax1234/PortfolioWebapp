@@ -133,6 +133,7 @@ interface LineChartProps {
 export function SimpleLineChart({
   data,
   color = '#3b82f6',
+  showDots = false,
   formatValue = value => value.toString(),
 }: LineChartProps) {
   if (data.length === 0) {

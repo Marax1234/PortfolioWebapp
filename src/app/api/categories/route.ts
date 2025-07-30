@@ -167,6 +167,7 @@ export async function GET(request: NextRequest) {
       category: LogCategory.ERROR,
       message: 'Error fetching categories',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -175,11 +176,6 @@ export async function GET(request: NextRequest) {
       context: {
         route: '/api/categories',
         operation: 'fetch_categories',
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 
@@ -270,6 +266,7 @@ export async function POST(request: NextRequest) {
       category: LogCategory.ERROR,
       message: 'Error creating category',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -278,11 +275,6 @@ export async function POST(request: NextRequest) {
       context: {
         route: '/api/categories',
         operation: 'create_category',
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 

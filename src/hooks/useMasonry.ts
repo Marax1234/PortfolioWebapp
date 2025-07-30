@@ -22,7 +22,7 @@ interface MasonryOptions {
 }
 
 interface MasonryLayout {
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   isLoading: boolean;
   recalculate: () => void;
   addItem: (element: HTMLElement, id: string) => void;

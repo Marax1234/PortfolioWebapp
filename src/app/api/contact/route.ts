@@ -29,7 +29,6 @@ const contactSchema = z.object({
   location: z.string().optional(),
 });
 
-
 export async function POST(request: NextRequest) {
   try {
     console.log('1. Starting contact form submission');
@@ -83,7 +82,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Validation failed',
-          details: error.errors,
+          details: error.issues,
         },
         { status: 400 }
       );

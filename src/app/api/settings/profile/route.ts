@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Ungültige Eingabedaten',
-          details: error.errors.map(err => ({
+          details: error.issues.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),

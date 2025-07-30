@@ -81,8 +81,8 @@ export class RequestLogger {
       }
     }
 
-    // Fallback to connection remote address or unknown
-    return request.ip || 'unknown';
+    // Fallback to unknown
+    return 'unknown';
   }
 
   /**
@@ -299,17 +299,14 @@ export class RequestLogger {
    * Create a wrapped API handler with automatic request/response logging
    */
   static withLogging<T extends unknown[]>(
-    handler: (...args: T) => Promise<NextResponse>,
+    handler: (request: NextRequest, ...args: T) => Promise<NextResponse>,
     options?: {
       skipRequestLog?: boolean;
       skipResponseLog?: boolean;
       logBody?: boolean;
     }
   ) {
-    return async (
-      request: NextRequest,
-      ...args: T
-    ): Promise<NextResponse> => {
+    return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
       const context = this.createContext(request);
 
       // Add request ID to headers for downstream services

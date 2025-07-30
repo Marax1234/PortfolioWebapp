@@ -20,9 +20,10 @@ const passwordUpdateSchema = z.object({
 export async function PUT(request: NextRequest) {
   const requestId = Logger.generateRequestId();
 
+  // Check authentication
+  const session = await getServerSession(authOptions);
+
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
     if (!session?.user) {
       Logger.securityLog({
         level: LogLevel.WARN,
@@ -194,7 +195,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Ungültige Eingabedaten',
-          details: error.errors.map(err => ({
+          details: error.issues.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),

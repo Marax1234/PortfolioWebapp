@@ -109,6 +109,7 @@ export async function GET(request: NextRequest) {
       category: LogCategory.ERROR,
       message: 'Error fetching admin inquiries',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -117,11 +118,6 @@ export async function GET(request: NextRequest) {
       context: {
         route: '/api/admin/inquiries',
         operation: 'fetch_inquiries',
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 

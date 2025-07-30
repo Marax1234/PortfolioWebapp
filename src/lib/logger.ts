@@ -59,12 +59,14 @@ export interface SecurityLogEntry extends BaseLogEntry {
     | 'LOGIN_FAILURE'
     | 'UNAUTHORIZED_ACCESS'
     | 'PERMISSION_DENIED'
-    | 'SUSPICIOUS_ACTIVITY';
+    | 'SUSPICIOUS_ACTIVITY'
+    | 'RATE_LIMITED';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   details?: {
     attempts?: number;
     blockedReason?: string;
     riskScore?: number;
+    [key: string]: unknown;
   };
 }
 
@@ -157,8 +159,8 @@ const createLogger = () => {
         const metaStr = Object.keys(meta).length
           ? JSON.stringify(meta, null, 2)
           : '';
-        const reqId = requestId ? `[${requestId.slice(0, 8)}]` : '';
-        const cat = category ? `[${category.toUpperCase()}]` : '';
+        const reqId = requestId ? `[${(requestId as string).slice(0, 8)}]` : '';
+        const cat = category ? `[${(category as string).toUpperCase()}]` : '';
         return `${timestamp} ${level} ${cat}${reqId} ${message} ${metaStr}`;
       }
     )
@@ -208,12 +210,15 @@ const createLogger = () => {
       new winston.transports.File({
         filename: 'logs/security.log',
         level: LogLevel.INFO,
-        format: jsonFormatter,
         maxsize: 20 * 1024 * 1024, // 20MB
         maxFiles: 10,
         tailable: true,
-        // Filter for security category only
-        filter: info => info.category === LogCategory.SECURITY,
+        format: winston.format.combine(
+          winston.format((info: winston.Logform.TransformableInfo) => {
+            return info.category === LogCategory.SECURITY ? info : false;
+          })(),
+          jsonFormatter
+        ),
       })
     );
   }

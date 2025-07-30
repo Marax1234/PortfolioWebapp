@@ -13,14 +13,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const context = getRequestContext(request);
   const startTime = Date.now();
-  let portfolioId: string | undefined;
+  const portfolioId: string = id;
 
   try {
-    const { id } = await params;
-    portfolioId = id;
-
     // Log incoming request
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -230,6 +228,7 @@ export async function GET(
       category: LogCategory.ERROR,
       message: 'Error fetching portfolio item',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -239,11 +238,6 @@ export async function GET(
         route: '/api/portfolio/[id]',
         operation: 'fetch_portfolio_item',
         inputData: { id: portfolioId },
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 

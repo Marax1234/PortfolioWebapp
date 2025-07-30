@@ -162,9 +162,13 @@ export async function POST(request: NextRequest) {
             stack: error instanceof Error ? error.stack : undefined,
           },
           context: {
-            fileName: file.name,
-            fileSize: file.size,
-            mimeType: file.type,
+            route: '/api/upload',
+            operation: 'file_processing',
+            inputData: {
+              fileName: file.name,
+              fileSize: file.size,
+              mimeType: file.type,
+            },
           },
         });
 
@@ -226,9 +230,11 @@ export async function POST(request: NextRequest) {
       context: {
         route: '/api/upload',
         operation: 'file_upload',
-        responseTime: totalResponseTime,
-        ip: context.ip,
-        userAgent: context.userAgent,
+        inputData: {
+          responseTime: totalResponseTime,
+          ip: context.ip,
+          userAgent: context.userAgent,
+        },
       },
     });
 

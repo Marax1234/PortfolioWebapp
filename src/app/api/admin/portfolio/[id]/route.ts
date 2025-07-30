@@ -14,11 +14,12 @@ import { getRequestContext } from '@/lib/middleware/logging';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const context = getRequestContext(request);
   const startTime = Date.now();
-  const portfolioId = params.id;
+  const portfolioId = id;
 
   try {
     Logger.databaseLog({
@@ -57,8 +58,7 @@ export async function GET(
       });
 
       const error = ErrorHandler.createNotFoundError(
-        'Portfolio item not found',
-        { id: portfolioId }
+        'Portfolio item not found'
       );
       return ErrorHandler.handleError(error, {
         ...context,
@@ -111,6 +111,7 @@ export async function GET(
       category: LogCategory.ERROR,
       message: 'Error fetching admin portfolio item',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -120,11 +121,6 @@ export async function GET(
         route: '/api/admin/portfolio/[id]',
         operation: 'fetch_admin_portfolio_item',
         inputData: { id: portfolioId },
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 
@@ -153,11 +149,12 @@ const updatePortfolioSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const context = getRequestContext(request);
   const startTime = Date.now();
-  const portfolioId = params.id;
+  const portfolioId = id;
 
   try {
     Logger.apiLog({
@@ -184,7 +181,7 @@ export async function PUT(
     // Validate request data
     const validationResult = updatePortfolioSchema.safeParse(body);
     if (!validationResult.success) {
-      const errorDetails = validationResult.error?.errors || [];
+      const errorDetails = validationResult.error?.issues || [];
       const errors = errorDetails
         .map(err => `${err.path.join('.')}: ${err.message}`)
         .join(', ');
@@ -267,6 +264,7 @@ export async function PUT(
       category: LogCategory.ERROR,
       message: 'Error updating portfolio item',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -276,11 +274,6 @@ export async function PUT(
         route: '/api/admin/portfolio/[id]',
         operation: 'update_portfolio_item',
         inputData: { id: portfolioId },
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 

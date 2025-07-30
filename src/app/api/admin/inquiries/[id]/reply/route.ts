@@ -26,11 +26,12 @@ type ReplyData = z.infer<typeof replySchema>;
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const context = getRequestContext(request);
   const startTime = Date.now();
-  const inquiryId = params.id;
+  const inquiryId = id;
 
   try {
     // Verify admin session
@@ -113,7 +114,19 @@ export async function POST(
     // Send email reply
     const emailStartTime = Date.now();
     try {
-      await sendCustomReply(inquiry, replyData.message);
+      // Transform inquiry for email function
+      const emailInquiry = {
+        id: inquiry.id,
+        name: inquiry.name,
+        email: inquiry.email,
+        subject: inquiry.subject,
+        category: inquiry.category,
+        message: inquiry.message,
+        createdAt: inquiry.createdAt,
+        budgetRange: inquiry.budgetRange,
+        eventDate: inquiry.eventDate ? inquiry.eventDate.toISOString() : null,
+      };
+      await sendCustomReply(emailInquiry, replyData.message);
       const emailTime = Date.now() - emailStartTime;
 
       Logger.info('Inquiry reply email sent successfully', {
@@ -139,9 +152,6 @@ export async function POST(
         },
         context: {
           operation: 'email_reply',
-          inquiryId,
-          customerEmail: inquiry.email,
-          adminUserId: session.user.id,
         },
       });
 
@@ -224,6 +234,7 @@ export async function POST(
       category: LogCategory.ERROR,
       message: 'Error sending inquiry reply',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -232,12 +243,6 @@ export async function POST(
       context: {
         route: `/api/admin/inquiries/${inquiryId}/reply`,
         operation: 'send_reply',
-        metadata: {
-          responseTime: totalResponseTime,
-          inquiryId,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 

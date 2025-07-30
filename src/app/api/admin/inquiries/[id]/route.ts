@@ -24,11 +24,12 @@ type UpdateInquiryData = z.infer<typeof updateInquirySchema>;
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const context = getRequestContext(request);
   const startTime = Date.now();
-  const inquiryId = params.id;
+  const inquiryId = id;
 
   try {
     // Verify admin session
@@ -95,8 +96,8 @@ export async function PATCH(
           statusCode: 400,
           responseTime: Date.now() - startTime,
           metadata: {
-            validationErrors: validationError.errors,
-            submittedFields: Object.keys(body),
+            validationErrors: validationError.issues,
+            submittedFields: Object.keys(body as Record<string, unknown>),
             inquiryId,
           },
         });
@@ -195,6 +196,7 @@ export async function PATCH(
       category: LogCategory.ERROR,
       message: 'Error updating admin inquiry',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
@@ -203,12 +205,6 @@ export async function PATCH(
       context: {
         route: `/api/admin/inquiries/${inquiryId}`,
         operation: 'update_inquiry',
-        metadata: {
-          responseTime: totalResponseTime,
-          inquiryId,
-          ip: context.ip,
-          userAgent: context.userAgent,
-        },
       },
     });
 

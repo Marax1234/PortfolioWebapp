@@ -44,9 +44,7 @@ const contactSchema = z.object({
     .string()
     .min(10, 'Nachricht muss mindestens 10 Zeichen haben')
     .max(2000, 'Nachricht zu lang'),
-  category: z
-    .enum(['NATURE', 'TRAVEL', 'EVENT', 'VIDEOGRAPHY', 'OTHER'])
-    .default('OTHER'),
+  category: z.enum(['NATURE', 'TRAVEL', 'EVENT', 'VIDEOGRAPHY', 'OTHER']),
   budgetRange: z.string().optional(),
   eventDate: z.string().optional(),
   location: z.string().optional(),
@@ -71,6 +69,9 @@ export default function ContactPage() {
     reset,
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
+    defaultValues: {
+      category: 'OTHER',
+    },
   });
 
   const onSubmit = async (data: ContactFormData) => {
