@@ -38,12 +38,14 @@ export const metadata: Metadata = {
   authors: [{ name: 'Kilian Siebert' }],
   creator: 'Kilian Siebert',
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
   ),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    url: process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
     title: 'Kilian Siebert - Photography & Videography',
     description:
       'Professional photography and videography services specializing in travel, event, and nature photography.',
