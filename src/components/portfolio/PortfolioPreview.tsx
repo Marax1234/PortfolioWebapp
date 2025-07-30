@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Loader2 } from "lucide-react"
 import { PortfolioApi } from "@/lib/portfolio-api"
 import { PortfolioCard } from "@/components/gallery/PortfolioCard"
+import { Lightbox } from "@/components/gallery/Lightbox"
+import { usePortfolioStore } from "@/store/portfolio-store"
 import type { PortfolioItem } from "@/store/portfolio-store"
 
 interface PortfolioPreviewProps {
@@ -22,6 +24,8 @@ export function PortfolioPreview({
   const [featuredItems, setFeaturedItems] = useState<PortfolioItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  const { lightboxOpen, openLightbox, incrementViewCount, setItems } = usePortfolioStore()
 
   useEffect(() => {
     async function loadFeaturedItems() {
@@ -30,6 +34,8 @@ export function PortfolioPreview({
         setError(null)
         const items = await PortfolioApi.fetchFeaturedItems(maxItems)
         setFeaturedItems(items)
+        // Update the store with featured items for lightbox functionality
+        setItems(items)
       } catch (err) {
         console.error('Error loading featured items:', err)
         setError('Failed to load portfolio items')
@@ -39,11 +45,11 @@ export function PortfolioPreview({
     }
 
     loadFeaturedItems()
-  }, [maxItems])
+  }, [maxItems, setItems])
 
-  const handleItemClick = (item: PortfolioItem) => {
-    // Navigate to portfolio page with specific item
-    window.location.href = `/portfolio/${item.id}`
+  const handleItemClick = (index: number, itemId: string) => {
+    incrementViewCount(itemId)
+    openLightbox(index)
   }
 
   if (isLoading) {
@@ -122,7 +128,7 @@ export function PortfolioPreview({
             >
               <PortfolioCard
                 item={item}
-                onClick={() => handleItemClick(item)}
+                onClick={() => handleItemClick(index, item.id)}
                 priority={index < 3} // Prioritize first 3 images for loading
                 adaptiveHeight={false} // Keep standard grid for preview
               />
@@ -140,6 +146,9 @@ export function PortfolioPreview({
           </Button>
         </div>
       </div>
+      
+      {/* Lightbox */}
+      {lightboxOpen && <Lightbox />}
     </section>
   )
 }

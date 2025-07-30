@@ -123,7 +123,7 @@ export default function ContactPage() {
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div>
-                    <Label htmlFor="name">Vollständiger Name</Label>
+                    <Label htmlFor="name" className="mb-2">Vollständiger Name</Label>
                     <Input 
                       id="name" 
                       type="text" 
@@ -136,7 +136,7 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="mb-2">Email</Label>
                     <Input 
                       id="email" 
                       type="email" 
@@ -149,7 +149,7 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="phone">Telefon (Optional)</Label>
+                    <Label htmlFor="phone" className="mb-2">Telefon (Optional)</Label>
                     <Input 
                       id="phone" 
                       type="tel" 
@@ -158,7 +158,7 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="subject">Betreff</Label>
+                    <Label htmlFor="subject" className="mb-2">Betreff</Label>
                     <Input 
                       id="subject" 
                       type="text" 
@@ -172,7 +172,7 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="category">Service Kategorie</Label>
+                    <Label htmlFor="category" className="mb-2">Service Kategorie</Label>
                     <select 
                       id="category"
                       {...register('category')}
@@ -190,7 +190,7 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="budgetRange">Budget Rahmen (Optional)</Label>
+                    <Label htmlFor="budgetRange" className="mb-2">Budget Rahmen (Optional)</Label>
                     <Input 
                       id="budgetRange" 
                       type="text" 
@@ -200,7 +200,7 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="eventDate">Event Datum (Optional)</Label>
+                    <Label htmlFor="eventDate" className="mb-2">Event Datum (Optional)</Label>
                     <Input 
                       id="eventDate" 
                       type="date" 
@@ -209,7 +209,7 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="location">Ort (Optional)</Label>
+                    <Label htmlFor="location" className="mb-2">Ort (Optional)</Label>
                     <Input 
                       id="location" 
                       type="text" 
@@ -219,7 +219,7 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="message">Projektbeschreibung</Label>
+                    <Label htmlFor="message" className="mb-2">Projektbeschreibung</Label>
                     <Textarea 
                       id="message" 
                       rows={5}

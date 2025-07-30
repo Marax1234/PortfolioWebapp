@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useEffect, useCallback, useState } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { usePortfolioStore } from "@/store/portfolio-store"
@@ -196,6 +196,7 @@ export function Lightbox() {
           maxHeight: '90vh'
         }}
       >
+        <DialogTitle className="sr-only">{currentItem.title}</DialogTitle>
         <div 
           className="relative w-full h-full flex flex-col"
           onTouchStart={handleTouchStart}
