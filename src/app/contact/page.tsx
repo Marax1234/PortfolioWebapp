@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Mail, Phone, MapPin, User, Clock, Award, CheckCircle, AlertCircle } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -102,23 +105,21 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 {submitStatus === 'success' && (
-                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <div>
-                      <p className="text-green-800 font-medium">Nachricht erfolgreich gesendet!</p>
-                      <p className="text-green-700 text-sm">Vielen Dank für Ihre Anfrage. Ich melde mich innerhalb von 24 Stunden bei Ihnen.</p>
-                    </div>
-                  </div>
+                  <Alert className="mb-6 border-green-200 bg-green-50">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertTitle className="text-green-800">Nachricht erfolgreich gesendet!</AlertTitle>
+                    <AlertDescription className="text-green-700">
+                      Vielen Dank für Ihre Anfrage. Ich melde mich innerhalb von 24 Stunden bei Ihnen.
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 {submitStatus === 'error' && (
-                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-center gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                    <div>
-                      <p className="text-red-800 font-medium">Fehler beim Senden</p>
-                      <p className="text-red-700 text-sm">{errorMessage}</p>
-                    </div>
-                  </div>
+                  <Alert variant="destructive" className="mb-6">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Fehler beim Senden</AlertTitle>
+                    <AlertDescription>{errorMessage}</AlertDescription>
+                  </Alert>
                 )}
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -173,17 +174,18 @@ export default function ContactPage() {
                   
                   <div>
                     <Label htmlFor="category" className="mb-2">Service Kategorie</Label>
-                    <select 
-                      id="category"
-                      {...register('category')}
-                      className="w-full p-3 border rounded-md bg-background"
-                    >
-                      <option value="OTHER">Anderes</option>
-                      <option value="NATURE">Naturfotografie</option>
-                      <option value="TRAVEL">Reisefotografie</option>
-                      <option value="EVENT">Eventfotografie</option>
-                      <option value="VIDEOGRAPHY">Videografie/Imagefilm</option>
-                    </select>
+                    <Select {...register('category')} defaultValue="OTHER">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wählen Sie eine Kategorie" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OTHER">Anderes</SelectItem>
+                        <SelectItem value="NATURE">Naturfotografie</SelectItem>
+                        <SelectItem value="TRAVEL">Reisefotografie</SelectItem>
+                        <SelectItem value="EVENT">Eventfotografie</SelectItem>
+                        <SelectItem value="VIDEOGRAPHY">Videografie/Imagefilm</SelectItem>
+                      </SelectContent>
+                    </Select>
                     {errors.category && (
                       <p className="text-red-500 text-sm mt-1">{errors.category.message}</p>
                     )}
@@ -232,14 +234,13 @@ export default function ContactPage() {
                     )}
                   </div>
 
-                  <div className="flex items-start space-x-2">
-                    <input
-                      type="checkbox"
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
                       id="gdprConsent"
                       {...register('gdprConsent')}
                       className="mt-1"
                     />
-                    <div>
+                    <div className="grid gap-1.5 leading-none">
                       <Label htmlFor="gdprConsent" className="text-sm leading-relaxed cursor-pointer">
                         Ich stimme der Verarbeitung meiner personenbezogenen Daten gemäß der{' '}
                         <a href="/privacy" className="text-blue-600 hover:underline" target="_blank">
