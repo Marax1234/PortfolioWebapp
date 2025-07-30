@@ -168,59 +168,64 @@ const createLogger = () => {
 
   // Create transports based on environment
   const transports: winston.transport[] = [];
+  const isVercel = process.env.VERCEL === '1';
 
-  // Console transport for development
-  if (!isProduction) {
-    transports.push(
-      new winston.transports.Console({
-        level: logLevel,
-        format: consoleFormatter,
-      })
-    );
-  }
+  // Always use console transport (both development and production)
+  // On Vercel, filesystem is read-only so we can't write log files
+  transports.push(
+    new winston.transports.Console({
+      level: logLevel,
+      format: isProduction ? jsonFormatter : consoleFormatter,
+    })
+  );
 
-  // File transports for production
-  if (isProduction) {
-    // All logs
-    transports.push(
-      new winston.transports.File({
-        filename: 'logs/combined.log',
-        level: logLevel,
-        format: jsonFormatter,
-        maxsize: 50 * 1024 * 1024, // 50MB
-        maxFiles: 5,
-        tailable: true,
-      })
-    );
+  // File transports only for local production (not on Vercel)
+  if (isProduction && !isVercel) {
+    try {
+      // All logs
+      transports.push(
+        new winston.transports.File({
+          filename: 'logs/combined.log',
+          level: logLevel,
+          format: jsonFormatter,
+          maxsize: 50 * 1024 * 1024, // 50MB
+          maxFiles: 5,
+          tailable: true,
+        })
+      );
 
-    // Error logs only
-    transports.push(
-      new winston.transports.File({
-        filename: 'logs/error.log',
-        level: LogLevel.ERROR,
-        format: jsonFormatter,
-        maxsize: 10 * 1024 * 1024, // 10MB
-        maxFiles: 10,
-        tailable: true,
-      })
-    );
+      // Error logs only
+      transports.push(
+        new winston.transports.File({
+          filename: 'logs/error.log',
+          level: LogLevel.ERROR,
+          format: jsonFormatter,
+          maxsize: 10 * 1024 * 1024, // 10MB
+          maxFiles: 10,
+          tailable: true,
+        })
+      );
 
-    // Security logs only
-    transports.push(
-      new winston.transports.File({
-        filename: 'logs/security.log',
-        level: LogLevel.INFO,
-        maxsize: 20 * 1024 * 1024, // 20MB
-        maxFiles: 10,
-        tailable: true,
-        format: winston.format.combine(
-          winston.format((info: winston.Logform.TransformableInfo) => {
-            return info.category === LogCategory.SECURITY ? info : false;
-          })(),
-          jsonFormatter
-        ),
-      })
-    );
+      // Security logs only
+      transports.push(
+        new winston.transports.File({
+          filename: 'logs/security.log',
+          level: LogLevel.INFO,
+          maxsize: 20 * 1024 * 1024, // 20MB
+          maxFiles: 10,
+          tailable: true,
+          format: winston.format.combine(
+            winston.format((info: winston.Logform.TransformableInfo) => {
+              return info.category === LogCategory.SECURITY ? info : false;
+            })(),
+            jsonFormatter
+          ),
+        })
+      );
+    } catch (error) {
+      // Fallback to console only if file operations fail
+      console.warn('Failed to create file transports, using console only:', error);
+    }
   }
 
   return winston.createLogger({
@@ -233,16 +238,21 @@ const createLogger = () => {
     },
     transports,
     // Handle uncaught exceptions and rejections
-    exceptionHandlers: [
-      new winston.transports.File({
-        filename: isProduction ? 'logs/exceptions.log' : '/dev/null',
-      }),
-    ],
-    rejectionHandlers: [
-      new winston.transports.File({
-        filename: isProduction ? 'logs/rejections.log' : '/dev/null',
-      }),
-    ],
+    // On Vercel, use console transport instead of files
+    exceptionHandlers: isVercel 
+      ? [new winston.transports.Console({ format: jsonFormatter })]
+      : [
+          new winston.transports.File({
+            filename: isProduction ? 'logs/exceptions.log' : '/dev/null',
+          }),
+        ],
+    rejectionHandlers: isVercel
+      ? [new winston.transports.Console({ format: jsonFormatter })]
+      : [
+          new winston.transports.File({
+            filename: isProduction ? 'logs/rejections.log' : '/dev/null',
+          }),
+        ],
     exitOnError: false,
   });
 };
