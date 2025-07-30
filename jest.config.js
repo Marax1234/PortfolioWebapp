@@ -3,13 +3,13 @@
  * Minimal setup focused on API route testing with TypeScript support
  */
 
-const nextJest = require('next/jest')
+const nextJest = require('next/jest');
 
 // Create Jest config with Next.js defaults
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files
   dir: './',
-})
+});
 
 // Custom Jest configuration
 const customJestConfig = {
@@ -35,27 +35,23 @@ const customJestConfig = {
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/dist/',
-    '<rootDir>/out/'
+    '<rootDir>/out/',
   ],
 
   // Transform configuration
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        jsx: 'react-jsx',
+    '^.+\\.(js|jsx|ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
       },
-    }],
+    ],
   },
 
   // Module file extensions
-  moduleFileExtensions: [
-    'ts',
-    'tsx',
-    'js',
-    'jsx',
-    'json',
-    'node'
-  ],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 
   // Coverage configuration (optional)
   collectCoverageFrom: [
@@ -64,7 +60,7 @@ const customJestConfig = {
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
     '!src/**/*.test.{js,ts,jsx,tsx}',
-    '!src/**/*.spec.{js,ts,jsx,tsx}'
+    '!src/**/*.spec.{js,ts,jsx,tsx}',
   ],
 
   // Clear mocks between tests
@@ -75,7 +71,7 @@ const customJestConfig = {
 
   // Global timeout for tests (10 seconds)
   testTimeout: 10000,
-}
+};
 
 // Export Jest config that is aware of Next.js
-module.exports = createJestConfig(customJestConfig)
+module.exports = createJestConfig(customJestConfig);

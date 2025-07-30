@@ -2,9 +2,8 @@
  * Jest Setup File
  * Global test configuration and mocks
  */
-
 // Import Jest DOM matchers
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom';
 
 // Mock Next.js modules that are not available in test environment
 jest.mock('next/headers', () => ({
@@ -26,7 +25,7 @@ jest.mock('next/headers', () => ({
     clear: jest.fn(),
     getAll: jest.fn(),
   })),
-}))
+}));
 
 // Mock Next.js server components
 jest.mock('next/server', () => ({
@@ -45,17 +44,17 @@ jest.mock('next/server', () => ({
     rewrite: jest.fn(),
     next: jest.fn(),
   },
-}))
+}));
 
 // Mock NextAuth
 jest.mock('next-auth', () => ({
   __esModule: true,
   default: jest.fn(),
-}))
+}));
 
 jest.mock('next-auth/middleware', () => ({
-  withAuth: jest.fn((middleware) => middleware),
-}))
+  withAuth: jest.fn(middleware => middleware),
+}));
 
 // Mock Winston logger to prevent console spam during tests
 jest.mock('@/lib/logger', () => ({
@@ -86,12 +85,12 @@ jest.mock('@/lib/logger', () => ({
     ERROR: 'error',
     SYSTEM: 'system',
   },
-}))
+}));
 
 // Mock environment variables for testing
-process.env.NODE_ENV = 'test'
-process.env.NEXTAUTH_SECRET = 'test-secret'
-process.env.NEXTAUTH_URL = 'http://localhost:3000'
+process.env.NODE_ENV = 'test';
+process.env.NEXTAUTH_SECRET = 'test-secret';
+process.env.NEXTAUTH_URL = 'http://localhost:3000';
 
 // Global test utilities
 global.TestUtils = {
@@ -113,10 +112,10 @@ global.TestUtils = {
   }),
 
   // Helper to extract response data from mocked NextResponse.json
-  extractResponseData: (mockResponse) => {
+  extractResponseData: mockResponse => {
     if (mockResponse && typeof mockResponse.json === 'function') {
-      return mockResponse.json()
+      return mockResponse.json();
     }
-    return mockResponse
+    return mockResponse;
   },
-}
+};

@@ -1,6 +1,7 @@
 ## Sprint 7: Contact Form & Inquiry Management
 
 ### 1. Kontext & Rolle
+
 ```
 Als Full-Stack Developer unterstütze mich bei der Kontaktformular-Implementierung.
 
@@ -12,6 +13,7 @@ Als Full-Stack Developer unterstütze mich bei der Kontaktformular-Implementieru
 ```
 
 ### 2. Aufgabengliederung
+
 ```
 **Schritt 1 - Contact Form:**
 1. **Form Implementation:**
@@ -39,6 +41,7 @@ Als Full-Stack Developer unterstütze mich bei der Kontaktformular-Implementieru
 ```
 
 ### 3. Ausgabe-Spezifikation
+
 ```
 **Deliverables:**
 - Funktionierendes Kontaktformular

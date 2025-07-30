@@ -2,23 +2,23 @@
  * Analytics API Endpoints
  * GET /api/analytics - Fetch analytics dashboard data with admin authentication
  */
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { AnalyticsQueries } from '@/lib/db-utils'
-import { Logger, LogCategory, LogLevel } from '@/lib/logger'
-import { getRequestContext } from '@/lib/middleware/logging'
-import { ErrorHandler } from '@/lib/error-handler'
+import { authOptions } from '@/lib/auth';
+import { AnalyticsQueries } from '@/lib/db-utils';
+import { ErrorHandler } from '@/lib/error-handler';
+import { LogCategory, LogLevel, Logger } from '@/lib/logger';
+import { getRequestContext } from '@/lib/middleware/logging';
 
 export async function GET(request: NextRequest) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
+  const context = getRequestContext(request);
+  const startTime = Date.now();
 
   try {
     // Check admin authentication
-    const session = await getServerSession(authOptions)
-    
+    const session = await getServerSession(authOptions);
+
     if (!session || session.user.role !== 'ADMIN') {
       Logger.securityLog({
         level: LogLevel.WARN,
@@ -34,14 +34,14 @@ export async function GET(request: NextRequest) {
           route: '/api/analytics',
           hasSession: !!session,
           userRole: session?.user?.role || 'none',
-          timestamp: new Date().toISOString()
-        }
-      })
+          timestamp: new Date().toISOString(),
+        },
+      });
 
       return NextResponse.json(
         { success: false, error: 'Unauthorized access' },
         { status: 401 }
-      )
+      );
     }
 
     // Log incoming request
@@ -59,44 +59,58 @@ export async function GET(request: NextRequest) {
       metadata: {
         adminUser: session.user.email,
         searchParams: context.searchParams,
-        timestamp: new Date().toISOString()
-      }
-    })
+        timestamp: new Date().toISOString(),
+      },
+    });
 
-    const { searchParams } = new URL(request.url)
-    
+    const { searchParams } = new URL(request.url);
+
     // Parse query parameters
-    const period = searchParams.get('period')
-    const startDateParam = searchParams.get('startDate')
-    const endDateParam = searchParams.get('endDate')
+    const period = searchParams.get('period');
+    const startDateParam = searchParams.get('startDate');
+    const endDateParam = searchParams.get('endDate');
 
     // Validate and parse dates
-    let startDate: Date | undefined
-    let endDate: Date | undefined
+    let startDate: Date | undefined;
+    let endDate: Date | undefined;
 
     if (startDateParam) {
-      startDate = new Date(startDateParam)
+      startDate = new Date(startDateParam);
       if (isNaN(startDate.getTime())) {
-        const error = ErrorHandler.createValidationError('Invalid startDate format', { startDate: startDateParam })
+        const error = ErrorHandler.createValidationError(
+          'Invalid startDate format',
+          { startDate: startDateParam }
+        );
         return ErrorHandler.handleError(error, {
           ...context,
           route: '/api/analytics',
           operation: 'validation',
-          inputData: { startDate: startDateParam, endDate: endDateParam, period }
-        })
+          inputData: {
+            startDate: startDateParam,
+            endDate: endDateParam,
+            period,
+          },
+        });
       }
     }
 
     if (endDateParam) {
-      endDate = new Date(endDateParam)
+      endDate = new Date(endDateParam);
       if (isNaN(endDate.getTime())) {
-        const error = ErrorHandler.createValidationError('Invalid endDate format', { endDate: endDateParam })
+        const error = ErrorHandler.createValidationError(
+          'Invalid endDate format',
+          { endDate: endDateParam }
+        );
         return ErrorHandler.handleError(error, {
           ...context,
           route: '/api/analytics',
           operation: 'validation',
-          inputData: { startDate: startDateParam, endDate: endDateParam, period }
-        })
+          inputData: {
+            startDate: startDateParam,
+            endDate: endDateParam,
+            period,
+          },
+        });
       }
     }
 
@@ -106,25 +120,30 @@ export async function GET(request: NextRequest) {
         '7d': 7,
         '30d': 30,
         '90d': 90,
-        '1y': 365
-      }[period]
+        '1y': 365,
+      }[period];
 
       if (!periodDays) {
-        const error = ErrorHandler.createValidationError('Invalid period value', { period })
+        const error = ErrorHandler.createValidationError(
+          'Invalid period value',
+          { period }
+        );
         return ErrorHandler.handleError(error, {
           ...context,
           route: '/api/analytics',
           operation: 'validation',
-          inputData: { period }
-        })
+          inputData: { period },
+        });
       }
 
-      endDate = new Date()
-      startDate = new Date(endDate.getTime() - periodDays * 24 * 60 * 60 * 1000)
+      endDate = new Date();
+      startDate = new Date(
+        endDate.getTime() - periodDays * 24 * 60 * 60 * 1000
+      );
     }
 
     // Log database query start
-    const dbStartTime = Date.now()
+    const dbStartTime = Date.now();
     Logger.databaseLog({
       level: LogLevel.INFO,
       category: LogCategory.DATABASE,
@@ -134,22 +153,22 @@ export async function GET(request: NextRequest) {
       table: 'AnalyticsEvent, PortfolioItem, Category',
       queryTime: 0,
       metadata: {
-        filters: { 
-          startDate: startDate?.toISOString(), 
+        filters: {
+          startDate: startDate?.toISOString(),
           endDate: endDate?.toISOString(),
-          period 
-        }
-      }
-    })
+          period,
+        },
+      },
+    });
 
     // Fetch analytics data
     const analyticsData = await AnalyticsQueries.getDashboardAnalytics({
       startDate,
-      endDate
-    })
+      endDate,
+    });
 
-    const dbQueryTime = Date.now() - dbStartTime
-    const totalResponseTime = Date.now() - startTime
+    const dbQueryTime = Date.now() - dbStartTime;
+    const totalResponseTime = Date.now() - startTime;
 
     // Log database query completion
     Logger.databaseLog({
@@ -165,9 +184,9 @@ export async function GET(request: NextRequest) {
         totalViews: analyticsData.overview.totalViews,
         uniqueVisitors: analyticsData.overview.uniqueVisitors,
         topContentCount: analyticsData.topContent.length,
-        trafficSourcesCount: analyticsData.trafficSources.length
-      }
-    })
+        trafficSourcesCount: analyticsData.trafficSources.length,
+      },
+    });
 
     // Log successful response
     Logger.apiLog({
@@ -177,7 +196,7 @@ export async function GET(request: NextRequest) {
       requestId: context.requestId,
       method: context.method,
       url: context.url,
-      ip: context.ip,  
+      ip: context.ip,
       userAgent: context.userAgent,
       statusCode: 200,
       responseTime: totalResponseTime,
@@ -187,30 +206,29 @@ export async function GET(request: NextRequest) {
           totalViews: analyticsData.overview.totalViews,
           uniqueVisitors: analyticsData.overview.uniqueVisitors,
           portfolioItems: analyticsData.overview.totalPortfolioItems,
-          categories: analyticsData.overview.totalCategories
+          categories: analyticsData.overview.totalCategories,
         },
         timeRange: {
           startDate: analyticsData.timeRangeStats.startDate,
           endDate: analyticsData.timeRangeStats.endDate,
-          totalEvents: analyticsData.timeRangeStats.totalEvents
+          totalEvents: analyticsData.timeRangeStats.totalEvents,
         },
         dbQueryTime,
-        cached: false
-      }
-    })
+        cached: false,
+      },
+    });
 
     const response = NextResponse.json({
       success: true,
-      data: analyticsData
-    })
+      data: analyticsData,
+    });
 
     // Add request ID to response headers for client tracking
-    response.headers.set('x-request-id', context.requestId)
-    
-    return response
+    response.headers.set('x-request-id', context.requestId);
 
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     // Log the error with context
     Logger.errorLog({
@@ -221,7 +239,7 @@ export async function GET(request: NextRequest) {
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
         route: '/api/analytics',
@@ -230,16 +248,16 @@ export async function GET(request: NextRequest) {
         metadata: {
           responseTime: totalResponseTime,
           ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+          userAgent: context.userAgent,
+        },
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
       route: '/api/analytics',
       operation: 'fetch_analytics_data',
-      inputData: context.searchParams
-    })
+      inputData: context.searchParams,
+    });
   }
 }

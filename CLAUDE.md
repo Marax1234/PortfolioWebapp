@@ -1,10 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this
+repository.
 
 ## Project Overview
 
 This is a Next.js 15 portfolio webapp for photographer/videographer Kilian Siebert, built with:
+
 - **Framework**: Next.js 15.4.2 with App Router and React 19
 - **Database**: SQLite with Prisma ORM 6.12.0
 - **Authentication**: NextAuth.js with JWT strategy
@@ -40,6 +42,7 @@ npm run setup:admin  # Setup admin user password
 ## Architecture
 
 ### Database Models (Prisma)
+
 - **User**: Authentication with roles (VISITOR, REGISTERED, ADMIN)
 - **PortfolioItem**: Media items with metadata, categories, tags, view counts
 - **Category**: Portfolio categorization (Nature, Travel, Events, Videography)
@@ -50,6 +53,7 @@ npm run setup:admin  # Setup admin user password
 Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 
 ### API Routes Structure
+
 - `/api/auth/[...nextauth]` - NextAuth.js authentication endpoints
 - `/api/portfolio` - Portfolio CRUD operations with image upload
 - `/api/categories` - Category management
@@ -57,6 +61,7 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 - `/api/upload` - File upload handling for portfolio items
 
 ### Authentication & Authorization
+
 - JWT tokens with HTTP-only cookies (24-hour expiry)
 - bcrypt for password hashing
 - Role-based access: ADMIN role required for `/admin/*` routes
@@ -64,18 +69,21 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 - Comprehensive security logging via winston
 
 ### Key Components
+
 - **PortfolioGrid** (`src/components/gallery/`): Infinite scroll gallery with masonry/grid toggle
 - **Lightbox** (`src/components/gallery/`): Full-screen image viewer with keyboard navigation
 - **AdminDashboard** (`src/app/(admin)/admin/`): Portfolio management interface
 - **AuthProvider** (`src/components/providers/`): Session management wrapper
 
 ### State Management
+
 - Zustand store in `src/store/portfolio-store.ts` for portfolio state
 - Client-side caching and pagination
 - Optimistic updates for view counts
 - Lightbox state management with keyboard navigation
 
 ### File Structure
+
 - `src/app/` - Next.js App Router pages with route groups
 - `src/app/(admin)/` - Admin-protected routes
 - `src/app/(auth)/` - Authentication pages
@@ -99,12 +107,15 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 The contact form and inquiry system supports email notifications:
 
 ### Development Mode
+
 - Without SMTP configuration: Emails are simulated and logged only
 - Inquiry data is still saved to database
 - Check server logs to see email content
 
 ### Production Setup
+
 Configure SMTP settings in `.env.local`:
+
 ```bash
 # Admin email for notifications
 ADMIN_EMAIL="mhiller2005@gmail.com"
@@ -119,6 +130,7 @@ EMAIL_FROM="your-email@gmail.com"
 ```
 
 ### Supported Email Features
+
 - **Contact Form Notifications**: Admin receives inquiry notifications
 - **Customer Confirmations**: Automatic confirmation emails to customers
 - **Admin Replies**: Send custom replies from admin dashboard

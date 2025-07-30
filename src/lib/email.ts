@@ -2,27 +2,27 @@
  * Email Service for Kilian Siebert Portfolio
  * Handles contact form submissions and admin notifications
  */
+import nodemailer from 'nodemailer';
 
-import nodemailer from 'nodemailer'
-import { Logger } from '@/lib/logger'
+import { Logger } from '@/lib/logger';
 
 export interface EmailOptions {
-  to: string | string[]
-  subject: string
-  html: string
-  text?: string
-  from?: string
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  from?: string;
 }
 
 export interface ContactFormData {
-  name: string
-  email: string
-  phone?: string
-  subject: string
-  message: string
-  category: string
-  budget?: string
-  timeline?: string
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  category: string;
+  budget?: string;
+  timeline?: string;
 }
 
 /**
@@ -32,8 +32,8 @@ export interface ContactFormData {
 const createTransporter = () => {
   // For development, use Ethereal Email (testing service)
   if (process.env.NODE_ENV === 'development' && !process.env.SMTP_HOST) {
-    Logger.warn('Using simulated email service for development')
-    return null // Return null to simulate email sending
+    Logger.warn('Using simulated email service for development');
+    return null; // Return null to simulate email sending
   }
 
   return nodemailer.createTransporter({
@@ -45,75 +45,81 @@ const createTransporter = () => {
       pass: process.env.SMTP_PASSWORD || process.env.EMAIL_PASSWORD,
     },
     tls: {
-      rejectUnauthorized: false
-    }
-  })
-}
+      rejectUnauthorized: false,
+    },
+  });
+};
 
 /**
  * Send email using configured transporter
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
-  const transporter = createTransporter()
-  
+  const transporter = createTransporter();
+
   // For development without SMTP config, just log the email
   if (!transporter) {
     Logger.info('Simulated email send (development mode)', {
       to: options.to,
       subject: options.subject,
       hasHtml: !!options.html,
-      hasText: !!options.text
-    })
-    
+      hasText: !!options.text,
+    });
+
     // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 200))
-    
+    await new Promise(resolve => setTimeout(resolve, 200));
+
     // Simulate occasional failures (5% in development)
     if (Math.random() < 0.05) {
-      throw new Error('Simulated email service error for testing')
+      throw new Error('Simulated email service error for testing');
     }
-    
-    return
+
+    return;
   }
 
   const emailOptions = {
-    from: options.from || process.env.EMAIL_FROM || 'noreply@kiliansiebertphotography.com',
+    from:
+      options.from ||
+      process.env.EMAIL_FROM ||
+      'noreply@kiliansiebertphotography.com',
     to: options.to,
     subject: options.subject,
     html: options.html,
-    text: options.text || options.html.replace(/<[^>]*>/g, '') // Strip HTML for text version
-  }
+    text: options.text || options.html.replace(/<[^>]*>/g, ''), // Strip HTML for text version
+  };
 
   try {
-    const info = await transporter.sendMail(emailOptions)
+    const info = await transporter.sendMail(emailOptions);
     Logger.info('Email sent successfully', {
       messageId: info.messageId,
       to: options.to,
       subject: options.subject,
       accepted: info.accepted,
-      rejected: info.rejected
-    })
+      rejected: info.rejected,
+    });
   } catch (error) {
     Logger.error('Failed to send email', {
       error: error instanceof Error ? error.message : String(error),
       to: options.to,
-      subject: options.subject
-    })
-    throw error
+      subject: options.subject,
+    });
+    throw error;
   }
 }
 
 /**
  * Send contact form notification to admin
  */
-export async function sendContactFormNotification(data: ContactFormData, inquiryId: string): Promise<void> {
+export async function sendContactFormNotification(
+  data: ContactFormData,
+  inquiryId: string
+): Promise<void> {
   const categoryLabels: Record<string, string> = {
     NATURE: 'Naturfotografie',
-    TRAVEL: 'Reisefotografie', 
+    TRAVEL: 'Reisefotografie',
     EVENT: 'Eventfotografie',
     VIDEOGRAPHY: 'Videografie',
-    OTHER: 'Anderes'
-  }
+    OTHER: 'Anderes',
+  };
 
   const adminEmail: EmailOptions = {
     to: process.env.ADMIN_EMAIL || 'mhiller2005@gmail.com',
@@ -193,23 +199,26 @@ export async function sendContactFormNotification(data: ContactFormData, inquiry
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
-  await sendEmail(adminEmail)
+  await sendEmail(adminEmail);
 }
 
 /**
  * Send auto-reply confirmation to customer
  */
-export async function sendContactFormConfirmation(data: ContactFormData, inquiryId: string): Promise<void> {
+export async function sendContactFormConfirmation(
+  data: ContactFormData,
+  inquiryId: string
+): Promise<void> {
   const categoryLabels: Record<string, string> = {
     NATURE: 'Naturfotografie',
     TRAVEL: 'Reisefotografie',
-    EVENT: 'Eventfotografie', 
+    EVENT: 'Eventfotografie',
     VIDEOGRAPHY: 'Videografie',
-    OTHER: 'Anderes'
-  }
+    OTHER: 'Anderes',
+  };
 
   const confirmationEmail: EmailOptions = {
     to: data.email,
@@ -280,18 +289,18 @@ export async function sendContactFormConfirmation(data: ContactFormData, inquiry
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
-  await sendEmail(confirmationEmail)
+  await sendEmail(confirmationEmail);
 }
 
 /**
  * Send custom reply from admin to customer
  */
 export async function sendCustomReply(
-  inquiry: any, 
-  replyMessage: string, 
+  inquiry: any,
+  replyMessage: string,
   adminName = 'Kilian Siebert'
 ): Promise<void> {
   const categoryLabels: Record<string, string> = {
@@ -299,8 +308,8 @@ export async function sendCustomReply(
     TRAVEL: 'Reisefotografie',
     EVENT: 'Eventfotografie',
     VIDEOGRAPHY: 'Videografie',
-    OTHER: 'Anderes'
-  }
+    OTHER: 'Anderes',
+  };
 
   const replyEmail: EmailOptions = {
     to: inquiry.email,
@@ -366,8 +375,8 @@ export async function sendCustomReply(
       </body>
       </html>
     `,
-    from: process.env.EMAIL_FROM || 'mhiller2005@gmail.com'
-  }
+    from: process.env.EMAIL_FROM || 'mhiller2005@gmail.com',
+  };
 
-  await sendEmail(replyEmail)
+  await sendEmail(replyEmail);
 }

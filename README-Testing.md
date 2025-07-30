@@ -1,16 +1,20 @@
 # API Route Testing Documentation
 
 ## Übersicht
-Dieses Dokument beschreibt die implementierte Test-Infrastructure für die API-Routen der Portfolio Web-App.
+
+Dieses Dokument beschreibt die implementierte Test-Infrastructure für die API-Routen der Portfolio
+Web-App.
 
 ## Test Setup
 
 ### Jest Konfiguration
+
 - **Test Framework**: Jest 30.0.5 mit TypeScript-Support
 - **Test Environment**: Node.js für API-Route-Tests
 - **Mock Framework**: Jest Mocks für Abhängigkeiten
 
 ### Test-Struktur
+
 ```
 src/
 ├── __tests__/
@@ -33,6 +37,7 @@ src/
 ### 1. Portfolio API Routes (`/api/portfolio`)
 
 **Getestete Funktionen:**
+
 - ✅ GET Request mit Standard-Pagination
 - ✅ Benutzerdefinierte Pagination (page, limit)
 - ✅ Kategorie-Filterung
@@ -44,6 +49,7 @@ src/
 - ✅ Response Format Validation
 
 **Getestete HTTP Status Codes:**
+
 - 200 OK - Erfolgreiche Anfragen
 - 400 Bad Request - Ungültige Parameter
 - 500 Internal Server Error - Database-Fehler
@@ -51,6 +57,7 @@ src/
 ### 2. Portfolio Item by ID (`/api/portfolio/[id]`)
 
 **Getestete Funktionen:**
+
 - ✅ GET Request mit gültiger ID
 - ✅ Related Items Abfrage
 - ✅ View Count Increment
@@ -60,6 +67,7 @@ src/
 - ✅ Performance-Tests
 
 **Getestete HTTP Status Codes:**
+
 - 200 OK - Portfolio Item gefunden
 - 400 Bad Request - Ungültige ID
 - 404 Not Found - Item nicht gefunden
@@ -68,6 +76,7 @@ src/
 ### 3. Categories API (`/api/categories`)
 
 **Getestete Funktionen:**
+
 - ✅ GET alle aktiven Kategorien
 - ✅ Portfolio Item Counts pro Kategorie
 - ✅ Sortierung nach sortOrder
@@ -77,12 +86,14 @@ src/
 - ✅ Performance mit großen Datasets
 
 **Getestete HTTP Status Codes:**
+
 - 200 OK - Kategorien erfolgreich abgerufen
 - 500 Internal Server Error - Database-Fehler
 
 ### 4. Contact API (`/api/contact`)
 
 **Getestete Funktionen:**
+
 - ✅ POST Request mit gültigen Daten
 - ✅ Optionale Felder (phone, company, budget, timeline)
 - ✅ Input Validation (Pflichtfelder, Email-Format, Nachrichtenlänge)
@@ -92,6 +103,7 @@ src/
 - ✅ Response Format Validation
 
 **Getestete HTTP Status Codes:**
+
 - 201 Created - Kontaktanfrage erfolgreich erstellt
 - 400 Bad Request - Validation-Fehler
 - 429 Too Many Requests - Rate Limiting
@@ -100,6 +112,7 @@ src/
 ### 5. Authentication API (`/api/auth/[...nextauth]`)
 
 **Getestete Funktionen:**
+
 - ✅ NextAuth Handler Export (GET/POST)
 - ✅ Auth Options Integration
 - ✅ Request Parameter Weiterleitung
@@ -110,6 +123,7 @@ src/
 ### 6. Auth Configuration Tests
 
 **Getestete Funktionen:**
+
 - ✅ Session Strategy (JWT)
 - ✅ Provider Konfiguration (Credentials)
 - ✅ Authorization Logic (Admin-only)
@@ -120,17 +134,20 @@ src/
 ## Mock-Strategy
 
 ### Database Mocking
+
 - **Prisma Client**: Vollständig gemockt mit realistischen Daten
 - **Query Methods**: findMany, findFirst, create, update, count
 - **Error Simulation**: Prisma-spezifische Fehler (P2002, P2025, etc.)
 
 ### Service Layer Mocking
+
 - **UserService**: Authentication und User Management
 - **PortfolioQueries**: Portfolio-spezifische Datenbankabfragen
 - **CategoryQueries**: Kategorie-Datenbankabfragen
 - **ErrorHandler**: Strukturierte Fehlerbehandlung
 
 ### External Dependencies
+
 - **Winston Logger**: Vollständig gemockt für saubere Test-Ausgaben
 - **NextAuth**: Mocked für Authentication-Tests
 - **Next.js Server**: NextRequest/NextResponse Mocks
@@ -153,11 +170,11 @@ npm run test src/app/api/portfolio/__tests__/route.test.ts
 
 ## Test-Statistiken
 
-**Implementierte Tests:** 80+ Test Cases
-**Abgedeckte API Routes:** 6 von 6 (100%)
-**Test Categories:**
+**Implementierte Tests:** 80+ Test Cases **Abgedeckte API Routes:** 6 von 6 (100%) **Test
+Categories:**
+
 - Successful Requests
-- Input Validation  
+- Input Validation
 - Error Handling
 - Performance Considerations
 - Response Format Validation
@@ -166,6 +183,7 @@ npm run test src/app/api/portfolio/__tests__/route.test.ts
 ## Qualitätskriterien
 
 **Erfüllt:**
+
 - ✅ 100% aller API Routes haben strukturierte Tests
 - ✅ Alle HTTP-Methoden getestet (GET, POST)
 - ✅ Alle erwarteten Status Codes getestet (200, 201, 400, 404, 429, 500)

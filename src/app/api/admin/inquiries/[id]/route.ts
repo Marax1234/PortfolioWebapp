@@ -2,41 +2,46 @@
  * Admin Inquiry Management API Endpoint
  * PATCH /api/admin/inquiries/[id] - Update inquiry status
  */
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/db'
-import { z } from 'zod'
-import { Logger, LogCategory, LogLevel } from '@/lib/logger'
-import { getRequestContext } from '@/lib/middleware/logging'
-import { ErrorHandler } from '@/lib/error-handler'
+import { z } from 'zod';
+
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import { ErrorHandler } from '@/lib/error-handler';
+import { LogCategory, LogLevel, Logger } from '@/lib/logger';
+import { getRequestContext } from '@/lib/middleware/logging';
 
 // Update inquiry validation schema
 const updateInquirySchema = z.object({
   status: z.enum(['NEW', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
   assignedTo: z.string().optional(),
-})
+});
 
-type UpdateInquiryData = z.infer<typeof updateInquirySchema>
+type UpdateInquiryData = z.infer<typeof updateInquirySchema>;
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
-  const inquiryId = params.id
+  const context = getRequestContext(request);
+  const startTime = Date.now();
+  const inquiryId = params.id;
 
   try {
     // Verify admin session
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session || session.user.role !== 'ADMIN') {
       return ErrorHandler.handleError(
         ErrorHandler.createAuthenticationError('Admin access required'),
-        { ...context, route: `/api/admin/inquiries/${inquiryId}`, operation: 'authentication' }
-      )
+        {
+          ...context,
+          route: `/api/admin/inquiries/${inquiryId}`,
+          operation: 'authentication',
+        }
+      );
     }
 
     Logger.apiLog({
@@ -53,27 +58,29 @@ export async function PATCH(
       metadata: {
         adminUserId: session.user.id,
         inquiryId,
-        timestamp: new Date().toISOString()
-      }
-    })
+        timestamp: new Date().toISOString(),
+      },
+    });
 
     // Parse and validate request body
-    let body: any
+    let body: any;
     try {
-      body = await request.json()
+      body = await request.json();
     } catch (parseError) {
-      const error = ErrorHandler.createValidationError('Invalid JSON in request body')
+      const error = ErrorHandler.createValidationError(
+        'Invalid JSON in request body'
+      );
       return ErrorHandler.handleError(error, {
         ...context,
         route: `/api/admin/inquiries/${inquiryId}`,
-        operation: 'json_parsing'
-      })
+        operation: 'json_parsing',
+      });
     }
 
     // Validate update data
-    let updateData: UpdateInquiryData
+    let updateData: UpdateInquiryData;
     try {
-      updateData = updateInquirySchema.parse(body)
+      updateData = updateInquirySchema.parse(body);
     } catch (validationError) {
       if (validationError instanceof z.ZodError) {
         Logger.apiLog({
@@ -90,42 +97,46 @@ export async function PATCH(
           metadata: {
             validationErrors: validationError.errors,
             submittedFields: Object.keys(body),
-            inquiryId
-          }
-        })
+            inquiryId,
+          },
+        });
 
         return ErrorHandler.handleError(validationError, {
           ...context,
           route: `/api/admin/inquiries/${inquiryId}`,
-          operation: 'validation'
-        })
+          operation: 'validation',
+        });
       }
-      throw validationError
+      throw validationError;
     }
 
     // Check if inquiry exists
     const existingInquiry = await prisma.inquiry.findUnique({
-      where: { id: inquiryId }
-    })
+      where: { id: inquiryId },
+    });
 
     if (!existingInquiry) {
       return ErrorHandler.handleError(
         ErrorHandler.createNotFoundError('Inquiry not found'),
-        { ...context, route: `/api/admin/inquiries/${inquiryId}`, operation: 'inquiry_lookup' }
-      )
+        {
+          ...context,
+          route: `/api/admin/inquiries/${inquiryId}`,
+          operation: 'inquiry_lookup',
+        }
+      );
     }
 
     // Update inquiry
-    const dbStartTime = Date.now()
+    const dbStartTime = Date.now();
     const updatedInquiry = await prisma.inquiry.update({
       where: { id: inquiryId },
       data: {
         ...updateData,
         updatedAt: new Date(),
-        ...(updateData.status === 'RESOLVED' && { resolvedAt: new Date() })
-      }
-    })
-    const dbQueryTime = Date.now() - dbStartTime
+        ...(updateData.status === 'RESOLVED' && { resolvedAt: new Date() }),
+      },
+    });
+    const dbQueryTime = Date.now() - dbStartTime;
 
     Logger.databaseLog({
       level: LogLevel.INFO,
@@ -141,11 +152,11 @@ export async function PATCH(
         adminUserId: session.user.id,
         oldStatus: existingInquiry.status,
         newStatus: updateData.status,
-        changes: Object.keys(updateData)
-      }
-    })
+        changes: Object.keys(updateData),
+      },
+    });
 
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -163,22 +174,21 @@ export async function PATCH(
         inquiryId,
         oldStatus: existingInquiry.status,
         newStatus: updateData.status,
-        dbQueryTime
-      }
-    })
+        dbQueryTime,
+      },
+    });
 
     const response = NextResponse.json({
       success: true,
       inquiry: updatedInquiry,
       message: 'Inquiry updated successfully',
-      timestamp: new Date().toISOString()
-    })
+      timestamp: new Date().toISOString(),
+    });
 
-    response.headers.set('x-request-id', context.requestId)
-    return response
-
+    response.headers.set('x-request-id', context.requestId);
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.errorLog({
       level: LogLevel.ERROR,
@@ -188,7 +198,7 @@ export async function PATCH(
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
         route: `/api/admin/inquiries/${inquiryId}`,
@@ -197,15 +207,15 @@ export async function PATCH(
           responseTime: totalResponseTime,
           inquiryId,
           ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+          userAgent: context.userAgent,
+        },
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
       route: `/api/admin/inquiries/${inquiryId}`,
-      operation: 'update_inquiry'
-    })
+      operation: 'update_inquiry',
+    });
   }
 }

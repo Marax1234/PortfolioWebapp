@@ -1,24 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
-import { z } from 'zod'
-import bcrypt from 'bcryptjs'
-import { Logger, LogCategory, LogLevel } from '@/lib/logger'
+import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
 
-const prisma = new PrismaClient()
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import { z } from 'zod';
+
+import { authOptions } from '@/lib/auth';
+import { LogCategory, LogLevel, Logger } from '@/lib/logger';
+
+const prisma = new PrismaClient();
 
 const passwordUpdateSchema = z.object({
-  currentPassword: z.string().min(1, "Aktuelles Passwort ist erforderlich"),
-  newPassword: z.string().min(8, "Neues Passwort muss mindestens 8 Zeichen lang sein"),
-})
+  currentPassword: z.string().min(1, 'Aktuelles Passwort ist erforderlich'),
+  newPassword: z
+    .string()
+    .min(8, 'Neues Passwort muss mindestens 8 Zeichen lang sein'),
+});
 
 export async function PUT(request: NextRequest) {
-  const requestId = Logger.generateRequestId()
-  
+  const requestId = Logger.generateRequestId();
+
   try {
     // Check authentication
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session?.user) {
       Logger.securityLog({
         level: LogLevel.WARN,
@@ -29,13 +33,13 @@ export async function PUT(request: NextRequest) {
         requestId,
         details: {
           reason: 'no_session',
-          timestamp: new Date().toISOString()
-        }
-      })
+          timestamp: new Date().toISOString(),
+        },
+      });
       return NextResponse.json(
         { error: 'Nicht authentifiziert' },
         { status: 401 }
-      )
+      );
     }
 
     // Check admin role
@@ -51,18 +55,18 @@ export async function PUT(request: NextRequest) {
         details: {
           reason: 'insufficient_role',
           role: session.user.role,
-          timestamp: new Date().toISOString()
-        }
-      })
+          timestamp: new Date().toISOString(),
+        },
+      });
       return NextResponse.json(
         { error: 'Keine Berechtigung' },
         { status: 403 }
-      )
+      );
     }
 
     // Parse and validate request body
-    const body = await request.json()
-    const validatedData = passwordUpdateSchema.parse(body)
+    const body = await request.json();
+    const validatedData = passwordUpdateSchema.parse(body);
 
     // Get current user from database
     const user = await prisma.user.findUnique({
@@ -71,8 +75,8 @@ export async function PUT(request: NextRequest) {
         id: true,
         email: true,
         passwordHash: true,
-      }
-    })
+      },
+    });
 
     if (!user || !user.passwordHash) {
       Logger.securityLog({
@@ -85,20 +89,20 @@ export async function PUT(request: NextRequest) {
         userId: session.user.id,
         details: {
           reason: 'no_password_hash',
-          timestamp: new Date().toISOString()
-        }
-      })
+          timestamp: new Date().toISOString(),
+        },
+      });
       return NextResponse.json(
         { error: 'Benutzer nicht gefunden oder kein Passwort gesetzt' },
         { status: 400 }
-      )
+      );
     }
 
     // Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(
       validatedData.currentPassword,
       user.passwordHash
-    )
+    );
 
     if (!isCurrentPasswordValid) {
       Logger.securityLog({
@@ -112,35 +116,38 @@ export async function PUT(request: NextRequest) {
         details: {
           reason: 'invalid_current_password',
           email: user.email,
-          timestamp: new Date().toISOString()
-        }
-      })
+          timestamp: new Date().toISOString(),
+        },
+      });
       return NextResponse.json(
         { error: 'Aktuelles Passwort ist falsch' },
         { status: 400 }
-      )
+      );
     }
 
     // Check if new password is different from current
     const isSamePassword = await bcrypt.compare(
       validatedData.newPassword,
       user.passwordHash
-    )
+    );
 
     if (isSamePassword) {
       Logger.warn('User attempted to set same password', {
         requestId,
-        userId: session.user.id
-      })
+        userId: session.user.id,
+      });
       return NextResponse.json(
         { error: 'Das neue Passwort muss sich vom aktuellen unterscheiden' },
         { status: 400 }
-      )
+      );
     }
 
     // Hash new password
-    const saltRounds = 12
-    const hashedNewPassword = await bcrypt.hash(validatedData.newPassword, saltRounds)
+    const saltRounds = 12;
+    const hashedNewPassword = await bcrypt.hash(
+      validatedData.newPassword,
+      saltRounds
+    );
 
     // Update password in database
     await prisma.user.update({
@@ -148,8 +155,8 @@ export async function PUT(request: NextRequest) {
       data: {
         passwordHash: hashedNewPassword,
         updatedAt: new Date(),
-      }
-    })
+      },
+    });
 
     Logger.securityLog({
       level: LogLevel.INFO,
@@ -162,46 +169,45 @@ export async function PUT(request: NextRequest) {
       details: {
         email: user.email,
         passwordChanged: true,
-        timestamp: new Date().toISOString()
-      }
-    })
+        timestamp: new Date().toISOString(),
+      },
+    });
 
     Logger.info('User password updated successfully', {
       requestId,
       userId: session.user.id,
-      email: user.email
-    })
+      email: user.email,
+    });
 
     return NextResponse.json({
-      message: 'Passwort erfolgreich geändert'
-    })
-
+      message: 'Passwort erfolgreich geändert',
+    });
   } catch (error) {
     Logger.error('Password update error', {
       requestId,
       userId: session?.user?.id,
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
-    })
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Ungültige Eingabedaten',
           details: error.errors.map(err => ({
             field: err.path.join('.'),
-            message: err.message
-          }))
+            message: err.message,
+          })),
         },
         { status: 400 }
-      )
+      );
     }
 
     return NextResponse.json(
       { error: 'Interner Server-Fehler' },
       { status: 500 }
-    )
+    );
   } finally {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   }
 }

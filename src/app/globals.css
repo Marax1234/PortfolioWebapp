@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -125,7 +125,7 @@
   .animate-shimmer {
     animation: shimmer 2s ease-in-out infinite;
   }
-  
+
   @keyframes shimmer {
     0% {
       transform: translateX(-100%);
@@ -147,7 +147,7 @@
     top: 0;
     left: 0;
     width: auto;
-    transition: 
+    transition:
       transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
       opacity 0.4s ease-out,
       filter 0.3s ease-out;
@@ -194,16 +194,36 @@
   }
 
   /* Staggered fade-in animation for masonry items */
-  .masonry-item:nth-child(1) { animation-delay: 0ms; }
-  .masonry-item:nth-child(2) { animation-delay: 50ms; }
-  .masonry-item:nth-child(3) { animation-delay: 100ms; }
-  .masonry-item:nth-child(4) { animation-delay: 150ms; }
-  .masonry-item:nth-child(5) { animation-delay: 200ms; }
-  .masonry-item:nth-child(6) { animation-delay: 250ms; }
-  .masonry-item:nth-child(7) { animation-delay: 300ms; }
-  .masonry-item:nth-child(8) { animation-delay: 350ms; }
-  .masonry-item:nth-child(9) { animation-delay: 400ms; }
-  .masonry-item:nth-child(10) { animation-delay: 450ms; }
+  .masonry-item:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .masonry-item:nth-child(2) {
+    animation-delay: 50ms;
+  }
+  .masonry-item:nth-child(3) {
+    animation-delay: 100ms;
+  }
+  .masonry-item:nth-child(4) {
+    animation-delay: 150ms;
+  }
+  .masonry-item:nth-child(5) {
+    animation-delay: 200ms;
+  }
+  .masonry-item:nth-child(6) {
+    animation-delay: 250ms;
+  }
+  .masonry-item:nth-child(7) {
+    animation-delay: 300ms;
+  }
+  .masonry-item:nth-child(8) {
+    animation-delay: 350ms;
+  }
+  .masonry-item:nth-child(9) {
+    animation-delay: 400ms;
+  }
+  .masonry-item:nth-child(10) {
+    animation-delay: 450ms;
+  }
 
   /* Fade in up animation */
   .animate-fade-in-up {

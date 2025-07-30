@@ -2,22 +2,25 @@
  * Database Utility Functions for Kilian Siebert Portfolio
  * Type-safe query helpers and common operations
  */
+import { Prisma } from '@prisma/client';
 
-import { Prisma } from '@prisma/client'
-import { prisma } from './db'
+import { prisma } from './db';
 
 /**
  * Type definitions for API responses
  */
 export type PortfolioItemWithCategory = Prisma.PortfolioItemGetPayload<{
-  include: { category: true }
-}>
+  include: { category: true };
+}>;
 
 export type CategoryWithCount = Prisma.CategoryGetPayload<{
-  include: { _count: { select: { portfolioItems: true } } }
-}>
+  include: { _count: { select: { portfolioItems: true } } };
+}>;
 
-export type UserSafe = Omit<Prisma.UserGetPayload<Record<string, never>>, 'passwordHash' | 'verificationToken' | 'resetToken'>
+export type UserSafe = Omit<
+  Prisma.UserGetPayload<Record<string, never>>,
+  'passwordHash' | 'verificationToken' | 'resetToken'
+>;
 
 /**
  * Portfolio Item Queries
@@ -32,35 +35,35 @@ export class PortfolioQueries {
     category,
     featured,
     orderBy = 'createdAt',
-    orderDirection = 'desc'
+    orderDirection = 'desc',
   }: {
-    page?: number
-    limit?: number
-    category?: string
-    featured?: boolean
-    orderBy?: 'createdAt' | 'publishedAt' | 'viewCount' | 'title'
-    orderDirection?: 'asc' | 'desc'
+    page?: number;
+    limit?: number;
+    category?: string;
+    featured?: boolean;
+    orderBy?: 'createdAt' | 'publishedAt' | 'viewCount' | 'title';
+    orderDirection?: 'asc' | 'desc';
   } = {}) {
-    const skip = (page - 1) * limit
+    const skip = (page - 1) * limit;
 
     const where: Prisma.PortfolioItemWhereInput = {
       status: 'PUBLISHED',
       ...(category && { category: { slug: category } }),
-      ...(featured !== undefined && { featured })
-    }
+      ...(featured !== undefined && { featured }),
+    };
 
     const [items, total] = await Promise.all([
       prisma.portfolioItem.findMany({
         where,
         include: {
-          category: true
+          category: true,
         },
         orderBy: { [orderBy]: orderDirection },
         skip,
-        take: limit
+        take: limit,
       }),
-      prisma.portfolioItem.count({ where })
-    ])
+      prisma.portfolioItem.count({ where }),
+    ]);
 
     return {
       items,
@@ -70,9 +73,9 @@ export class PortfolioQueries {
         total,
         totalPages: Math.ceil(total / limit),
         hasNext: page * limit < total,
-        hasPrev: page > 1
-      }
-    }
+        hasPrev: page > 1,
+      },
+    };
   }
 
   /**
@@ -85,36 +88,36 @@ export class PortfolioQueries {
     status,
     featured,
     orderBy = 'createdAt',
-    orderDirection = 'desc'
+    orderDirection = 'desc',
   }: {
-    page?: number
-    limit?: number
-    category?: string
-    status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED'
-    featured?: boolean
-    orderBy?: 'createdAt' | 'publishedAt' | 'viewCount' | 'title'
-    orderDirection?: 'asc' | 'desc'
+    page?: number;
+    limit?: number;
+    category?: string;
+    status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED';
+    featured?: boolean;
+    orderBy?: 'createdAt' | 'publishedAt' | 'viewCount' | 'title';
+    orderDirection?: 'asc' | 'desc';
   } = {}) {
-    const skip = (page - 1) * limit
+    const skip = (page - 1) * limit;
 
     const where: Prisma.PortfolioItemWhereInput = {
       ...(status && { status }),
       ...(category && { category: { slug: category } }),
-      ...(featured !== undefined && { featured })
-    }
+      ...(featured !== undefined && { featured }),
+    };
 
     const [items, total] = await Promise.all([
       prisma.portfolioItem.findMany({
         where,
         include: {
-          category: true
+          category: true,
         },
         orderBy: { [orderBy]: orderDirection },
         skip,
-        take: limit
+        take: limit,
       }),
-      prisma.portfolioItem.count({ where })
-    ])
+      prisma.portfolioItem.count({ where }),
+    ]);
 
     return {
       items,
@@ -124,9 +127,9 @@ export class PortfolioQueries {
         total,
         totalPages: Math.ceil(total / limit),
         hasNext: page * limit < total,
-        hasPrev: page > 1
-      }
-    }
+        hasPrev: page > 1,
+      },
+    };
   }
 
   /**
@@ -136,22 +139,22 @@ export class PortfolioQueries {
     const item = await prisma.portfolioItem.findFirst({
       where: {
         id,
-        status: 'PUBLISHED'
+        status: 'PUBLISHED',
       },
       include: {
-        category: true
-      }
-    })
+        category: true,
+      },
+    });
 
     if (item) {
       // Increment view count
       await prisma.portfolioItem.update({
         where: { id },
-        data: { viewCount: { increment: 1 } }
-      })
+        data: { viewCount: { increment: 1 } },
+      });
     }
 
-    return item
+    return item;
   }
 
   /**
@@ -161,45 +164,50 @@ export class PortfolioQueries {
     const item = await prisma.portfolioItem.findUnique({
       where: { id },
       include: {
-        category: true
-      }
-    })
+        category: true,
+      },
+    });
 
-    return item
+    return item;
   }
 
   /**
    * Update portfolio item
    */
-  static async updatePortfolioItem(id: string, data: Partial<{
-    title: string
-    description: string | null
-    categoryId: string | null
-    status: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED'
-    featured: boolean
-    tags: string
-    metadata: string
-    mediaType: string
-    filePath: string
-    thumbnailPath: string | null
-  }>) {
+  static async updatePortfolioItem(
+    id: string,
+    data: Partial<{
+      title: string;
+      description: string | null;
+      categoryId: string | null;
+      status: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED';
+      featured: boolean;
+      tags: string;
+      metadata: string;
+      mediaType: string;
+      filePath: string;
+      thumbnailPath: string | null;
+    }>
+  ) {
     // Add updatedAt timestamp
     const updateData = {
       ...data,
       updatedAt: new Date().toISOString(),
       // If status is being changed to PUBLISHED and publishedAt is null, set it
-      ...(data.status === 'PUBLISHED' && { publishedAt: new Date().toISOString() })
-    }
+      ...(data.status === 'PUBLISHED' && {
+        publishedAt: new Date().toISOString(),
+      }),
+    };
 
     const updatedItem = await prisma.portfolioItem.update({
       where: { id },
       data: updateData,
       include: {
-        category: true
-      }
-    })
+        category: true,
+      },
+    });
 
-    return updatedItem
+    return updatedItem;
   }
 
   /**
@@ -209,14 +217,14 @@ export class PortfolioQueries {
     return prisma.portfolioItem.findMany({
       where: {
         status: 'PUBLISHED',
-        featured: true
+        featured: true,
       },
       include: {
-        category: true
+        category: true,
       },
       orderBy: { createdAt: 'desc' },
-      take: limit
-    })
+      take: limit,
+    });
   }
 
   /**
@@ -227,35 +235,35 @@ export class PortfolioQueries {
       where: {
         status: 'PUBLISHED',
         categoryId,
-        id: { not: itemId }
+        id: { not: itemId },
       },
       include: {
-        category: true
+        category: true,
       },
       orderBy: { createdAt: 'desc' },
-      take: limit
-    })
+      take: limit,
+    });
   }
 
   /**
    * Create new portfolio item
    */
   static async createPortfolioItem(data: {
-    title: string
-    description?: string | null
-    mediaType: 'IMAGE' | 'VIDEO'
-    filePath: string
-    thumbnailPath?: string | null
-    categoryId?: string | null
-    tags?: string
-    metadata?: string
-    status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED'
-    featured?: boolean
-    sortOrder?: number
-    viewCount?: number
-    createdAt: string
-    updatedAt: string
-    publishedAt?: string | null
+    title: string;
+    description?: string | null;
+    mediaType: 'IMAGE' | 'VIDEO';
+    filePath: string;
+    thumbnailPath?: string | null;
+    categoryId?: string | null;
+    tags?: string;
+    metadata?: string;
+    status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'ARCHIVED';
+    featured?: boolean;
+    sortOrder?: number;
+    viewCount?: number;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt?: string | null;
   }) {
     return prisma.portfolioItem.create({
       data: {
@@ -273,12 +281,12 @@ export class PortfolioQueries {
         viewCount: data.viewCount ?? 0,
         createdAt: new Date(data.createdAt),
         updatedAt: new Date(data.updatedAt),
-        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
       },
       include: {
-        category: true
-      }
-    })
+        category: true,
+      },
+    });
   }
 }
 
@@ -296,13 +304,13 @@ export class CategoryQueries {
         _count: {
           select: {
             portfolioItems: {
-              where: { status: 'PUBLISHED' }
-            }
-          }
-        }
+              where: { status: 'PUBLISHED' },
+            },
+          },
+        },
       },
-      orderBy: { sortOrder: 'asc' }
-    })
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
   /**
@@ -313,12 +321,12 @@ export class CategoryQueries {
       include: {
         _count: {
           select: {
-            portfolioItems: true
-          }
-        }
+            portfolioItems: true,
+          },
+        },
       },
-      orderBy: { sortOrder: 'asc' }
-    })
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
   /**
@@ -331,12 +339,12 @@ export class CategoryQueries {
         _count: {
           select: {
             portfolioItems: {
-              where: { status: 'PUBLISHED' }
-            }
-          }
-        }
-      }
-    })
+              where: { status: 'PUBLISHED' },
+            },
+          },
+        },
+      },
+    });
   }
 
   /**
@@ -348,22 +356,22 @@ export class CategoryQueries {
       include: {
         _count: {
           select: {
-            portfolioItems: true
-          }
-        }
-      }
-    })
+            portfolioItems: true,
+          },
+        },
+      },
+    });
   }
 
   /**
    * Create new category
    */
   static async create(data: {
-    name: string
-    slug: string
-    description?: string | null
-    isActive?: boolean
-    sortOrder?: number
+    name: string;
+    slug: string;
+    description?: string | null;
+    isActive?: boolean;
+    sortOrder?: number;
   }) {
     return prisma.category.create({
       data: {
@@ -376,34 +384,37 @@ export class CategoryQueries {
       include: {
         _count: {
           select: {
-            portfolioItems: true
-          }
-        }
-      }
-    })
+            portfolioItems: true,
+          },
+        },
+      },
+    });
   }
 
   /**
    * Update category
    */
-  static async update(id: string, data: {
-    name?: string
-    slug?: string
-    description?: string | null
-    isActive?: boolean
-    sortOrder?: number
-  }) {
+  static async update(
+    id: string,
+    data: {
+      name?: string;
+      slug?: string;
+      description?: string | null;
+      isActive?: boolean;
+      sortOrder?: number;
+    }
+  ) {
     return prisma.category.update({
       where: { id },
       data,
       include: {
         _count: {
           select: {
-            portfolioItems: true
-          }
-        }
-      }
-    })
+            portfolioItems: true,
+          },
+        },
+      },
+    });
   }
 
   /**
@@ -416,23 +427,25 @@ export class CategoryQueries {
       include: {
         _count: {
           select: {
-            portfolioItems: true
-          }
-        }
-      }
-    })
+            portfolioItems: true,
+          },
+        },
+      },
+    });
 
     if (!category) {
-      throw new Error('Category not found')
+      throw new Error('Category not found');
     }
 
     if (category._count.portfolioItems > 0) {
-      throw new Error(`Cannot delete category with ${category._count.portfolioItems} portfolio items`)
+      throw new Error(
+        `Cannot delete category with ${category._count.portfolioItems} portfolio items`
+      );
     }
 
     return prisma.category.delete({
-      where: { id }
-    })
+      where: { id },
+    });
   }
 }
 
@@ -445,15 +458,15 @@ export class UserQueries {
    */
   static async getByEmailSafe(email: string): Promise<UserSafe | null> {
     const user = await prisma.user.findUnique({
-      where: { email }
-    })
+      where: { email },
+    });
 
-    if (!user) return null
+    if (!user) return null;
 
     // Remove sensitive fields
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, verificationToken, resetToken, ...safeUser } = user
-    return safeUser
+    const { passwordHash, verificationToken, resetToken, ...safeUser } = user;
+    return safeUser;
   }
 }
 
@@ -469,13 +482,13 @@ export class AnalyticsQueries {
     userAgent,
     referrer,
     sessionId,
-    userId
+    userId,
   }: {
-    pageUrl: string
-    userAgent?: string
-    referrer?: string
-    sessionId?: string
-    userId?: string
+    pageUrl: string;
+    userAgent?: string;
+    referrer?: string;
+    sessionId?: string;
+    userId?: string;
   }) {
     return prisma.analyticsEvent.create({
       data: {
@@ -485,9 +498,9 @@ export class AnalyticsQueries {
         referrer,
         sessionId,
         userId,
-        pageUrl
-      }
-    })
+        pageUrl,
+      },
+    });
   }
 
   /**
@@ -498,8 +511,8 @@ export class AnalyticsQueries {
       where: { status: 'PUBLISHED' },
       include: { category: true },
       orderBy: { viewCount: 'desc' },
-      take: limit
-    })
+      take: limit,
+    });
   }
 
   /**
@@ -507,24 +520,25 @@ export class AnalyticsQueries {
    */
   static async getDashboardAnalytics({
     startDate,
-    endDate
+    endDate,
   }: {
-    startDate?: Date
-    endDate?: Date
+    startDate?: Date;
+    endDate?: Date;
   } = {}) {
-    const defaultStartDate = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
-    const defaultEndDate = endDate || new Date()
+    const defaultStartDate =
+      startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+    const defaultEndDate = endDate || new Date();
 
     // Analytics events in date range
     const analyticsEvents = await prisma.analyticsEvent.findMany({
       where: {
         timestamp: {
           gte: defaultStartDate,
-          lte: defaultEndDate
-        }
+          lte: defaultEndDate,
+        },
       },
-      orderBy: { timestamp: 'desc' }
-    })
+      orderBy: { timestamp: 'desc' },
+    });
 
     // Portfolio items statistics
     const [
@@ -534,38 +548,38 @@ export class AnalyticsQueries {
       totalViews,
       topViewedItems,
       categories,
-      recentItems
+      recentItems,
     ] = await Promise.all([
       // Total portfolio items
       prisma.portfolioItem.count(),
-      
+
       // Published items
       prisma.portfolioItem.count({
-        where: { status: 'PUBLISHED' }
+        where: { status: 'PUBLISHED' },
       }),
-      
+
       // Featured items
       prisma.portfolioItem.count({
-        where: { 
+        where: {
           status: 'PUBLISHED',
-          featured: true 
-        }
+          featured: true,
+        },
       }),
-      
+
       // Total views across all items
       prisma.portfolioItem.aggregate({
         _sum: { viewCount: true },
-        where: { status: 'PUBLISHED' }
+        where: { status: 'PUBLISHED' },
       }),
-      
+
       // Top viewed items
       prisma.portfolioItem.findMany({
         where: { status: 'PUBLISHED' },
         include: { category: true },
         orderBy: { viewCount: 'desc' },
-        take: 5
+        take: 5,
       }),
-      
+
       // Categories with item counts
       prisma.category.findMany({
         where: { isActive: true },
@@ -573,48 +587,60 @@ export class AnalyticsQueries {
           _count: {
             select: {
               portfolioItems: {
-                where: { status: 'PUBLISHED' }
-              }
-            }
-          }
+                where: { status: 'PUBLISHED' },
+              },
+            },
+          },
         },
-        orderBy: { sortOrder: 'asc' }
+        orderBy: { sortOrder: 'asc' },
       }),
-      
+
       // Recent items
       prisma.portfolioItem.findMany({
-        where: { 
+        where: {
           status: 'PUBLISHED',
           createdAt: {
-            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
-          }
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+          },
         },
         include: { category: true },
         orderBy: { createdAt: 'desc' },
-        take: 10
-      })
-    ])
+        take: 10,
+      }),
+    ]);
 
     // Process analytics events
-    const pageViews = analyticsEvents.filter(event => event.eventType === 'page_view')
-    const uniqueVisitors = new Set(analyticsEvents.map(event => event.sessionId || event.ipAddress).filter(Boolean)).size
-    
+    const pageViews = analyticsEvents.filter(
+      event => event.eventType === 'page_view'
+    );
+    const uniqueVisitors = new Set(
+      analyticsEvents
+        .map(event => event.sessionId || event.ipAddress)
+        .filter(Boolean)
+    ).size;
+
     // Traffic sources analysis
-    const trafficSources = analyticsEvents.reduce((acc, event) => {
-      const referrer = event.referrer || 'Direct'
-      let domain = 'Direct'
-      
-      if (referrer !== 'Direct') {
-        try {
-          domain = new URL(referrer).hostname
-        } catch {
-          domain = referrer.length > 50 ? referrer.substring(0, 50) + '...' : referrer
+    const trafficSources = analyticsEvents.reduce(
+      (acc, event) => {
+        const referrer = event.referrer || 'Direct';
+        let domain = 'Direct';
+
+        if (referrer !== 'Direct') {
+          try {
+            domain = new URL(referrer).hostname;
+          } catch {
+            domain =
+              referrer.length > 50
+                ? referrer.substring(0, 50) + '...'
+                : referrer;
+          }
         }
-      }
-      
-      acc[domain] = (acc[domain] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+
+        acc[domain] = (acc[domain] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     // Popular pages (for future use)
     // const popularPages = pageViews.reduce((acc, event) => {
@@ -625,25 +651,24 @@ export class AnalyticsQueries {
 
     // Category performance - get actual view counts per category
     const categoryPerformance = await Promise.all(
-      categories.map(async (category) => {
+      categories.map(async category => {
         const categoryViews = await prisma.portfolioItem.aggregate({
           _sum: { viewCount: true },
           where: {
             categoryId: category.id,
-            status: 'PUBLISHED'
-          }
-        })
-        
+            status: 'PUBLISHED',
+          },
+        });
+
         return {
           id: category.id,
           name: category.name,
           slug: category.slug,
           itemCount: category._count.portfolioItems,
-          totalViews: categoryViews._sum.viewCount || 0
-        }
+          totalViews: categoryViews._sum.viewCount || 0,
+        };
       })
-    )
-    
+    );
 
     return {
       overview: {
@@ -653,71 +678,83 @@ export class AnalyticsQueries {
         totalPortfolioItems,
         publishedItems,
         featuredItems,
-        totalCategories: categories.length
+        totalCategories: categories.length,
       },
       topContent: topViewedItems.map(item => ({
         id: item.id,
         title: item.title,
         viewCount: item.viewCount,
         category: item.category?.name || 'Uncategorized',
-        thumbnail: item.thumbnailPath
+        thumbnail: item.thumbnailPath,
       })),
       trafficSources: Object.entries(trafficSources)
         .map(([source, count]) => ({ source, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 10),
-      categoryPerformance: categoryPerformance.sort((a, b) => b.totalViews - a.totalViews),
+      categoryPerformance: categoryPerformance.sort(
+        (a, b) => b.totalViews - a.totalViews
+      ),
       recentActivity: recentItems.map(item => ({
         id: item.id,
         title: item.title,
         action: 'published',
         timestamp: item.createdAt,
-        category: item.category?.name || 'Uncategorized'
+        category: item.category?.name || 'Uncategorized',
       })),
       timeRangeStats: {
         startDate: defaultStartDate,
         endDate: defaultEndDate,
         totalEvents: analyticsEvents.length,
-        dailyViews: this.groupEventsByDay(pageViews, defaultStartDate, defaultEndDate)
-      }
-    }
+        dailyViews: this.groupEventsByDay(
+          pageViews,
+          defaultStartDate,
+          defaultEndDate
+        ),
+      },
+    };
   }
 
   /**
    * Group events by day for trend analysis
    */
-  private static groupEventsByDay(events: { timestamp: Date }[], startDate: Date, endDate: Date) {
-    const days: Record<string, number> = {}
-    
+  private static groupEventsByDay(
+    events: { timestamp: Date }[],
+    startDate: Date,
+    endDate: Date
+  ) {
+    const days: Record<string, number> = {};
+
     // Initialize all days in range with 0
-    const currentDate = new Date(startDate)
+    const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-      const dateString = currentDate.toISOString().split('T')[0]
-      days[dateString] = 0
-      currentDate.setDate(currentDate.getDate() + 1)
+      const dateString = currentDate.toISOString().split('T')[0];
+      days[dateString] = 0;
+      currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     // Count events per day
     events.forEach(event => {
-      const dateString = event.timestamp.toISOString().split('T')[0]
+      const dateString = event.timestamp.toISOString().split('T')[0];
       if (days.hasOwnProperty(dateString)) {
-        days[dateString]++
+        days[dateString]++;
       }
-    })
-    
-    
+    });
+
     // Return with 'value' instead of 'count' for frontend compatibility
-    return Object.entries(days).map(([date, count]) => ({ date, value: count }))
+    return Object.entries(days).map(([date, count]) => ({
+      date,
+      value: count,
+    }));
   }
 
   /**
    * Get analytics for specific time period
    */
   static async getAnalyticsForPeriod(days: number) {
-    const endDate = new Date()
-    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000)
-    
-    return this.getDashboardAnalytics({ startDate, endDate })
+    const endDate = new Date();
+    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+
+    return this.getDashboardAnalytics({ startDate, endDate });
   }
 
   /**
@@ -725,7 +762,7 @@ export class AnalyticsQueries {
    */
   static async getUserEngagementMetrics() {
     const [
-      totalSessions
+      totalSessions,
       // averageSessionDuration,
       // bounceRate,
       // returningVisitors
@@ -734,21 +771,21 @@ export class AnalyticsQueries {
       prisma.analyticsEvent.findMany({
         select: { sessionId: true },
         distinct: ['sessionId'],
-        where: { sessionId: { not: null } }
-      })
-      
+        where: { sessionId: { not: null } },
+      }),
+
       // TODO: Implement more sophisticated session tracking
       // Promise.resolve(0), // averageSessionDuration placeholder
-      // Promise.resolve(0), // bounceRate placeholder  
+      // Promise.resolve(0), // bounceRate placeholder
       // Promise.resolve(0), // returningVisitors placeholder
-    ])
+    ]);
 
     return {
       totalSessions: totalSessions.length,
       averageSessionDuration: 0, // Would need proper session tracking
       bounceRate: 0, // Would need proper calculation
-      returningVisitors: 0 // Would need proper calculation
-    }
+      returningVisitors: 0, // Would need proper calculation
+    };
   }
 }
 
@@ -763,33 +800,33 @@ export const handlePrismaError = (error: unknown) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002':
-        return { error: 'A record with this data already exists', code: 409 }
+        return { error: 'A record with this data already exists', code: 409 };
       case 'P2025':
-        return { error: 'Record not found', code: 404 }
+        return { error: 'Record not found', code: 404 };
       case 'P2003':
-        return { error: 'Foreign key constraint failed', code: 400 }
+        return { error: 'Foreign key constraint failed', code: 400 };
       default:
-        return { error: 'Database error occurred', code: 500 }
+        return { error: 'Database error occurred', code: 500 };
     }
   }
 
   if (error instanceof Prisma.PrismaClientValidationError) {
-    return { error: 'Invalid data provided', code: 400 }
+    return { error: 'Invalid data provided', code: 400 };
   }
 
-  return { error: 'Internal server error', code: 500 }
-}
+  return { error: 'Internal server error', code: 500 };
+};
 
 /**
  * Validate database connection on startup
  */
 export const validateDatabaseConnection = async () => {
   try {
-    await prisma.$connect()
-    console.log('✅ Database connected successfully')
-    return true
+    await prisma.$connect();
+    console.log('✅ Database connected successfully');
+    return true;
   } catch (error) {
-    console.error('❌ Failed to connect to database:', error)
-    return false
+    console.error('❌ Failed to connect to database:', error);
+    return false;
   }
-}
+};

@@ -2,49 +2,59 @@
  * Portfolio API Client - Frontend API Utilities
  * Interagiert mit Backend API Endpunkten
  */
+/**
+ * React Hooks für API Calls
+ */
+import { useCallback } from 'react';
 
-import { PortfolioItem, Category, PaginationInfo } from '@/store/portfolio-store'
+import {
+  Category,
+  PaginationInfo,
+  PortfolioItem,
+} from '@/store/portfolio-store';
+import { usePortfolioStore } from '@/store/portfolio-store';
 
 interface ApiResponse<T> {
-  success: boolean
-  data: T
-  error?: string
+  success: boolean;
+  data: T;
+  error?: string;
 }
 
 interface PortfolioApiResponse extends ApiResponse<PortfolioItem[]> {
-  pagination?: PaginationInfo
+  pagination?: PaginationInfo;
 }
 
 type SinglePortfolioApiResponse = ApiResponse<{
-  item: PortfolioItem
-  relatedItems: PortfolioItem[]
-}>
+  item: PortfolioItem;
+  relatedItems: PortfolioItem[];
+}>;
 
-type CategoriesApiResponse = ApiResponse<Category[]>
+type CategoriesApiResponse = ApiResponse<Category[]>;
 
 export interface FetchPortfolioParams {
-  page?: number
-  limit?: number
-  category?: string
-  featured?: boolean
-  orderBy?: 'createdAt' | 'publishedAt' | 'viewCount' | 'title'
-  orderDirection?: 'asc' | 'desc'
+  page?: number;
+  limit?: number;
+  category?: string;
+  featured?: boolean;
+  orderBy?: 'createdAt' | 'publishedAt' | 'viewCount' | 'title';
+  orderDirection?: 'asc' | 'desc';
 }
 
 /**
  * Base API configuration
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 /**
  * Generic API fetch utility
  */
 async function apiRequest<T>(
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`
-  
+  const url = `${API_BASE_URL}${endpoint}`;
+
   try {
     const response = await fetch(url, {
       headers: {
@@ -52,21 +62,21 @@ async function apiRequest<T>(
         ...options.headers,
       },
       ...options,
-    })
+    });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(
         errorData.error || `HTTP ${response.status}: ${response.statusText}`
-      )
+      );
     }
 
-    return await response.json()
+    return await response.json();
   } catch (error) {
     if (error instanceof Error) {
-      throw error
+      throw error;
     }
-    throw new Error('Network error occurred')
+    throw new Error('Network error occurred');
   }
 }
 
@@ -80,27 +90,30 @@ export class PortfolioApi {
   static async fetchPortfolioItems(
     params: FetchPortfolioParams = {}
   ): Promise<{ items: PortfolioItem[]; pagination: PaginationInfo }> {
-    const searchParams = new URLSearchParams()
-    
+    const searchParams = new URLSearchParams();
+
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        searchParams.append(key, String(value))
+        searchParams.append(key, String(value));
       }
-    })
+    });
 
-    const endpoint = `/api/portfolio${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
-    const response: PortfolioApiResponse = await apiRequest(endpoint)
-    
+    const endpoint = `/api/portfolio${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const response: PortfolioApiResponse = await apiRequest(endpoint);
+
     if (!response.success) {
-      throw new Error(response.error || 'Failed to fetch portfolio items')
+      throw new Error(response.error || 'Failed to fetch portfolio items');
     }
 
     // Parse JSON strings in tags and metadata
     const processedItems = response.data.map(item => ({
       ...item,
       tags: typeof item.tags === 'string' ? JSON.parse(item.tags) : item.tags,
-      metadata: typeof item.metadata === 'string' ? JSON.parse(item.metadata) : item.metadata
-    }))
+      metadata:
+        typeof item.metadata === 'string'
+          ? JSON.parse(item.metadata)
+          : item.metadata,
+    }));
 
     return {
       items: processedItems,
@@ -110,9 +123,9 @@ export class PortfolioApi {
         total: processedItems.length,
         totalPages: 1,
         hasNext: false,
-        hasPrev: false
-      }
-    }
+        hasPrev: false,
+      },
+    };
   }
 
   /**
@@ -121,97 +134,106 @@ export class PortfolioApi {
   static async fetchPortfolioItem(
     id: string
   ): Promise<{ item: PortfolioItem; relatedItems: PortfolioItem[] }> {
-    const endpoint = `/api/portfolio/${id}`
-    const response: SinglePortfolioApiResponse = await apiRequest(endpoint)
-    
+    const endpoint = `/api/portfolio/${id}`;
+    const response: SinglePortfolioApiResponse = await apiRequest(endpoint);
+
     if (!response.success) {
-      throw new Error(response.error || 'Failed to fetch portfolio item')
+      throw new Error(response.error || 'Failed to fetch portfolio item');
     }
 
     // Process JSON fields
     const processItem = (item: PortfolioItem) => ({
       ...item,
       tags: typeof item.tags === 'string' ? JSON.parse(item.tags) : item.tags,
-      metadata: typeof item.metadata === 'string' ? JSON.parse(item.metadata) : item.metadata
-    })
+      metadata:
+        typeof item.metadata === 'string'
+          ? JSON.parse(item.metadata)
+          : item.metadata,
+    });
 
     return {
       item: processItem(response.data.item),
-      relatedItems: response.data.relatedItems.map(processItem)
-    }
+      relatedItems: response.data.relatedItems.map(processItem),
+    };
   }
 
   /**
    * Fetch all categories
    */
   static async fetchCategories(): Promise<Category[]> {
-    const endpoint = '/api/categories'
-    const response: CategoriesApiResponse = await apiRequest(endpoint)
-    
+    const endpoint = '/api/categories';
+    const response: CategoriesApiResponse = await apiRequest(endpoint);
+
     if (!response.success) {
-      throw new Error(response.error || 'Failed to fetch categories')
+      throw new Error(response.error || 'Failed to fetch categories');
     }
 
-    return response.data
+    return response.data;
   }
 
   /**
    * Create new category
    */
   static async createCategory(data: {
-    name: string
-    slug: string
-    description?: string | null
-    isActive?: boolean
-    sortOrder?: number
+    name: string;
+    slug: string;
+    description?: string | null;
+    isActive?: boolean;
+    sortOrder?: number;
   }): Promise<Category> {
-    const endpoint = '/api/categories'
+    const endpoint = '/api/categories';
     const response: ApiResponse<Category> = await apiRequest(endpoint, {
       method: 'POST',
-      body: JSON.stringify(data)
-    })
-    
+      body: JSON.stringify(data),
+    });
+
     if (!response.success) {
-      throw new Error(response.error || 'Failed to create category')
+      throw new Error(response.error || 'Failed to create category');
     }
 
-    return response.data
+    return response.data;
   }
 
   /**
    * Update category
    */
-  static async updateCategory(id: string, data: {
-    name?: string
-    slug?: string
-    description?: string | null
-    isActive?: boolean
-    sortOrder?: number
-  }): Promise<Category> {
-    const endpoint = `/api/categories/${id}`
+  static async updateCategory(
+    id: string,
+    data: {
+      name?: string;
+      slug?: string;
+      description?: string | null;
+      isActive?: boolean;
+      sortOrder?: number;
+    }
+  ): Promise<Category> {
+    const endpoint = `/api/categories/${id}`;
     const response: ApiResponse<Category> = await apiRequest(endpoint, {
       method: 'PUT',
-      body: JSON.stringify(data)
-    })
-    
+      body: JSON.stringify(data),
+    });
+
     if (!response.success) {
-      throw new Error(response.error || 'Failed to update category')
+      throw new Error(response.error || 'Failed to update category');
     }
 
-    return response.data
+    return response.data;
   }
 
   /**
    * Delete category
    */
   static async deleteCategory(id: string): Promise<void> {
-    const endpoint = `/api/categories/${id}`
-    const response: ApiResponse<{ message: string }> = await apiRequest(endpoint, {
-      method: 'DELETE'
-    })
-    
+    const endpoint = `/api/categories/${id}`;
+    const response: ApiResponse<{ message: string }> = await apiRequest(
+      endpoint,
+      {
+        method: 'DELETE',
+      }
+    );
+
     if (!response.success) {
-      throw new Error(response.error || 'Failed to delete category')
+      throw new Error(response.error || 'Failed to delete category');
     }
   }
 
@@ -219,13 +241,13 @@ export class PortfolioApi {
    * Fetch featured portfolio items
    */
   static async fetchFeaturedItems(limit: number = 6): Promise<PortfolioItem[]> {
-    const { items } = await this.fetchPortfolioItems({ 
-      featured: true, 
+    const { items } = await this.fetchPortfolioItems({
+      featured: true,
       limit,
       orderBy: 'createdAt',
-      orderDirection: 'desc'
-    })
-    return items
+      orderDirection: 'desc',
+    });
+    return items;
   }
 
   /**
@@ -239,31 +261,26 @@ export class PortfolioApi {
     // In production, this should be implemented as backend search
     const { items, pagination } = await this.fetchPortfolioItems({
       ...params,
-      limit: 100 // Fetch more items for search
-    })
+      limit: 100, // Fetch more items for search
+    });
 
-    const filteredItems = items.filter(item => 
-      item.title.toLowerCase().includes(query.toLowerCase()) ||
-      item.description?.toLowerCase().includes(query.toLowerCase()) ||
-      item.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-    )
+    const filteredItems = items.filter(
+      item =>
+        item.title.toLowerCase().includes(query.toLowerCase()) ||
+        item.description?.toLowerCase().includes(query.toLowerCase()) ||
+        item.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
+    );
 
     return {
       items: filteredItems,
       pagination: {
         ...pagination,
         total: filteredItems.length,
-        totalPages: Math.ceil(filteredItems.length / (params.limit || 12))
-      }
-    }
+        totalPages: Math.ceil(filteredItems.length / (params.limit || 12)),
+      },
+    };
   }
 }
-
-/**
- * React Hooks für API Calls
- */
-import { useCallback } from 'react'
-import { usePortfolioStore } from '@/store/portfolio-store'
 
 export function usePortfolioApi() {
   const {
@@ -277,83 +294,109 @@ export function usePortfolioApi() {
     setError,
     clearError,
     filters,
-    pagination
-  } = usePortfolioStore()
+    pagination,
+  } = usePortfolioStore();
 
-  const loadPortfolioItems = useCallback(async (
-    params: FetchPortfolioParams = {},
-    append: boolean = false
-  ) => {
-    try {
-      const finalParams = { ...filters, ...params }
-      
-      if (!append) {
-        setLoading(true)
-      } else {
-        setLoadingMore(true)
+  const loadPortfolioItems = useCallback(
+    async (params: FetchPortfolioParams = {}, append: boolean = false) => {
+      try {
+        const finalParams = { ...filters, ...params };
+
+        if (!append) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
+        clearError();
+
+        const response = await PortfolioApi.fetchPortfolioItems(finalParams);
+
+        // Ensure unique items by ID
+        const uniqueItems = response.items.filter(
+          (item, index, arr) => arr.findIndex(i => i.id === item.id) === index
+        );
+
+        if (append) {
+          addItems(uniqueItems);
+        } else {
+          setItems(uniqueItems);
+        }
+
+        setPagination(response.pagination);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Failed to load portfolio items'
+        );
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-      clearError()
-
-      const response = await PortfolioApi.fetchPortfolioItems(finalParams)
-
-      // Ensure unique items by ID
-      const uniqueItems = response.items.filter((item, index, arr) => 
-        arr.findIndex(i => i.id === item.id) === index
-      )
-
-      if (append) {
-        addItems(uniqueItems)
-      } else {
-        setItems(uniqueItems)
-      }
-      
-      setPagination(response.pagination)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load portfolio items')
-    } finally {
-      setLoading(false)
-      setLoadingMore(false)
-    }
-  }, [filters, setItems, addItems, setPagination, setLoading, setLoadingMore, setError, clearError])
+    },
+    [
+      filters,
+      setItems,
+      addItems,
+      setPagination,
+      setLoading,
+      setLoadingMore,
+      setError,
+      clearError,
+    ]
+  );
 
   const loadCategories = useCallback(async () => {
     try {
-      clearError()
-      const categories = await PortfolioApi.fetchCategories()
-      setCategories(categories)
+      clearError();
+      const categories = await PortfolioApi.fetchCategories();
+      setCategories(categories);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load categories')
+      setError(
+        error instanceof Error ? error.message : 'Failed to load categories'
+      );
     }
-  }, [setCategories, setError, clearError])
+  }, [setCategories, setError, clearError]);
 
-  const loadPortfolioItem = useCallback(async (id: string) => {
-    try {
-      setLoading(true)
-      clearError()
-      const { item, relatedItems } = await PortfolioApi.fetchPortfolioItem(id)
-      setSelectedItem(item)
-      return { item, relatedItems }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load portfolio item')
-      return null
-    } finally {
-      setLoading(false)
-    }
-  }, [setSelectedItem, setLoading, setError, clearError])
+  const loadPortfolioItem = useCallback(
+    async (id: string) => {
+      try {
+        setLoading(true);
+        clearError();
+        const { item, relatedItems } =
+          await PortfolioApi.fetchPortfolioItem(id);
+        setSelectedItem(item);
+        return { item, relatedItems };
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Failed to load portfolio item'
+        );
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setSelectedItem, setLoading, setError, clearError]
+  );
 
   const loadMoreItems = useCallback(async () => {
-    if (!pagination?.hasNext) return
-    
-    await loadPortfolioItems({
-      page: pagination.page + 1,
-      limit: pagination.limit
-    }, true)
-  }, [pagination, loadPortfolioItems])
+    if (!pagination?.hasNext) return;
+
+    await loadPortfolioItems(
+      {
+        page: pagination.page + 1,
+        limit: pagination.limit,
+      },
+      true
+    );
+  }, [pagination, loadPortfolioItems]);
 
   return {
     loadPortfolioItems,
     loadCategories,
     loadPortfolioItem,
-    loadMoreItems
-  }
+    loadMoreItems,
+  };
 }

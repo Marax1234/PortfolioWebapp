@@ -1,6 +1,7 @@
 # 📚 Kilian Siebert Portfolio - Vollständige Dokumentation
 
-Diese Dokumentation enthält detaillierte Informationen zur Setup, Konfiguration und Verwendung der Portfolio-Website.
+Diese Dokumentation enthält detaillierte Informationen zur Setup, Konfiguration und Verwendung der
+Portfolio-Website.
 
 ## 📋 Inhaltsverzeichnis
 
@@ -19,17 +20,20 @@ Diese Dokumentation enthält detaillierte Informationen zur Setup, Konfiguration
 ## 🏗 Vollständige Setup-Anleitung
 
 ### 1. Repository klonen
+
 ```bash
 git clone <repository-url>
 cd PortfolioWebapp
 ```
 
 ### 2. Dependencies installieren
+
 ```bash
 npm install
 ```
 
 ### 3. Environment-Konfiguration
+
 Erstelle eine `.env.local` Datei im Root-Verzeichnis:
 
 ```env
@@ -54,6 +58,7 @@ EMAIL_FROM="your-email@gmail.com"
 ```
 
 ### 4. Datenbank-Setup
+
 ```bash
 # Prisma Client generieren
 npx prisma generate
@@ -66,12 +71,14 @@ npm run db:seed
 ```
 
 ### 5. Admin-Benutzer einrichten
+
 ```bash
 # Admin-Benutzer-Passwort einrichten
 npm run setup:admin
 ```
 
 ### 6. Entwicklungsserver starten
+
 ```bash
 npm run dev
 ```
@@ -81,6 +88,7 @@ Die Anwendung ist verfügbar unter [http://localhost:3000](http://localhost:3000
 ## 🛠️ Environment-Konfiguration
 
 ### Basis-Konfiguration
+
 ```env
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"
@@ -94,6 +102,7 @@ ADMIN_PASSWORD_HASH="$2b$12$..."  # Wird durch setup:admin gesetzt
 ### E-Mail-Konfiguration (Optional)
 
 #### Option A: Gmail SMTP
+
 ```env
 ADMIN_EMAIL="mhiller2005@gmail.com"
 SMTP_HOST="smtp.gmail.com"
@@ -105,6 +114,7 @@ EMAIL_FROM="your-email@gmail.com"
 ```
 
 #### Option B: SendGrid
+
 ```env
 ADMIN_EMAIL="mhiller2005@gmail.com"
 SMTP_HOST="smtp.sendgrid.net"
@@ -116,6 +126,7 @@ EMAIL_FROM="your-verified-sender@domain.com"
 ```
 
 #### Option C: Custom SMTP
+
 ```env
 ADMIN_EMAIL="mhiller2005@gmail.com"
 SMTP_HOST="mail.your-domain.com"
@@ -129,6 +140,7 @@ EMAIL_FROM="noreply@your-domain.com"
 ## 🗄️ Datenbank-Management
 
 ### Verfügbare Commands
+
 ```bash
 npm run db:push      # Schema-Änderungen zur Datenbank pushen
 npm run db:migrate   # Migrationen erstellen und ausführen
@@ -138,6 +150,7 @@ npm run db:reset     # Datenbank komplett zurücksetzen
 ```
 
 ### Datenbank zurücksetzen und neu befüllen
+
 ```bash
 # Methode 1: Komplett zurücksetzen (empfohlen)
 npm run db:reset
@@ -148,6 +161,7 @@ npm run db:seed                   # Mock-Daten laden
 ```
 
 Dies wird:
+
 1. Alle existierenden Daten löschen
 2. Datenbank-Schema neu erstellen
 3. Beispiel-Portfolio-Items, Kategorien und Benutzerdaten laden
@@ -155,6 +169,7 @@ Dies wird:
 ### Datenbank-Schema
 
 #### Kern-Modelle
+
 - **User** - Authentifizierung mit Rollen (VISITOR, REGISTERED, ADMIN)
 - **PortfolioItem** - Medien-Items mit Metadaten, Kategorien, Tags, View-Counts
 - **Category** - Portfolio-Kategorisierung (Nature, Travel, Events, Videography)
@@ -163,7 +178,9 @@ Dies wird:
 - **AnalyticsEvent** - Basis-Analytics-Tracking
 
 #### Content-Workflow
+
 Portfolio-Items folgen einem strukturierten Workflow:
+
 - **DRAFT** - Work in Progress
 - **REVIEW** - Bereit zur Überprüfung
 - **PUBLISHED** - Live auf der Website
@@ -172,11 +189,13 @@ Portfolio-Items folgen einem strukturierten Workflow:
 ## 🛠️ Admin-Dashboard
 
 ### Zugang zum Dashboard
+
 ```
 http://localhost:3000/admin/inquiries
 ```
 
 ### Vollständige Portfolio-Verwaltung:
+
 - Portfolio-Items erstellen, bearbeiten, löschen
 - Kategorie-Management
 - File-Upload mit Vorschau
@@ -185,6 +204,7 @@ http://localhost:3000/admin/inquiries
 - Analytics-Übersicht
 
 ### Authentifizierung & Autorisierung
+
 - JWT-Tokens mit HTTP-only Cookies (24-Stunden-Ablauf)
 - bcrypt für Passwort-Hashing
 - Rollenbasierter Zugang: ADMIN-Rolle erforderlich für `/admin/*` Routen
@@ -192,12 +212,14 @@ http://localhost:3000/admin/inquiries
 - Umfassendes Sicherheits-Logging via winston
 
 ### Schlüssel-Komponenten
+
 - **PortfolioGrid** (`src/components/gallery/`): Infinite Scroll Galerie mit Masonry/Grid-Toggle
 - **Lightbox** (`src/components/gallery/`): Vollbild-Bild-Viewer mit Tastatur-Navigation
 - **AdminDashboard** (`src/app/(admin)/admin/`): Portfolio-Management-Interface
 - **AuthProvider** (`src/components/providers/`): Session-Management-Wrapper
 
 ### State-Management
+
 - Zustand Store in `src/store/portfolio-store.ts` für Portfolio-State
 - Client-seitiges Caching und Pagination
 - Optimistische Updates für View-Counts
@@ -205,11 +227,13 @@ http://localhost:3000/admin/inquiries
 
 ## 📬 Kontaktformular & Anfrage-Management-System
 
-Das Portfolio beinhaltet ein umfassendes Kontaktformular und Anfrage-Management-System für professionelle Kunden-Kommunikation.
+Das Portfolio beinhaltet ein umfassendes Kontaktformular und Anfrage-Management-System für
+professionelle Kunden-Kommunikation.
 
 ### 🌟 Features-Übersicht
 
 #### **Kunden-seitiges Kontaktformular**
+
 - **Professionelles Form-Design** - Sauberes, responsives Formular mit Validierung
 - **Service-Kategorien** - Nature, Travel, Event, Videography Optionen
 - **GDPR-Konformität** - Erforderliches Datenschutz-Einverständnis-Checkbox
@@ -218,6 +242,7 @@ Das Portfolio beinhaltet ein umfassendes Kontaktformular und Anfrage-Management-
 - **Spam-Schutz** - Eingebaute Spam-Erkennung und Rate-Limiting
 
 #### **Admin Anfrage-Management Dashboard**
+
 - **Zentralisiertes Dashboard** - Alle Anfragen anzeigen unter `/admin/inquiries`
 - **Echtzeit-Statistiken** - Anzahl neuer, laufender und gelöster Anfragen
 - **Erweiterte Filterung** - Suche nach Name, E-Mail oder Betreff
@@ -226,6 +251,7 @@ Das Portfolio beinhaltet ein umfassendes Kontaktformular und Anfrage-Management-
 - **Detailansicht** - Vollständige Anfrage-Details mit Kunden-Kontaktinformationen
 
 #### **E-Mail-System**
+
 - **Doppelte Benachrichtigungen** - Admin-Warnungen + Kunden-Bestätigungen
 - **Professionelle Templates** - HTML-E-Mail-Templates mit Branding
 - **Auto-Antworten** - Sofortige Bestätigungs-E-Mails an Kunden
@@ -235,6 +261,7 @@ Das Portfolio beinhaltet ein umfassendes Kontaktformular und Anfrage-Management-
 ### 🛠 Setup-Anweisungen
 
 #### **1. Basis-Setup (Funktioniert sofort)**
+
 Das Kontaktformular funktioniert out-of-the-box mit E-Mail-Simulation:
 
 ```bash
@@ -244,7 +271,9 @@ npm run dev
 ```
 
 #### **2. Produktions-E-Mail-Setup**
-Für Live-E-Mail-Benachrichtigungen konfiguriere SMTP in `.env.local` (siehe E-Mail-Konfiguration oben).
+
+Für Live-E-Mail-Benachrichtigungen konfiguriere SMTP in `.env.local` (siehe E-Mail-Konfiguration
+oben).
 
 ### 📧 Gmail App-Passwort Setup
 
@@ -278,11 +307,13 @@ Um Gmail SMTP zu verwenden, benötigst du ein App-Passwort (nicht dein reguläre
 ### 🔧 Admin Anfrage-Management
 
 #### **Dashboard zugreifen**
+
 ```
 http://localhost:3000/admin/inquiries
 ```
 
 #### **Schlüssel-Features**
+
 - **Statistik-Karten** - Übersicht der Anfrage-Anzahl nach Status
 - **Suchen & Filtern** - Anfragen nach Name, E-Mail oder Betreff finden
 - **Status-Updates** - Klicken um Anfrage-Status zu ändern
@@ -291,6 +322,7 @@ http://localhost:3000/admin/inquiries
 - **Kontakt-Integration** - Direkte E-Mail- und Telefon-Links
 
 #### **Anfrage-Workflow**
+
 ```
 NEW → IN_PROGRESS → RESOLVED → CLOSED
 ```
@@ -312,6 +344,7 @@ NEW → IN_PROGRESS → RESOLVED → CLOSED
 ### 🧪 System testen
 
 #### **Manuelles Testen**
+
 1. Entwicklungsserver starten: `npm run dev`
 2. Kontaktformular besuchen: `http://localhost:3000/contact`
 3. Formular ausfüllen und absenden
@@ -320,12 +353,14 @@ NEW → IN_PROGRESS → RESOLVED → CLOSED
 6. Antwort-Funktionalität testen
 
 #### **Entwicklung vs. Produktion**
+
 - **Entwicklung**: E-Mails simuliert und in Konsole protokolliert
 - **Produktion**: Echte E-Mails über konfiguriertes SMTP gesendet
 
 ## 📊 API-Dokumentation
 
 ### Öffentliche API-Endpoints
+
 - `GET /api/portfolio` - Veröffentlichte Portfolio-Items abrufen
 - `GET /api/portfolio/[id]` - Einzelnes Portfolio-Item abrufen
 - `GET /api/categories` - Kategorien abrufen
@@ -334,6 +369,7 @@ NEW → IN_PROGRESS → RESOLVED → CLOSED
 ### Admin API-Endpoints
 
 #### Portfolio-Management
+
 - `GET /api/admin/portfolio` - Alle Portfolio-Items abrufen (beliebiger Status)
 - `GET /api/admin/portfolio/[id]` - Einzelnes Item zum Bearbeiten abrufen
 - `PUT /api/admin/portfolio/[id]` - Portfolio-Item aktualisieren
@@ -341,6 +377,7 @@ NEW → IN_PROGRESS → RESOLVED → CLOSED
 - `POST /api/upload` - Dateien hochladen und verarbeiten
 
 #### Anfrage-Management
+
 - `GET /api/admin/inquiries` - Alle Kunden-Anfragen abrufen
 - `PATCH /api/admin/inquiries/[id]` - Anfrage-Status/Priorität aktualisieren
 - `POST /api/admin/inquiries/[id]/reply` - Individuelle Antwort an Kunden senden
@@ -348,6 +385,7 @@ NEW → IN_PROGRESS → RESOLVED → CLOSED
 ## 🏗 Projekt-Architektur
 
 ### Datei-Struktur
+
 ```
 src/
 ├── app/                    # Next.js App Router-Seiten
@@ -379,6 +417,7 @@ public/
 ```
 
 ### Datenbank-Beziehungen
+
 - Portfolio-Items gehören zu Kategorien
 - Portfolio-Items haben Metadaten (Fotograf, Ort, Kamera-Einstellungen)
 - Benutzer können mehrere Rollen haben und Inhalte verwalten
@@ -386,7 +425,9 @@ public/
 ## 🔧 Konfiguration
 
 ### Bildverarbeitung
+
 Bildverarbeitungsoptionen in `src/lib/image-processor.ts` konfigurieren:
+
 ```typescript
 export const DEFAULT_PROCESSING_OPTIONS = {
   quality: 85,
@@ -395,20 +436,23 @@ export const DEFAULT_PROCESSING_OPTIONS = {
   thumbnailSize: 400,
   generateWebP: true,
   generateAVIF: true,
-}
+};
 ```
 
 ### Speicher-Konfiguration
+
 Speicher-Einstellungen in `src/lib/storage.ts` ändern:
+
 ```typescript
 export const DEFAULT_STORAGE_CONFIG = {
   maxFileSize: 10 * 1024 * 1024, // 10MB
   allowedImageTypes: ['image/jpeg', 'image/png', 'image/webp'],
   allowedVideoTypes: ['video/mp4', 'video/quicktime'],
-}
+};
 ```
 
 ### File-Upload & Verarbeitung
+
 - Automatische Bildoptimierung mit Sharp
 - Generierung mehrerer Formate (WebP, AVIF)
 - Thumbnail-Erstellung
@@ -420,6 +464,7 @@ export const DEFAULT_STORAGE_CONFIG = {
 ### Häufige Probleme
 
 #### **Formular wird nicht abgesendet:**
+
 ```bash
 # Server-Logs für Validierungsfehler prüfen
 npm run dev
@@ -427,6 +472,7 @@ npm run dev
 ```
 
 #### **E-Mails werden nicht gesendet:**
+
 ```bash
 # SMTP-Konfiguration in .env.local überprüfen
 cat .env.local | grep SMTP
@@ -436,6 +482,7 @@ cat .env.local | grep SMTP
 ```
 
 #### **Admin-Dashboard lädt nicht:**
+
 ```bash
 # Sicherstellen, dass Admin-Benutzer eingerichtet ist
 npm run setup:admin
@@ -445,6 +492,7 @@ npm run setup:admin
 ```
 
 ### Datenbank-Probleme
+
 ```bash
 # Wenn Prisma Client out of sync ist
 npx prisma generate
@@ -455,6 +503,7 @@ npm run db:seed
 ```
 
 ### File-Upload-Probleme
+
 ```bash
 # Upload-Verzeichnis-Berechtigungen prüfen
 ls -la public/uploads/
@@ -464,6 +513,7 @@ mkdir -p public/uploads/portfolio/{originals,thumbnails,webp,avif,temp}
 ```
 
 ### Admin-Zugriffs-Probleme
+
 ```bash
 # Admin-Passwort zurücksetzen
 npm run setup:admin
@@ -475,20 +525,25 @@ cat .env.local
 ## 🚀 Deployment
 
 ### Production-Build
+
 ```bash
 npm run build
 npm run start
 ```
 
 ### Environment-Variablen für Produktion
+
 Stelle sicher, dass alle Environment-Variablen für Produktion richtig gesetzt sind:
+
 - `NEXTAUTH_URL` - Deine Produktions-Domain
 - `NEXTAUTH_SECRET` - Sicherer zufälliger String
 - `DATABASE_URL` - Produktions-Datenbank-Verbindung
 - SMTP-Einstellungen für Kontaktformulare
 
 ### Dateispeicher
+
 Für Produktion erwägen:
+
 - Cloud-Speicher verwenden (AWS S3, Cloudinary) statt lokaler Dateien
 - CDN für Bild-Auslieferung
 - Regelmäßige Backups des Uploads-Verzeichnisses
@@ -502,6 +557,7 @@ Das System beinhaltet professionelle HTML-E-Mail-Templates:
 - **Individuelle Antwort**: Personalisierte Antwort-Template mit ursprünglichem Anfrage-Kontext
 
 Alle Templates sind mobile-responsive und beinhalten:
+
 - Professionelles Branding
 - Klare Typografie
 - Aktions-Buttons
@@ -511,6 +567,7 @@ Alle Templates sind mobile-responsive und beinhalten:
 ## 🧪 Testing
 
 ### Verfügbare Test-Commands
+
 ```bash
 npm run test         # Tests ausführen
 npm run test:watch   # Tests im Watch-Mode
@@ -518,6 +575,7 @@ npm run test:coverage # Tests mit Coverage-Report
 ```
 
 ### Testing-Framework
+
 - Jest als Testing-Framework mit Coverage-Reporting
 - Umfassende Test-Suites für API-Routen und Komponenten
 

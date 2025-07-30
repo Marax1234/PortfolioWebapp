@@ -2,20 +2,20 @@
  * File Upload API Endpoint
  * POST /api/upload - Handle file uploads with processing
  */
+import { NextRequest, NextResponse } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server'
-import { storageManager, StorageManager } from '@/lib/storage'
-import { imageProcessor, ImageProcessor } from '@/lib/image-processor'
-import { Logger, LogCategory, LogLevel } from '@/lib/logger'
-import { getRequestContext } from '@/lib/middleware/logging'
-import { ErrorHandler } from '@/lib/error-handler'
+import { ErrorHandler } from '@/lib/error-handler';
+import { ImageProcessor, imageProcessor } from '@/lib/image-processor';
+import { LogCategory, LogLevel, Logger } from '@/lib/logger';
+import { getRequestContext } from '@/lib/middleware/logging';
+import { StorageManager, storageManager } from '@/lib/storage';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-const MAX_FILES = 10
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILES = 10;
 
 export async function POST(request: NextRequest) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
+  const context = getRequestContext(request);
+  const startTime = Date.now();
 
   try {
     Logger.apiLog({
@@ -30,66 +30,68 @@ export async function POST(request: NextRequest) {
       statusCode: 0,
       responseTime: 0,
       metadata: {
-        timestamp: new Date().toISOString()
-      }
-    })
+        timestamp: new Date().toISOString(),
+      },
+    });
 
     // Parse multipart form data
-    const formData = await request.formData()
-    const files = formData.getAll('files') as File[]
+    const formData = await request.formData();
+    const files = formData.getAll('files') as File[];
 
     if (!files || files.length === 0) {
-      const error = ErrorHandler.createValidationError('No files provided')
+      const error = ErrorHandler.createValidationError('No files provided');
       return ErrorHandler.handleError(error, {
         ...context,
         route: '/api/upload',
-        operation: 'validation'
-      })
+        operation: 'validation',
+      });
     }
 
     if (files.length > MAX_FILES) {
-      const error = ErrorHandler.createValidationError(`Maximum ${MAX_FILES} files allowed`)
+      const error = ErrorHandler.createValidationError(
+        `Maximum ${MAX_FILES} files allowed`
+      );
       return ErrorHandler.handleError(error, {
         ...context,
         route: '/api/upload',
-        operation: 'validation'
-      })
+        operation: 'validation',
+      });
     }
 
     Logger.debug('Processing upload files', {
       requestId: context.requestId,
       fileCount: files.length,
       fileSizes: files.map(f => f.size),
-      fileTypes: files.map(f => f.type)
-    })
+      fileTypes: files.map(f => f.type),
+    });
 
-    const processedFiles = []
-    const errors = []
+    const processedFiles = [];
+    const errors = [];
 
     // Process each file
     for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      
+      const file = files[i];
+
       try {
         // Validate file
-        const validation = storageManager.validateFile(file)
+        const validation = storageManager.validateFile(file);
         if (!validation.isValid) {
           errors.push({
             fileName: file.name,
-            error: validation.error
-          })
-          continue
+            error: validation.error,
+          });
+          continue;
         }
 
         // Convert File to Buffer
-        const arrayBuffer = await file.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
         // Determine if it's an image or video
-        const isImage = file.type.startsWith('image/')
-        const isVideo = file.type.startsWith('video/')
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
 
-        let processedFile
+        let processedFile;
 
         if (isImage) {
           // Process image with Sharp
@@ -97,47 +99,47 @@ export async function POST(request: NextRequest) {
             requestId: context.requestId,
             fileName: file.name,
             fileSize: file.size,
-            mimeType: file.type
-          })
+            mimeType: file.type,
+          });
 
           processedFile = await imageProcessor.processImage(
             buffer,
             file.name,
             file.type
-          )
+          );
         } else if (isVideo) {
           // For videos, just store the original file
           Logger.debug('Processing video file', {
             requestId: context.requestId,
             fileName: file.name,
             fileSize: file.size,
-            mimeType: file.type
-          })
+            mimeType: file.type,
+          });
 
-          const fileName = storageManager.generateFileName(file.name)
-          await storageManager.saveFile(buffer, fileName, 'originals')
+          const fileName = storageManager.generateFileName(file.name);
+          await storageManager.saveFile(buffer, fileName, 'originals');
 
           processedFile = {
             original: {
               originalName: file.name,
               fileName,
               mimeType: file.type,
-              size: buffer.length
+              size: buffer.length,
             },
-            publicPath: storageManager.getPublicUrl(fileName, 'originals')
-          }
+            publicPath: storageManager.getPublicUrl(fileName, 'originals'),
+          };
         } else {
           errors.push({
             fileName: file.name,
-            error: 'Unsupported file type'
-          })
-          continue
+            error: 'Unsupported file type',
+          });
+          continue;
         }
 
         processedFiles.push({
           ...processedFile,
-          mediaType: isImage ? 'IMAGE' : 'VIDEO'
-        })
+          mediaType: isImage ? 'IMAGE' : 'VIDEO',
+        });
 
         Logger.debug('File processed successfully', {
           requestId: context.requestId,
@@ -146,9 +148,8 @@ export async function POST(request: NextRequest) {
           processedSize: processedFile.original.size,
           hasThumb: !!processedFile.thumbnail,
           hasWebP: !!processedFile.webp,
-          hasAVIF: !!processedFile.avif
-        })
-
+          hasAVIF: !!processedFile.avif,
+        });
       } catch (error) {
         Logger.errorLog({
           level: LogLevel.ERROR,
@@ -158,23 +159,23 @@ export async function POST(request: NextRequest) {
           error: {
             name: error instanceof Error ? error.name : 'ProcessingError',
             message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined
+            stack: error instanceof Error ? error.stack : undefined,
           },
           context: {
             fileName: file.name,
             fileSize: file.size,
-            mimeType: file.type
-          }
-        })
+            mimeType: file.type,
+          },
+        });
 
         errors.push({
           fileName: file.name,
-          error: error instanceof Error ? error.message : 'Processing failed'
-        })
+          error: error instanceof Error ? error.message : 'Processing failed',
+        });
       }
     }
 
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     // Log processing results
     Logger.apiLog({
@@ -192,9 +193,9 @@ export async function POST(request: NextRequest) {
         totalFiles: files.length,
         processedFiles: processedFiles.length,
         errorCount: errors.length,
-        totalProcessingTime: totalResponseTime
-      }
-    })
+        totalProcessingTime: totalResponseTime,
+      },
+    });
 
     // Return results
     return NextResponse.json({
@@ -205,13 +206,12 @@ export async function POST(request: NextRequest) {
         summary: {
           total: files.length,
           processed: processedFiles.length,
-          failed: errors.length
-        }
-      }
-    })
-
+          failed: errors.length,
+        },
+      },
+    });
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.errorLog({
       level: LogLevel.ERROR,
@@ -221,21 +221,21 @@ export async function POST(request: NextRequest) {
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
         route: '/api/upload',
         operation: 'file_upload',
         responseTime: totalResponseTime,
         ip: context.ip,
-        userAgent: context.userAgent
-      }
-    })
+        userAgent: context.userAgent,
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
       route: '/api/upload',
-      operation: 'file_upload'
-    })
+      operation: 'file_upload',
+    });
   }
 }

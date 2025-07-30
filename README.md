@@ -16,11 +16,12 @@
 📧 **Kontaktformular** mit professionellem Anfrage-Management  
 🖱️ **Drag & Drop Upload** mit automatischer Bildoptimierung  
 🔐 **Sichere Authentifizierung** mit JWT-Tokens  
-🌙 **Responsive Design** mit modernem UI  
+🌙 **Responsive Design** mit modernem UI
 
 ## 🚀 Quick Start
 
 ### Voraussetzungen
+
 - Node.js 18+
 - npm oder yarn
 
@@ -72,6 +73,7 @@ prisma/
 ## 🛠️ Verfügbare Commands
 
 ### Entwicklung
+
 ```bash
 npm run dev          # Entwicklungsserver starten
 npm run build        # Production Build
@@ -80,6 +82,7 @@ npm run lint         # Code-Linting
 ```
 
 ### Datenbank
+
 ```bash
 npm run db:migrate   # Migrationen ausführen
 npm run db:seed      # Datenbank mit Beispieldaten füllen
@@ -88,6 +91,7 @@ npm run db:reset     # Datenbank zurücksetzen
 ```
 
 ### Testing
+
 ```bash
 npm run test         # Tests ausführen
 npm run test:watch   # Tests im Watch-Mode
@@ -117,6 +121,7 @@ npm run test:coverage # Test-Coverage
 ## 📧 Kontakt-System
 
 Das integrierte Kontaktformular bietet:
+
 - ✅ Automatische E-Mail-Benachrichtigungen
 - 📊 Admin-Dashboard für Anfragen-Management
 - 🛡️ Spam-Schutz und Rate-Limiting
@@ -137,6 +142,7 @@ DATABASE_URL=postgresql://...
 ## 📚 Weitere Dokumentation
 
 Detaillierte Informationen findest du in der [Dokumentation](./doku.md):
+
 - Vollständige Setup-Anleitung
 - API-Dokumentation
 - Konfigurationsoptionen
@@ -150,7 +156,6 @@ Detaillierte Informationen findest du in der [Dokumentation](./doku.md):
 3. Änderungen committen (`git commit -m 'Neue Funktion hinzufügen'`)
 4. Branch pushen (`git push origin feature/neue-funktion`)
 5. Pull Request erstellen
-
 
 ---
 

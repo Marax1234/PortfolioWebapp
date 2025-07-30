@@ -2,40 +2,48 @@
  * Admin Inquiry Reply API Endpoint
  * POST /api/admin/inquiries/[id]/reply - Send reply to inquiry
  */
+import { getServerSession } from 'next-auth/next';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/db'
-import { z } from 'zod'
-import { Logger, LogCategory, LogLevel } from '@/lib/logger'
-import { getRequestContext } from '@/lib/middleware/logging'
-import { ErrorHandler } from '@/lib/error-handler'
-import { sendCustomReply } from '@/lib/email'
+import { z } from 'zod';
+
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import { sendCustomReply } from '@/lib/email';
+import { ErrorHandler } from '@/lib/error-handler';
+import { LogCategory, LogLevel, Logger } from '@/lib/logger';
+import { getRequestContext } from '@/lib/middleware/logging';
 
 // Reply validation schema
 const replySchema = z.object({
-  message: z.string().min(1, 'Reply message is required').max(5000, 'Reply message too long')
-})
+  message: z
+    .string()
+    .min(1, 'Reply message is required')
+    .max(5000, 'Reply message too long'),
+});
 
-type ReplyData = z.infer<typeof replySchema>
+type ReplyData = z.infer<typeof replySchema>;
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
-  const inquiryId = params.id
+  const context = getRequestContext(request);
+  const startTime = Date.now();
+  const inquiryId = params.id;
 
   try {
     // Verify admin session
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     if (!session || session.user.role !== 'ADMIN') {
       return ErrorHandler.handleError(
         ErrorHandler.createAuthenticationError('Admin access required'),
-        { ...context, route: `/api/admin/inquiries/${inquiryId}/reply`, operation: 'authentication' }
-      )
+        {
+          ...context,
+          route: `/api/admin/inquiries/${inquiryId}/reply`,
+          operation: 'authentication',
+        }
+      );
     }
 
     Logger.apiLog({
@@ -52,64 +60,69 @@ export async function POST(
       metadata: {
         adminUserId: session.user.id,
         inquiryId,
-        timestamp: new Date().toISOString()
-      }
-    })
+        timestamp: new Date().toISOString(),
+      },
+    });
 
     // Parse and validate request body
-    let body: any
+    let body: any;
     try {
-      body = await request.json()
+      body = await request.json();
     } catch (parseError) {
-      const error = ErrorHandler.createValidationError('Invalid JSON in request body')
+      const error = ErrorHandler.createValidationError(
+        'Invalid JSON in request body'
+      );
       return ErrorHandler.handleError(error, {
         ...context,
         route: `/api/admin/inquiries/${inquiryId}/reply`,
-        operation: 'json_parsing'
-      })
+        operation: 'json_parsing',
+      });
     }
 
     // Validate reply data
-    let replyData: ReplyData
+    let replyData: ReplyData;
     try {
-      replyData = replySchema.parse(body)
+      replyData = replySchema.parse(body);
     } catch (validationError) {
       if (validationError instanceof z.ZodError) {
         return ErrorHandler.handleError(validationError, {
           ...context,
           route: `/api/admin/inquiries/${inquiryId}/reply`,
-          operation: 'validation'
-        })
+          operation: 'validation',
+        });
       }
-      throw validationError
+      throw validationError;
     }
 
     // Get inquiry details
     const inquiry = await prisma.inquiry.findUnique({
-      where: { id: inquiryId }
-    })
+      where: { id: inquiryId },
+    });
 
     if (!inquiry) {
       return ErrorHandler.handleError(
         ErrorHandler.createNotFoundError('Inquiry not found'),
-        { ...context, route: `/api/admin/inquiries/${inquiryId}/reply`, operation: 'inquiry_lookup' }
-      )
+        {
+          ...context,
+          route: `/api/admin/inquiries/${inquiryId}/reply`,
+          operation: 'inquiry_lookup',
+        }
+      );
     }
 
     // Send email reply
-    const emailStartTime = Date.now()
+    const emailStartTime = Date.now();
     try {
-      await sendCustomReply(inquiry, replyData.message)
-      const emailTime = Date.now() - emailStartTime
+      await sendCustomReply(inquiry, replyData.message);
+      const emailTime = Date.now() - emailStartTime;
 
       Logger.info('Inquiry reply email sent successfully', {
         requestId: context.requestId,
         inquiryId,
         customerEmail: inquiry.email,
         emailSendTime: emailTime,
-        adminUserId: session.user.id
-      })
-
+        adminUserId: session.user.id,
+      });
     } catch (emailError) {
       Logger.errorLog({
         level: LogLevel.ERROR,
@@ -118,35 +131,42 @@ export async function POST(
         requestId: context.requestId,
         error: {
           name: emailError instanceof Error ? emailError.name : 'EmailError',
-          message: emailError instanceof Error ? emailError.message : String(emailError),
-          stack: emailError instanceof Error ? emailError.stack : undefined
+          message:
+            emailError instanceof Error
+              ? emailError.message
+              : String(emailError),
+          stack: emailError instanceof Error ? emailError.stack : undefined,
         },
         context: {
           operation: 'email_reply',
           inquiryId,
           customerEmail: inquiry.email,
-          adminUserId: session.user.id
-        }
-      })
+          adminUserId: session.user.id,
+        },
+      });
 
       return ErrorHandler.handleError(
         ErrorHandler.createExternalServiceError('Failed to send reply email'),
-        { ...context, route: `/api/admin/inquiries/${inquiryId}/reply`, operation: 'email_send' }
-      )
+        {
+          ...context,
+          route: `/api/admin/inquiries/${inquiryId}/reply`,
+          operation: 'email_send',
+        }
+      );
     }
 
     // Update inquiry status to RESOLVED
-    const dbStartTime = Date.now()
+    const dbStartTime = Date.now();
     const updatedInquiry = await prisma.inquiry.update({
       where: { id: inquiryId },
       data: {
         status: 'RESOLVED',
         resolvedAt: new Date(),
         updatedAt: new Date(),
-        assignedTo: session.user.id
-      }
-    })
-    const dbQueryTime = Date.now() - dbStartTime
+        assignedTo: session.user.id,
+      },
+    });
+    const dbQueryTime = Date.now() - dbStartTime;
 
     Logger.databaseLog({
       level: LogLevel.INFO,
@@ -161,11 +181,11 @@ export async function POST(
         inquiryId,
         adminUserId: session.user.id,
         oldStatus: inquiry.status,
-        newStatus: 'RESOLVED'
-      }
-    })
+        newStatus: 'RESOLVED',
+      },
+    });
 
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -183,22 +203,21 @@ export async function POST(
         inquiryId,
         customerEmail: inquiry.email,
         dbQueryTime,
-        replyLength: replyData.message.length
-      }
-    })
+        replyLength: replyData.message.length,
+      },
+    });
 
     const response = NextResponse.json({
       success: true,
       inquiry: updatedInquiry,
       message: 'Reply sent successfully and inquiry marked as resolved',
-      timestamp: new Date().toISOString()
-    })
+      timestamp: new Date().toISOString(),
+    });
 
-    response.headers.set('x-request-id', context.requestId)
-    return response
-
+    response.headers.set('x-request-id', context.requestId);
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.errorLog({
       level: LogLevel.ERROR,
@@ -208,7 +227,7 @@ export async function POST(
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
         route: `/api/admin/inquiries/${inquiryId}/reply`,
@@ -217,16 +236,15 @@ export async function POST(
           responseTime: totalResponseTime,
           inquiryId,
           ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+          userAgent: context.userAgent,
+        },
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
       route: `/api/admin/inquiries/${inquiryId}/reply`,
-      operation: 'send_reply'
-    })
+      operation: 'send_reply',
+    });
   }
 }
-
