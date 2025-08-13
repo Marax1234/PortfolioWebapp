@@ -1,3 +1,6 @@
+
+// Import mock setup FIRST to ensure mocks are established
+import '@/__tests__/setup/mock-setup';
 import { NextRequest, NextResponse } from 'next/server';
 import { GET, POST } from '../route';
 
