@@ -23,6 +23,11 @@ npm run build        # Production build
 npm run start        # Start production server
 npm run lint         # Run ESLint
 
+# Testing
+npm run test         # Run tests with isolated test database
+npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
+
 
 
 # Docker & Database
@@ -35,6 +40,12 @@ npm run db:migrate   # Create and run migrations (auto-starts container)
 npm run db:seed      # Seed database with sample data (auto-starts container)
 npm run db:studio    # Open Prisma Studio GUI (auto-starts container)
 npm run db:reset     # Reset database completely (auto-starts container)
+
+# Test Database (Isolated)
+npm run test:db:up     # Start test PostgreSQL container on port 5440
+npm run test:db:down   # Stop test container
+npm run test:db:reset  # Reset test database
+npm run test:setup     # Full test setup (start + reset + seed)
 
 # Admin Setup
 npm run setup:admin  # Setup admin user password (auto-starts container)
@@ -95,6 +106,7 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 ## Important Development Notes
 
 - **Database**: PostgreSQL 16 running in Docker container on port 5439
+- **Test Database**: Isolated PostgreSQL on port 5440 for testing
 - **Database Connection**:
   `postgresql://portfolio_user:portfolio_password@localhost:5439/portfolio_db`
 - **Container Management**: All database scripts automatically start the PostgreSQL container
