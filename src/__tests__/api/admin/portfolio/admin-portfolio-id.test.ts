@@ -203,6 +203,7 @@ describe('/api/admin/portfolio/[id]', () => {
         success: true,
         data: {
           ...updatedItem,
+          updatedAt: expect.any(String), // Date is serialized as string in JSON response
           tags: ['updated', 'published'], // Should be parsed JSON
           metadata: { camera: 'Sony A7R5' }, // Should be parsed JSON
         },

@@ -231,6 +231,19 @@ export const mockEmailService = {
   sendWelcomeEmail: jest.fn(),
 };
 
+// Mock UserService
+export const mockUserService = {
+  authenticateUser: jest.fn(),
+  createUser: jest.fn(),
+  getUserById: jest.fn(),
+  updateUser: jest.fn(),
+  deleteUser: jest.fn(),
+};
+
+jest.mock('@/lib/services/user-service', () => ({
+  UserService: jest.fn().mockImplementation(() => mockUserService),
+}));
+
 // Note: Email service mock will be added when the module exists
 
 // Mock validation schemas

@@ -5,9 +5,7 @@
 // Import mock setup FIRST to ensure mocks are established
 import '@/__tests__/setup/mock-setup';
 import { NextRequest } from 'next/server';
-import { authOptions } from '@/lib/auth';
 import { UserService } from '@/lib/services/user-service';
-import { Logger } from '@/lib/logger';
 import { TestUtils } from '@/__tests__/utils/test-utils';
 import { MockFactories } from '@/__tests__/utils/mock-factories';
 import {
@@ -16,28 +14,18 @@ import {
   prismaMock,
   mockLogger,
   mockBcrypt,
+  mockUserService,
 } from '@/__tests__/setup/mock-setup';
 
-// Mock UserService
-jest.mock('@/lib/services/user-service');
-const mockUserService = UserService as jest.MockedClass<typeof UserService>;
+// Import authOptions AFTER mocks are set up
+import { authOptions } from '@/lib/auth';
 
 describe('NextAuth Configuration', () => {
-  let mockUserServiceInstance: jest.Mocked<UserService>;
-
   beforeEach(() => {
     resetAllMocks();
-    mockUserServiceInstance = {
-      authenticateUser: jest.fn(),
-    } as any;
-    mockUserService.mockImplementation(() => mockUserServiceInstance);
     
-    // Mock Logger methods
-    jest.spyOn(Logger, 'generateRequestId').mockReturnValue('test-request-id');
-    jest.spyOn(Logger, 'securityLog').mockImplementation(jest.fn());
-    jest.spyOn(Logger, 'errorLog').mockImplementation(jest.fn());
-    jest.spyOn(Logger, 'info').mockImplementation(jest.fn());
-    jest.spyOn(Logger, 'debug').mockImplementation(jest.fn());
+    // Reset Logger mocks - use the mocks from mock-setup.ts instead of spies
+    mockLogger.generateRequestId.mockReturnValue('test-request-id');
   });
 
   describe('Credentials Provider Authorization', () => {
@@ -61,7 +49,7 @@ describe('NextAuth Configuration', () => {
         emailVerified: true,
       });
 
-      mockUserServiceInstance.authenticateUser.mockResolvedValue(mockUser);
+      mockUserService.authenticateUser.mockResolvedValue(mockUser);
 
       const provider = authOptions.providers[0] as any;
 
@@ -78,12 +66,12 @@ describe('NextAuth Configuration', () => {
         emailVerified: mockUser.emailVerified,
       });
 
-      expect(mockUserServiceInstance.authenticateUser).toHaveBeenCalledWith(
+      expect(mockUserService.authenticateUser).toHaveBeenCalledWith(
         mockCredentials.email,
         mockCredentials.password
       );
 
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining('Authentication successful'),
           eventType: 'LOGIN_SUCCESS',
@@ -101,7 +89,7 @@ describe('NextAuth Configuration', () => {
 
       // Assert
       expect(result).toBeNull();
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'Login attempt with missing credentials',
           eventType: 'LOGIN_FAILURE',
@@ -112,7 +100,7 @@ describe('NextAuth Configuration', () => {
 
     it('should reject user with invalid credentials', async () => {
       // Arrange
-      mockUserServiceInstance.authenticateUser.mockResolvedValue(null);
+      mockUserService.authenticateUser.mockResolvedValue(null);
       const provider = authOptions.providers[0] as any;
 
       // Act
@@ -120,7 +108,7 @@ describe('NextAuth Configuration', () => {
 
       // Assert
       expect(result).toBeNull();
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining('Authentication failed'),
           eventType: 'LOGIN_FAILURE',
@@ -136,7 +124,7 @@ describe('NextAuth Configuration', () => {
         role: 'REGISTERED', // Non-admin role
       });
 
-      mockUserServiceInstance.authenticateUser.mockResolvedValue(mockUser);
+      mockUserService.authenticateUser.mockResolvedValue(mockUser);
       const provider = authOptions.providers[0] as any;
 
       // Act
@@ -144,7 +132,7 @@ describe('NextAuth Configuration', () => {
 
       // Assert
       expect(result).toBeNull();
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining('Access denied - insufficient privileges'),
           eventType: 'UNAUTHORIZED_ACCESS',
@@ -156,7 +144,7 @@ describe('NextAuth Configuration', () => {
     it('should handle authentication system error', async () => {
       // Arrange
       const systemError = new Error('Database connection failed');
-      mockUserServiceInstance.authenticateUser.mockRejectedValue(systemError);
+      mockUserService.authenticateUser.mockRejectedValue(systemError);
       const provider = authOptions.providers[0] as any;
 
       // Act
@@ -164,14 +152,14 @@ describe('NextAuth Configuration', () => {
 
       // Assert
       expect(result).toBeNull();
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining('Authentication system error'),
           eventType: 'LOGIN_FAILURE',
           severity: 'HIGH',
         })
       );
-      expect(Logger.errorLog).toHaveBeenCalledWith(
+      expect(mockLogger.errorLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: 'NextAuth authentication error',
           error: expect.objectContaining({
@@ -186,7 +174,7 @@ describe('NextAuth Configuration', () => {
       const mockUser = MockFactories.createMockUser({
         role: 'ADMIN',
       });
-      mockUserServiceInstance.authenticateUser.mockResolvedValue(mockUser);
+      mockUserService.authenticateUser.mockResolvedValue(mockUser);
       
       const requestWithHeaders = {
         headers: {
@@ -201,7 +189,7 @@ describe('NextAuth Configuration', () => {
       await provider.authorize(mockCredentials, requestWithHeaders);
 
       // Assert
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           ip: '203.0.113.1',
           userAgent: 'Mozilla/5.0 Test Browser',
@@ -306,7 +294,7 @@ describe('NextAuth Configuration', () => {
       });
 
       // Assert
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining('User session created'),
           eventType: 'LOGIN_SUCCESS',
@@ -319,7 +307,7 @@ describe('NextAuth Configuration', () => {
         })
       );
 
-      expect(Logger.info).toHaveBeenCalledWith(
+      expect(mockLogger.info).toHaveBeenCalledWith(
         'User session established',
         expect.objectContaining({
           userId: mockUser.id,
@@ -344,7 +332,7 @@ describe('NextAuth Configuration', () => {
       });
 
       // Assert
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining('User session terminated'),
           userId: mockSession.user.id,
@@ -368,7 +356,7 @@ describe('NextAuth Configuration', () => {
       });
 
       // Assert
-      expect(Logger.securityLog).toHaveBeenCalledWith(
+      expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining('New user account created'),
           userId: mockUser.id,
@@ -398,7 +386,7 @@ describe('NextAuth Configuration', () => {
       });
 
       // Assert
-      expect(Logger.debug).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         'Session verified',
         expect.objectContaining({
           userId: mockSession.user.id,
