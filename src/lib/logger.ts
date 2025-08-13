@@ -224,7 +224,10 @@ const createLogger = () => {
       );
     } catch (error) {
       // Fallback to console only if file operations fail
-      console.warn('Failed to create file transports, using console only:', error);
+      console.warn(
+        'Failed to create file transports, using console only:',
+        error
+      );
     }
   }
 
@@ -239,7 +242,7 @@ const createLogger = () => {
     transports,
     // Handle uncaught exceptions and rejections
     // On Vercel, use console transport instead of files
-    exceptionHandlers: isVercel 
+    exceptionHandlers: isVercel
       ? [new winston.transports.Console({ format: jsonFormatter })]
       : [
           new winston.transports.File({

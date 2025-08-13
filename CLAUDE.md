@@ -8,7 +8,7 @@ repository.
 This is a Next.js 15 portfolio webapp for photographer/videographer Kilian Siebert, built with:
 
 - **Framework**: Next.js 15.4.2 with App Router and React 19
-- **Database**: SQLite with Prisma ORM 6.12.0
+- **Database**: PostgreSQL with Prisma ORM 6.12.0 (Docker containerized)
 - **Authentication**: NextAuth.js with JWT strategy
 - **Styling**: Tailwind CSS 4 with shadcn/ui components
 - **State**: Zustand for client-side state management
@@ -25,15 +25,19 @@ npm run lint         # Run ESLint
 
 
 
-# Database
-npm run db:push      # Push schema changes to database
-npm run db:migrate   # Create and run migrations
-npm run db:seed      # Seed database with sample data
-npm run db:studio    # Open Prisma Studio GUI
-npm run db:reset     # Reset database completely
+# Docker & Database
+npm run docker:up     # Start PostgreSQL container
+npm run docker:down   # Stop PostgreSQL container
+npm run docker:logs   # View PostgreSQL container logs
+
+npm run db:push      # Push schema changes to database (auto-starts container)
+npm run db:migrate   # Create and run migrations (auto-starts container)
+npm run db:seed      # Seed database with sample data (auto-starts container)
+npm run db:studio    # Open Prisma Studio GUI (auto-starts container)
+npm run db:reset     # Reset database completely (auto-starts container)
 
 # Admin Setup
-npm run setup:admin  # Setup admin user password
+npm run setup:admin  # Setup admin user password (auto-starts container)
 ```
 
 ## Architecture
@@ -90,13 +94,47 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 
 ## Important Development Notes
 
-- Database file: `prisma/dev.db` (SQLite)
+- **Database**: PostgreSQL 16 running in Docker container on port 5439
+- **Database Connection**:
+  `postgresql://portfolio_user:portfolio_password@localhost:5439/portfolio_db`
+- **Container Management**: All database scripts automatically start the PostgreSQL container
 - Admin credentials must be set up using `npm run setup:admin`
 - Images currently use Unsplash placeholders via `next.config.ts`
 - TypeScript strict mode enabled with path aliases configured
 - Tailwind CSS 4 with custom shadcn/ui component configuration
 - Winston logging configured for security events and errors
 - File uploads handled via `/api/upload` endpoint
+
+## Database Setup
+
+### First Time Setup
+
+```bash
+# 1. Start PostgreSQL container
+npm run docker:up
+
+# 2. Initialize database schema
+npm run db:migrate
+
+# 3. Seed with sample data
+npm run db:seed
+
+# 4. Setup admin credentials
+npm run setup:admin
+```
+
+### Daily Development
+
+```bash
+# Start development (database starts automatically)
+npm run dev
+
+# View database in Prisma Studio
+npm run db:studio
+
+# Stop containers when done
+npm run docker:down
+```
 
 ## Email Configuration
 

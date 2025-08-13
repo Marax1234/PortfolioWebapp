@@ -5,7 +5,7 @@
 The website shows CORS errors and 500 Internal Server Errors because:
 
 1. API calls try to reach `localhost:3000` from production ✅ **FIXED**
-2. `NEXTAUTH_URL` doesn't match the deployment URL ✅ **FIXED**  
+2. `NEXTAUTH_URL` doesn't match the deployment URL ✅ **FIXED**
 3. SQLite database doesn't work properly on Vercel ✅ **FIXED**
 
 ## Solution Steps
@@ -70,10 +70,12 @@ After redeployment:
 ## What this fixes
 
 **CORS Issue Fixed:**
+
 - API calls now use relative URLs instead of hardcoded localhost
 - Works automatically with any domain (preview deployments, production, custom domains)
 
 **Database Issue Fixed:**
+
 - Switched from SQLite to Vercel Postgres for production reliability
 - Uses `prisma migrate deploy` instead of `db push` for safe schema updates
 - Added `vercel-build` script for proper deployment sequence
@@ -81,6 +83,7 @@ After redeployment:
 - Versioned migrations allow rollbacks and safer updates
 
 **NextAuth Configuration Fixed:**
+
 - NextAuth.js automatically detects the correct URL using Vercel's system variables
 - No manual URL updates needed for each deployment
 - Works with preview deployments and production deployments
