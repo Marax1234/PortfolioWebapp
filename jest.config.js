@@ -13,7 +13,7 @@ const customJestConfig = {
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@prisma/(.*)$': '<rootDir>/prisma/$1',
+    '^@prisma/client$': '@prisma/client',
   },
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',

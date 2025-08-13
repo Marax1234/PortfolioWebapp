@@ -66,11 +66,38 @@ Content follows DRAFT → REVIEW → PUBLISHED → ARCHIVED workflow.
 
 ### API Routes Structure
 
-- `/api/auth/[...nextauth]` - NextAuth.js authentication endpoints
-- `/api/portfolio` - Portfolio CRUD operations with image upload
-- `/api/categories` - Category management
-- `/api/contact` - Contact form submission handling
-- `/api/upload` - File upload handling for portfolio items
+#### Authentication
+- `/api/auth/[...nextauth]` - NextAuth.js authentication endpoints (GET, POST)
+- `/api/debug` - Session and environment debugging (GET)
+
+#### Portfolio Management
+- `/api/portfolio` - Public portfolio operations (GET: fetch published items, POST: create items)
+- `/api/portfolio/[id]` - Single portfolio item with related items (GET)
+- `/api/admin/portfolio` - Admin portfolio management with all statuses (GET)
+- `/api/admin/portfolio/[id]` - Admin portfolio item operations (GET, PUT)
+
+#### Category Management
+- `/api/categories` - Category operations (GET: public/admin, POST: admin only)
+- `/api/categories/[id]` - Category CRUD operations (PUT, DELETE - admin only)
+
+#### Contact & Inquiry System
+- `/api/contact` - Contact form submission with validation (POST)
+- `/api/admin/inquiries` - Admin inquiry dashboard (GET)
+- `/api/admin/inquiries/[id]` - Inquiry status management (PATCH)
+- `/api/admin/inquiries/[id]/reply` - Send email replies to customers (POST)
+
+#### File & Media Management
+- `/api/upload` - File upload with image/video processing (POST)
+
+#### Analytics & Settings
+- `/api/analytics` - Admin dashboard analytics with filtering (GET)
+- `/api/settings/password` - Admin password management (PUT)
+- `/api/settings/profile` - Admin profile updates (PUT)
+- `/api/settings/portfolio` - Portfolio-specific settings (GET, PUT)
+
+#### Testing & Development
+- `/api/test` - Basic API connectivity testing (GET, POST)
+- `/api/contact-debug` - Contact form validation testing (POST)
 
 ### Authentication & Authorization
 
