@@ -158,7 +158,7 @@ export default function AboutPage() {
             </div>
           </div>
           <div>
-            <h2 className='mb-6 text-2xl font-bold'>Services & Specialties</h2>
+            <h2 className='mb-6 text-2xl font-bold'>My Specialties</h2>
             <div className='space-y-4'>
               <div className='flex items-start gap-3'>
                 <div className='bg-primary/10 mt-1 rounded p-1'>
@@ -218,8 +218,7 @@ export default function AboutPage() {
             Ready to Create Something Beautiful?
           </h2>
           <p className='text-muted-foreground mx-auto mb-6 max-w-2xl'>
-            Whether you&apos;re planning an adventure, need corporate
-            videography, or want to document nature&apos;s beauty, I&apos;d love
+            Whether you&apos;re planning an adventure or want to document nature&apos;s beauty, I&apos;d love
             to hear about your vision and discuss how we can bring it to life
             through visual storytelling.
           </p>

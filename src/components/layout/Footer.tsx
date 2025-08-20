@@ -39,21 +39,9 @@ const footerLinks = [
     ],
   },
   {
-    title: 'Services',
-    links: [
-      { name: 'Nature Photography', href: '/services/nature' },
-      { name: 'Travel Photography', href: '/services/travel' },
-      { name: 'Event Photography', href: '/services/event' },
-      { name: 'Videography', href: '/services/videography' },
-    ],
-  },
-  {
     title: 'About',
     links: [
       { name: 'My Story', href: '/about' },
-      { name: 'Equipment', href: '/about/equipment' },
-      { name: 'Process', href: '/about/process' },
-      { name: 'FAQ', href: '/about/faq' },
     ],
   },
 ];
@@ -74,7 +62,7 @@ export function Footer() {
               <p className='text-muted-foreground mb-6 max-w-md'>
                 Capturing life&apos;s precious moments through the lens of
                 creativity and passion. Professional photography and videography
-                services throughout Germany.
+                throughout Germany.
               </p>
 
               {/* Contact Information */}
