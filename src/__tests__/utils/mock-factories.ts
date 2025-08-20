@@ -1,4 +1,11 @@
-import type { User, PortfolioItem, Category, Inquiry, AnalyticsEvent } from '@prisma/client';
+import type {
+  AnalyticsEvent,
+  Category,
+  Inquiry,
+  PortfolioItem,
+  User,
+} from '@prisma/client';
+
 import { TestUtils } from './test-utils';
 
 /**
@@ -17,18 +24,22 @@ export class MockFactories {
    * Creates a mock User
    */
   static createMockUser(overrides: Partial<User> = {}): User {
+    const baseDate = new Date();
     return {
       id: TestUtils.randomString(12),
       email: TestUtils.randomEmail(),
-      password: '$2b$10$hash', // bcrypt hash for 'password'
+      passwordHash: '$2b$10$hash', // bcrypt hash for 'password'
       role: 'ADMIN',
-      name: `Test User ${TestUtils.randomString(4)}`,
-      bio: 'Test bio',
-      profileImage: null,
-      socialLinks: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      lastLoginAt: null,
+      firstName: `Test`,
+      lastName: `User ${TestUtils.randomString(4)}`,
+      createdAt: baseDate,
+      updatedAt: baseDate,
+      lastLogin: null,
+      emailVerified: true,
+      verificationToken: null,
+      resetToken: null,
+      resetTokenExpires: null,
+      portfolioSettings: '{}',
       ...overrides,
     };
   }
@@ -36,7 +47,10 @@ export class MockFactories {
   /**
    * Creates a mock PortfolioItem
    */
-  static createMockPortfolioItem(overrides: Partial<PortfolioItem> = {}): PortfolioItem {
+  static createMockPortfolioItem(
+    overrides: Partial<PortfolioItem> = {}
+  ): PortfolioItem {
+    const baseDate = new Date();
     return {
       id: TestUtils.randomString(12),
       title: `Test Portfolio Item ${TestUtils.randomString(4)}`,
@@ -44,7 +58,6 @@ export class MockFactories {
       mediaType: 'IMAGE',
       filePath: `/uploads/test-${TestUtils.randomString(8)}.jpg`,
       thumbnailPath: null,
-      altText: null,
       categoryId: TestUtils.randomString(12),
       status: 'PUBLISHED',
       featured: false,
@@ -52,9 +65,10 @@ export class MockFactories {
       metadata: JSON.stringify({ camera: 'Test Camera' }),
       viewCount: 0,
       sortOrder: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      publishedAt: new Date().toISOString(),
+      createdAt: baseDate,
+      updatedAt: baseDate,
+      publishedAt: baseDate,
+      userId: null,
       ...overrides,
     };
   }
@@ -68,12 +82,10 @@ export class MockFactories {
       name: `Test Category ${TestUtils.randomString(4)}`,
       slug: `test-category-${TestUtils.randomString(4)}`,
       description: 'Test category description',
-      color: '#3B82F6',
-      icon: 'camera',
+      coverImage: null,
       sortOrder: 0,
       isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
       ...overrides,
     };
   }
@@ -82,6 +94,7 @@ export class MockFactories {
    * Creates a mock Inquiry
    */
   static createMockInquiry(overrides: Partial<Inquiry> = {}): Inquiry {
+    const baseDate = new Date();
     return {
       id: TestUtils.randomString(12),
       name: `Test Customer ${TestUtils.randomString(4)}`,
@@ -89,15 +102,17 @@ export class MockFactories {
       phone: '+1234567890',
       subject: `Test Subject ${TestUtils.randomString(4)}`,
       message: 'This is a test inquiry message',
-      inquiryType: 'GENERAL',
-      status: 'PENDING',
+      category: 'OTHER',
+      status: 'NEW',
       priority: 'MEDIUM',
-      source: 'WEBSITE',
-      metadata: JSON.stringify({ ip: '127.0.0.1' }),
-      adminNotes: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      respondedAt: null,
+      budgetRange: null,
+      eventDate: null,
+      location: null,
+      assignedTo: null,
+      createdAt: baseDate,
+      updatedAt: baseDate,
+      resolvedAt: null,
+      userId: null,
       ...overrides,
     };
   }
@@ -105,21 +120,20 @@ export class MockFactories {
   /**
    * Creates a mock AnalyticsEvent
    */
-  static createMockAnalyticsEvent(overrides: Partial<AnalyticsEvent> = {}): AnalyticsEvent {
+  static createMockAnalyticsEvent(
+    overrides: Partial<AnalyticsEvent> = {}
+  ): AnalyticsEvent {
     return {
       id: TestUtils.randomString(12),
       eventType: 'PAGE_VIEW',
-      eventName: 'portfolio_view',
-      userId: null,
+      eventData: JSON.stringify({ test: true }),
       sessionId: TestUtils.randomString(16),
-      path: '/portfolio',
-      referrer: null,
-      userAgent: 'test-agent',
       ipAddress: '127.0.0.1',
-      country: 'US',
-      city: 'Test City',
-      metadata: JSON.stringify({ test: true }),
-      createdAt: new Date().toISOString(),
+      userAgent: 'test-agent',
+      referrer: null,
+      pageUrl: '/portfolio',
+      timestamp: new Date(),
+      userId: null,
       ...overrides,
     };
   }
@@ -127,12 +141,14 @@ export class MockFactories {
   /**
    * Creates a mock pagination object
    */
-  static createMockPagination(overrides: {
-    currentPage?: number;
-    totalPages?: number;
-    totalItems?: number;
-    itemsPerPage?: number;
-  } = {}) {
+  static createMockPagination(
+    overrides: {
+      currentPage?: number;
+      totalPages?: number;
+      totalItems?: number;
+      itemsPerPage?: number;
+    } = {}
+  ) {
     const {
       currentPage = 1,
       totalPages = 1,
@@ -155,14 +171,15 @@ export class MockFactories {
    */
   static createMockSession(userOverrides: Partial<User> = {}) {
     const user = this.createMockUser(userOverrides);
-    
+
     return {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
-        image: user.profileImage,
+        emailVerified: user.emailVerified,
       },
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
     };
@@ -172,11 +189,11 @@ export class MockFactories {
    * Creates multiple mock items using a factory function
    */
   static createMultiple<T>(
-    factory: (overrides?: any) => T,
+    factory: (overrides?: Record<string, unknown>) => T,
     count: number,
-    overrides: any = {}
+    overrides: Record<string, unknown> = {}
   ): T[] {
-    return Array.from({ length: count }, (_, index) => 
+    return Array.from({ length: count }, (_, index) =>
       factory({ ...overrides, sortOrder: index })
     );
   }
@@ -192,7 +209,7 @@ export class MockFactories {
   ) {
     const total = totalItems ?? items.length;
     const totalPages = Math.ceil(total / limit);
-    
+
     return {
       items,
       pagination: this.createMockPagination({
@@ -207,7 +224,7 @@ export class MockFactories {
   /**
    * Creates a mock contact form submission
    */
-  static createMockContactFormData(overrides: any = {}) {
+  static createMockContactFormData(overrides: Record<string, unknown> = {}) {
     return {
       name: `Test Customer ${TestUtils.randomString(4)}`,
       email: TestUtils.randomEmail(),
@@ -222,7 +239,7 @@ export class MockFactories {
   /**
    * Creates a mock file upload data
    */
-  static createMockUploadData(overrides: any = {}) {
+  static createMockUploadData(overrides: Record<string, unknown> = {}) {
     return {
       filename: 'test-image.jpg',
       originalName: 'test-image.jpg',
@@ -236,7 +253,7 @@ export class MockFactories {
   /**
    * Creates a mock portfolio item creation data
    */
-  static createMockPortfolioItemData(overrides: any = {}) {
+  static createMockPortfolioItemData(overrides: Record<string, unknown> = {}) {
     return {
       title: `Test Portfolio Item ${TestUtils.randomString(4)}`,
       description: 'Test portfolio item description',
@@ -255,13 +272,12 @@ export class MockFactories {
   /**
    * Creates a mock category creation data
    */
-  static createMockCategoryData(overrides: any = {}) {
+  static createMockCategoryData(overrides: Record<string, unknown> = {}) {
     return {
       name: `Test Category ${TestUtils.randomString(4)}`,
       slug: `test-category-${TestUtils.randomString(4)}`,
       description: 'Test category description',
-      color: '#3B82F6',
-      icon: 'camera',
+      coverImage: null,
       sortOrder: 0,
       isActive: true,
       ...overrides,
@@ -271,7 +287,7 @@ export class MockFactories {
   /**
    * Creates mock analytics data for dashboard
    */
-  static createMockAnalyticsData(overrides: any = {}) {
+  static createMockAnalyticsData(overrides: Record<string, unknown> = {}) {
     return {
       totalViews: 1250,
       totalInquiries: 45,

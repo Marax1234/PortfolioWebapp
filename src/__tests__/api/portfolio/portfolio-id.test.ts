@@ -1,21 +1,19 @@
-
 /**
  * Unit tests for /api/portfolio/[id] route
  */
 // Import mock setup FIRST to ensure mocks are established
 import '@/__tests__/setup/mock-setup';
-import { NextRequest } from 'next/server';
-import { GET } from '@/app/api/portfolio/[id]/route';
-import { TestUtils } from '@/__tests__/utils/test-utils';
-import { MockFactories } from '@/__tests__/utils/mock-factories';
 import {
-  resetAllMocks,
-  mockPortfolioQueries,
-  mockGetRequestContext,
   defaultRequestContext,
   mockErrorHandler,
+  mockGetRequestContext,
   mockLogger,
+  mockPortfolioQueries,
+  resetAllMocks,
 } from '@/__tests__/setup/mock-setup';
+import { MockFactories } from '@/__tests__/utils/mock-factories';
+import { TestUtils } from '@/__tests__/utils/test-utils';
+import { GET } from '@/app/api/portfolio/[id]/route';
 
 describe('/api/portfolio/[id]', () => {
   beforeEach(() => {
@@ -63,7 +61,9 @@ describe('/api/portfolio/[id]', () => {
         },
       });
 
-      expect(mockPortfolioQueries.getById).toHaveBeenCalledWith(validPortfolioId);
+      expect(mockPortfolioQueries.getById).toHaveBeenCalledWith(
+        validPortfolioId
+      );
       expect(mockPortfolioQueries.getRelatedItems).toHaveBeenCalledWith(
         mockPortfolioItem.id,
         mockPortfolioItem.categoryId,
@@ -102,7 +102,9 @@ describe('/api/portfolio/[id]', () => {
         relatedItems: [],
       });
 
-      expect(mockPortfolioQueries.getById).toHaveBeenCalledWith(validPortfolioId);
+      expect(mockPortfolioQueries.getById).toHaveBeenCalledWith(
+        validPortfolioId
+      );
       expect(mockPortfolioQueries.getRelatedItems).not.toHaveBeenCalled();
     });
 
@@ -110,7 +112,7 @@ describe('/api/portfolio/[id]', () => {
       // Arrange
       const nonExistentId = 'non-existent-id';
       mockPortfolioQueries.getById.mockResolvedValue(null);
-      
+
       const mockError = new Error('Portfolio item not found');
       const mockErrorResponse = TestUtils.createErrorResponse(
         'Portfolio item not found',
@@ -329,15 +331,12 @@ describe('/api/portfolio/[id]', () => {
       mockPortfolioQueries.getById.mockResolvedValue(mockPortfolioItem);
       mockPortfolioQueries.getRelatedItems.mockResolvedValue([]);
 
-      const request = TestUtils.createMockRequest(
-        customContext.url,
-        {
-          headers: {
-            'x-forwarded-for': customContext.ip,
-            'user-agent': customContext.userAgent,
-          },
-        }
-      );
+      const request = TestUtils.createMockRequest(customContext.url, {
+        headers: {
+          'x-forwarded-for': customContext.ip,
+          'user-agent': customContext.userAgent,
+        },
+      });
       const mockParams = Promise.resolve({ id: validPortfolioId });
 
       // Act
@@ -370,7 +369,7 @@ describe('/api/portfolio/[id]', () => {
       const request = TestUtils.createMockRequest(
         'http://localhost:3000/api/portfolio/123'
       );
-      // Simulate non-string ID (though in practice, route params are strings)
+      // Simulate invalid ID (though in practice, route params are strings)
       const mockParams = Promise.resolve({ id: null as any });
 
       // Act
@@ -404,11 +403,13 @@ describe('/api/portfolio/[id]', () => {
       const responseData = await TestUtils.extractJsonResponse(response);
 
       // Assert
-      expect(TestUtils.validateApiResponse(responseData, {
-        success: true,
-        hasData: true,
-        hasError: false,
-      })).toBe(true);
+      expect(
+        TestUtils.validateApiResponse(responseData, {
+          success: true,
+          hasData: true,
+          hasError: false,
+        })
+      ).toBe(true);
 
       // Validate data structure
       expect(responseData.data).toHaveProperty('item');

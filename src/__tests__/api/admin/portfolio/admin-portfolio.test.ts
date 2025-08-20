@@ -1,21 +1,19 @@
-
 /**
  * Unit tests for /api/admin/portfolio routes
  */
 // Import mock setup FIRST to ensure mocks are established
 import '@/__tests__/setup/mock-setup';
-import { NextRequest } from 'next/server';
-import { GET } from '@/app/api/admin/portfolio/route';
-import { TestUtils } from '@/__tests__/utils/test-utils';
-import { MockFactories } from '@/__tests__/utils/mock-factories';
 import {
-  resetAllMocks,
-  mockPortfolioQueries,
-  mockGetRequestContext,
   defaultRequestContext,
   mockErrorHandler,
+  mockGetRequestContext,
   mockLogger,
+  mockPortfolioQueries,
+  resetAllMocks,
 } from '@/__tests__/setup/mock-setup';
+import { MockFactories } from '@/__tests__/utils/mock-factories';
+import { TestUtils } from '@/__tests__/utils/test-utils';
+import { GET } from '@/app/api/admin/portfolio/route';
 
 describe('/api/admin/portfolio', () => {
   beforeEach(() => {
@@ -50,7 +48,7 @@ describe('/api/admin/portfolio', () => {
       expect(response.status).toBe(200);
       expect(responseData).toEqual({
         success: true,
-        data: mockPaginationResult.items,
+        data: TestUtils.simulateJsonSerialization(mockPaginationResult.items),
         pagination: mockPaginationResult.pagination,
       });
 
@@ -73,11 +71,10 @@ describe('/api/admin/portfolio', () => {
     it('should handle query parameters correctly', async () => {
       // Arrange
       const filteredResult = MockFactories.createPaginatedResult(
-        MockFactories.createMultiple(
-          MockFactories.createMockPortfolioItem,
-          3,
-          { status: 'PUBLISHED', categoryId: 'nature-category' }
-        ),
+        MockFactories.createMultiple(MockFactories.createMockPortfolioItem, 3, {
+          status: 'PUBLISHED',
+          categoryId: 'nature-category',
+        }),
         2,
         5,
         10
@@ -106,7 +103,7 @@ describe('/api/admin/portfolio', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(responseData.data).toEqual(filteredResult.items);
+      expect(responseData.data).toEqual(TestUtils.simulateJsonSerialization(filteredResult.items));
       expect(responseData.pagination).toEqual(filteredResult.pagination);
 
       expect(mockPortfolioQueries.getAllItems).toHaveBeenCalledWith({
@@ -252,7 +249,7 @@ describe('/api/admin/portfolio', () => {
     it('should filter by all supported status values', async () => {
       // Arrange
       const statuses = ['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED'] as const;
-      
+
       for (const status of statuses) {
         const filteredResult = MockFactories.createPaginatedResult(
           MockFactories.createMultiple(
@@ -287,13 +284,21 @@ describe('/api/admin/portfolio', () => {
 
     it('should support all ordering options', async () => {
       // Arrange
-      const orderByOptions = ['createdAt', 'publishedAt', 'viewCount', 'title'] as const;
+      const orderByOptions = [
+        'createdAt',
+        'publishedAt',
+        'viewCount',
+        'title',
+      ] as const;
       const orderDirections = ['asc', 'desc'] as const;
 
       for (const orderBy of orderByOptions) {
         for (const orderDirection of orderDirections) {
           const mockResult = MockFactories.createPaginatedResult(
-            MockFactories.createMultiple(MockFactories.createMockPortfolioItem, 3)
+            MockFactories.createMultiple(
+              MockFactories.createMockPortfolioItem,
+              3
+            )
           );
 
           mockPortfolioQueries.getAllItems.mockResolvedValue(mockResult);
@@ -458,12 +463,14 @@ describe('/api/admin/portfolio', () => {
       const responseData = await TestUtils.extractJsonResponse(response);
 
       // Assert
-      expect(TestUtils.validateApiResponse(responseData, {
-        success: true,
-        hasData: true,
-        hasError: false,
-        hasPagination: true,
-      })).toBe(true);
+      expect(
+        TestUtils.validateApiResponse(responseData, {
+          success: true,
+          hasData: true,
+          hasError: false,
+          hasPagination: true,
+        })
+      ).toBe(true);
 
       // Validate pagination structure
       expect(TestUtils.validatePagination(responseData.pagination)).toBe(true);
@@ -510,7 +517,7 @@ describe('/api/admin/portfolio', () => {
       };
 
       mockGetRequestContext.mockReturnValue(customContext);
-      
+
       const dbError = new Error('Connection timeout');
       mockPortfolioQueries.getAllItems.mockRejectedValue(dbError);
 

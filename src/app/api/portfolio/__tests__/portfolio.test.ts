@@ -1,7 +1,12 @@
-
 // Import mock setup FIRST to ensure mocks are established
-import '@/__tests__/setup/mock-setup';
 import { NextRequest, NextResponse } from 'next/server';
+
+import '@/__tests__/setup/mock-setup';
+import { PortfolioQueries } from '@/lib/db-utils';
+import { ErrorHandler } from '@/lib/error-handler';
+import { Logger } from '@/lib/logger';
+import { getRequestContext } from '@/lib/middleware/logging';
+
 import { GET, POST } from '../route';
 
 // Mock dependencies
@@ -10,22 +15,23 @@ jest.mock('@/lib/error-handler');
 jest.mock('@/lib/logger');
 jest.mock('@/lib/middleware/logging');
 
-import { PortfolioQueries } from '@/lib/db-utils';
-import { ErrorHandler } from '@/lib/error-handler';
-import { Logger } from '@/lib/logger';
-import { getRequestContext } from '@/lib/middleware/logging';
-
 // Mock implementations
-const mockPortfolioQueries = PortfolioQueries as jest.Mocked<typeof PortfolioQueries>;
+const mockPortfolioQueries = PortfolioQueries as jest.Mocked<
+  typeof PortfolioQueries
+>;
 const mockErrorHandler = ErrorHandler as jest.Mocked<typeof ErrorHandler>;
 const mockLogger = Logger as jest.Mocked<typeof Logger>;
-const mockGetRequestContext = getRequestContext as jest.MockedFunction<typeof getRequestContext>;
+const mockGetRequestContext = getRequestContext as jest.MockedFunction<
+  typeof getRequestContext
+>;
 
 // Mock request context
 const mockRequestContext = {
   requestId: 'test-request-id-123',
+  startTime: Date.now(),
   method: 'GET',
   url: 'http://localhost:3000/api/portfolio',
+  pathname: '/api/portfolio',
   ip: '127.0.0.1',
   userAgent: 'jest/test-agent',
   searchParams: {},
@@ -34,7 +40,7 @@ const mockRequestContext = {
 describe('/api/portfolio', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup default mock implementations
     mockGetRequestContext.mockReturnValue(mockRequestContext);
     mockLogger.apiLog = jest.fn();
@@ -52,31 +58,51 @@ describe('/api/portfolio', () => {
           id: '1',
           title: 'Test Image 1',
           description: 'Test description',
-          mediaType: 'IMAGE',
+          mediaType: 'IMAGE' as any,
           filePath: '/test/image1.jpg',
           status: 'PUBLISHED',
           viewCount: 10,
           createdAt: new Date().toISOString(),
+          category: {
+            id: 'cat-1',
+            name: 'Nature',
+            slug: 'nature',
+            description: null,
+            sortOrder: 1,
+            coverImage: null,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+          },
         },
         {
           id: '2',
           title: 'Test Image 2',
           description: 'Another test description',
-          mediaType: 'IMAGE',
+          mediaType: 'IMAGE' as any,
           filePath: '/test/image2.jpg',
           status: 'PUBLISHED',
           viewCount: 5,
           createdAt: new Date().toISOString(),
+          category: {
+            id: 'cat-2',
+            name: 'Travel',
+            slug: 'travel',
+            description: null,
+            sortOrder: 2,
+            coverImage: null,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+          },
         },
       ];
 
       const mockPagination = {
-        currentPage: 1,
+        page: 1,
+        limit: 12,
+        total: 2,
         totalPages: 1,
-        totalItems: 2,
-        itemsPerPage: 12,
-        hasNextPage: false,
-        hasPreviousPage: false,
+        hasNext: false,
+        hasPrev: false,
       };
 
       mockPortfolioQueries.getPublishedItems.mockResolvedValue({
@@ -113,21 +139,23 @@ describe('/api/portfolio', () => {
       const mockResult = {
         items: [],
         pagination: {
-          currentPage: 2,
+          page: 2,
+          limit: 10,
+          total: 30,
           totalPages: 3,
-          totalItems: 30,
-          itemsPerPage: 10,
-          hasNextPage: true,
-          hasPreviousPage: true,
+          hasNext: true,
+          hasPrev: true,
         },
       };
 
       mockPortfolioQueries.getPublishedItems.mockResolvedValue(mockResult);
 
-      const request = new NextRequest('http://localhost:3000/api/portfolio?page=2&limit=10&category=nature&featured=true&orderBy=viewCount&orderDirection=asc');
+      const request = new NextRequest(
+        'http://localhost:3000/api/portfolio?page=2&limit=10&category=nature&featured=true&orderBy=viewCount&orderDirection=asc'
+      );
 
       // Act
-      const response = await GET(request);
+      await GET(request);
 
       // Assert
       expect(mockPortfolioQueries.getPublishedItems).toHaveBeenCalledWith({
@@ -142,16 +170,23 @@ describe('/api/portfolio', () => {
 
     it('should validate page parameter and return error for invalid page', async () => {
       // Arrange
-      const mockError = new Error('Page must be greater than 0');
-      const mockErrorResponse = NextResponse.json(
-        { success: false, error: 'Validation error' },
+      const mockError = {
+        message: 'Page must be greater than 0',
+        type: 'VALIDATION_ERROR',
+        statusCode: 400,
+        isOperational: true,
+      };
+      const mockErrorResponse = Promise.resolve(NextResponse.json(
+        { success: false as const, error: 'Validation error', timestamp: new Date().toISOString() },
         { status: 400 }
-      );
+      ));
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError);
+      mockErrorHandler.createValidationError.mockReturnValue(mockError as any);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
-      const request = new NextRequest('http://localhost:3000/api/portfolio?page=0');
+      const request = new NextRequest(
+        'http://localhost:3000/api/portfolio?page=0'
+      );
 
       // Act
       const response = await GET(request);
@@ -159,10 +194,12 @@ describe('/api/portfolio', () => {
 
       // Assert
       expect(response.status).toBe(400);
-      expect(responseData).toEqual({
-        success: false,
-        error: 'Validation error',
-      });
+      expect(responseData).toEqual(
+        expect.objectContaining({
+          success: false,
+          error: 'Validation error',
+        })
+      );
 
       expect(mockErrorHandler.createValidationError).toHaveBeenCalledWith(
         'Page must be greater than 0',
@@ -172,16 +209,23 @@ describe('/api/portfolio', () => {
 
     it('should validate limit parameter and return error for invalid limit', async () => {
       // Arrange
-      const mockError = new Error('Limit must be greater than 0');
-      const mockErrorResponse = NextResponse.json(
-        { success: false, error: 'Validation error' },
+      const mockError = {
+        message: 'Limit must be greater than 0',
+        type: 'VALIDATION_ERROR',
+        statusCode: 400,
+        isOperational: true,
+      };
+      const mockErrorResponse = Promise.resolve(NextResponse.json(
+        { success: false as const, error: 'Validation error', timestamp: new Date().toISOString() },
         { status: 400 }
-      );
+      ));
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError);
+      mockErrorHandler.createValidationError.mockReturnValue(mockError as any);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
-      const request = new NextRequest('http://localhost:3000/api/portfolio?limit=0');
+      const request = new NextRequest(
+        'http://localhost:3000/api/portfolio?limit=0'
+      );
 
       // Act
       const response = await GET(request);
@@ -199,18 +243,20 @@ describe('/api/portfolio', () => {
       const mockResult = {
         items: [],
         pagination: {
-          currentPage: 1,
+          page: 1,
+          limit: 50,
+          total: 0,
           totalPages: 1,
-          totalItems: 0,
-          itemsPerPage: 50,
-          hasNextPage: false,
-          hasPreviousPage: false,
+          hasNext: false,
+          hasPrev: false,
         },
       };
 
       mockPortfolioQueries.getPublishedItems.mockResolvedValue(mockResult);
 
-      const request = new NextRequest('http://localhost:3000/api/portfolio?limit=100');
+      const request = new NextRequest(
+        'http://localhost:3000/api/portfolio?limit=100'
+      );
 
       // Act
       await GET(request);
@@ -229,10 +275,10 @@ describe('/api/portfolio', () => {
     it('should handle database errors gracefully', async () => {
       // Arrange
       const dbError = new Error('Database connection failed');
-      const mockErrorResponse = NextResponse.json(
-        { success: false, error: 'Internal server error' },
+      const mockErrorResponse = Promise.resolve(NextResponse.json(
+        { success: false as const, error: 'Internal server error', timestamp: new Date().toISOString() },
         { status: 500 }
-      );
+      ));
 
       mockPortfolioQueries.getPublishedItems.mockRejectedValue(dbError);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
@@ -272,16 +318,37 @@ describe('/api/portfolio', () => {
 
       const mockCreatedItem = {
         id: 'new-item-id',
-        ...portfolioData,
+        title: portfolioData.title,
+        description: portfolioData.description,
+        mediaType: portfolioData.mediaType as any,
+        filePath: portfolioData.filePath,
+        thumbnailPath: null,
         tags: JSON.stringify(portfolioData.tags),
         metadata: JSON.stringify(portfolioData.metadata),
+        status: portfolioData.status,
+        featured: portfolioData.featured,
+        sortOrder: portfolioData.sortOrder,
         viewCount: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         publishedAt: null,
+        categoryId: portfolioData.categoryId,
+        userId: null,
+        category: {
+          id: 'category-1',
+          name: 'Nature',
+          slug: 'nature',
+          description: null,
+          sortOrder: 1,
+          coverImage: null,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+        },
       };
 
-      mockPortfolioQueries.createPortfolioItem.mockResolvedValue(mockCreatedItem);
+      mockPortfolioQueries.createPortfolioItem.mockResolvedValue(
+        mockCreatedItem
+      );
 
       const request = new NextRequest('http://localhost:3000/api/portfolio', {
         method: 'POST',
@@ -308,7 +375,7 @@ describe('/api/portfolio', () => {
         expect.objectContaining({
           title: portfolioData.title,
           description: portfolioData.description,
-          mediaType: portfolioData.mediaType,
+          mediaType: portfolioData.mediaType as any,
           filePath: portfolioData.filePath,
           categoryId: portfolioData.categoryId,
           status: portfolioData.status,
@@ -325,13 +392,18 @@ describe('/api/portfolio', () => {
         filePath: '/test.jpg',
       };
 
-      const mockError = new Error('Invalid portfolio data');
-      const mockErrorResponse = NextResponse.json(
-        { success: false, error: 'Validation error' },
+      const mockError = {
+        message: 'Invalid portfolio data',
+        type: 'VALIDATION_ERROR',
+        statusCode: 400,
+        isOperational: true,
+      };
+      const mockErrorResponse = Promise.resolve(NextResponse.json(
+        { success: false as const, error: 'Validation error', timestamp: new Date().toISOString() },
         { status: 400 }
-      );
+      ));
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError);
+      mockErrorHandler.createValidationError.mockReturnValue(mockError as any);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
       const request = new NextRequest('http://localhost:3000/api/portfolio', {
@@ -360,10 +432,10 @@ describe('/api/portfolio', () => {
       };
 
       const dbError = new Error('Database insert failed');
-      const mockErrorResponse = NextResponse.json(
-        { success: false, error: 'Internal server error' },
+      const mockErrorResponse = Promise.resolve(NextResponse.json(
+        { success: false as const, error: 'Internal server error', timestamp: new Date().toISOString() },
         { status: 500 }
-      );
+      ));
 
       mockPortfolioQueries.createPortfolioItem.mockRejectedValue(dbError);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
@@ -395,12 +467,12 @@ describe('/api/portfolio', () => {
       mockPortfolioQueries.getPublishedItems.mockResolvedValue({
         items: [],
         pagination: {
-          currentPage: 1,
+          page: 1,
+          limit: 12,
+          total: 0,
           totalPages: 1,
-          totalItems: 0,
-          itemsPerPage: 12,
-          hasNextPage: false,
-          hasPreviousPage: false,
+          hasNext: false,
+          hasPrev: false,
         },
       });
 
@@ -431,12 +503,12 @@ describe('/api/portfolio', () => {
       mockPortfolioQueries.getPublishedItems.mockResolvedValue({
         items: [],
         pagination: {
-          currentPage: 1,
+          page: 1,
+          limit: 12,
+          total: 0,
           totalPages: 1,
-          totalItems: 0,
-          itemsPerPage: 12,
-          hasNextPage: false,
-          hasPreviousPage: false,
+          hasNext: false,
+          hasPrev: false,
         },
       });
 

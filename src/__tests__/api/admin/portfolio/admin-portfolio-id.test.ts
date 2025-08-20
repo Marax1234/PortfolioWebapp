@@ -1,22 +1,18 @@
-
 /**
  * Unit tests for /api/admin/portfolio/[id] routes
  */
 // Import mock setup FIRST to ensure mocks are established
 import '@/__tests__/setup/mock-setup';
-
-import { NextRequest } from 'next/server';
-import { GET, PUT } from '@/app/api/admin/portfolio/[id]/route';
-import { TestUtils } from '@/__tests__/utils/test-utils';
-import { MockFactories } from '@/__tests__/utils/mock-factories';
 import {
-  resetAllMocks,
-  mockPortfolioQueries,
-  mockGetRequestContext,
   defaultRequestContext,
   mockErrorHandler,
   mockLogger,
+  mockPortfolioQueries,
+  resetAllMocks,
 } from '@/__tests__/setup/mock-setup';
+import { MockFactories } from '@/__tests__/utils/mock-factories';
+import { TestUtils } from '@/__tests__/utils/test-utils';
+import { GET, PUT } from '@/app/api/admin/portfolio/[id]/route';
 
 describe('/api/admin/portfolio/[id]', () => {
   beforeEach(() => {
@@ -57,7 +53,9 @@ describe('/api/admin/portfolio/[id]', () => {
         },
       });
 
-      expect(mockPortfolioQueries.getByIdForAdmin).toHaveBeenCalledWith(validPortfolioId);
+      expect(mockPortfolioQueries.getByIdForAdmin).toHaveBeenCalledWith(
+        validPortfolioId
+      );
       expect(response.headers.get('x-request-id')).toBe(
         defaultRequestContext.requestId
       );
@@ -89,7 +87,9 @@ describe('/api/admin/portfolio/[id]', () => {
 
       // Assert
       expect(response.status).toBe(404);
-      expect(mockPortfolioQueries.getByIdForAdmin).toHaveBeenCalledWith(nonExistentId);
+      expect(mockPortfolioQueries.getByIdForAdmin).toHaveBeenCalledWith(
+        nonExistentId
+      );
       expect(mockErrorHandler.createNotFoundError).toHaveBeenCalledWith(
         'Portfolio item not found'
       );
@@ -136,7 +136,9 @@ describe('/api/admin/portfolio/[id]', () => {
         metadata: '{"unclosed": object', // Malformed JSON
       });
 
-      mockPortfolioQueries.getByIdForAdmin.mockResolvedValue(itemWithMalformedJSON);
+      mockPortfolioQueries.getByIdForAdmin.mockResolvedValue(
+        itemWithMalformedJSON
+      );
 
       const request = TestUtils.createMockRequest(
         `http://localhost:3000/api/admin/portfolio/${validPortfolioId}`
@@ -147,10 +149,10 @@ describe('/api/admin/portfolio/[id]', () => {
       try {
         const response = await GET(request, { params: mockParams });
         // If it succeeds, JSON.parse should have been called with fallback values
-        const responseData = await TestUtils.extractJsonResponse(response);
+        await TestUtils.extractJsonResponse(response);
         // Either the endpoint handles it gracefully, or it should throw an error
         expect(response.status).toBeGreaterThanOrEqual(200);
-      } catch (error) {
+      } catch {
         // If it throws, it should be handled by error handler
         expect(mockErrorHandler.handleError).toHaveBeenCalled();
       }
@@ -219,7 +221,11 @@ describe('/api/admin/portfolio/[id]', () => {
       // Arrange
       const invalidUpdateData = {
         title: '', // Empty title should fail validation
-        status: 'INVALID_STATUS' as any, // Invalid status
+        status: 'INVALID_STATUS' as
+          | 'DRAFT'
+          | 'REVIEW'
+          | 'PUBLISHED'
+          | 'ARCHIVED', // Invalid status
       };
 
       const mockError = new Error('Invalid update data');
@@ -258,7 +264,12 @@ describe('/api/admin/portfolio/[id]', () => {
 
     it('should validate all supported status transitions', async () => {
       // Arrange
-      const validStatuses = ['DRAFT', 'REVIEW', 'PUBLISHED', 'ARCHIVED'] as const;
+      const validStatuses = [
+        'DRAFT',
+        'REVIEW',
+        'PUBLISHED',
+        'ARCHIVED',
+      ] as const;
 
       for (const status of validStatuses) {
         const updateData = { status };
@@ -398,12 +409,11 @@ describe('/api/admin/portfolio/[id]', () => {
 
     it('should handle malformed JSON in request body', async () => {
       // Arrange
-      const request = new NextRequest(
+      const request = TestUtils.createMockRequest(
         `http://localhost:3000/api/admin/portfolio/${validPortfolioId}`,
         {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: 'invalid-json-body', // Malformed JSON
+          body: JSON.parse('"invalid-json-body"'), // This will work with createMockRequest
         }
       );
       const mockParams = Promise.resolve({ id: validPortfolioId });
@@ -411,7 +421,7 @@ describe('/api/admin/portfolio/[id]', () => {
       // Act & Assert
       try {
         await PUT(request, { params: mockParams });
-      } catch (error) {
+      } catch {
         // Should be handled by error handler
         expect(mockErrorHandler.handleError).toHaveBeenCalled();
       }
@@ -524,11 +534,13 @@ describe('/api/admin/portfolio/[id]', () => {
       const responseData = await TestUtils.extractJsonResponse(response);
 
       // Assert
-      expect(TestUtils.validateApiResponse(responseData, {
-        success: true,
-        hasData: true,
-        hasError: false,
-      })).toBe(true);
+      expect(
+        TestUtils.validateApiResponse(responseData, {
+          success: true,
+          hasData: true,
+          hasError: false,
+        })
+      ).toBe(true);
 
       // Validate data structure
       expect(responseData.data).toHaveProperty('id');

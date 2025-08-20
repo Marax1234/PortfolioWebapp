@@ -1,29 +1,23 @@
-
 /**
  * Unit tests for NextAuth.js authentication configuration
  */
 // Import mock setup FIRST to ensure mocks are established
 import '@/__tests__/setup/mock-setup';
-import { NextRequest } from 'next/server';
-import { UserService } from '@/lib/services/user-service';
-import { TestUtils } from '@/__tests__/utils/test-utils';
-import { MockFactories } from '@/__tests__/utils/mock-factories';
 import {
-  resetAllMocks,
-  mockAuthenticatedSession,
-  prismaMock,
   mockLogger,
-  mockBcrypt,
   mockUserService,
+  resetAllMocks,
 } from '@/__tests__/setup/mock-setup';
-
+import { MockFactories } from '@/__tests__/utils/mock-factories';
 // Import authOptions AFTER mocks are set up
 import { authOptions } from '@/lib/auth';
+import { CredentialsConfig } from 'next-auth/providers/credentials';
+import { User } from 'next-auth';
 
 describe('NextAuth Configuration', () => {
   beforeEach(() => {
     resetAllMocks();
-    
+
     // Reset Logger mocks - use the mocks from mock-setup.ts instead of spies
     mockLogger.generateRequestId.mockReturnValue('test-request-id');
   });
@@ -51,10 +45,10 @@ describe('NextAuth Configuration', () => {
 
       mockUserService.authenticateUser.mockResolvedValue(mockUser);
 
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as CredentialsConfig<Record<string, any>>;
 
       // Act
-      const result = await provider.authorize(mockCredentials, mockRequest);
+      const result = await provider.authorize!(mockCredentials, mockRequest);
 
       // Assert
       expect(result).toEqual({
@@ -82,10 +76,13 @@ describe('NextAuth Configuration', () => {
     it('should reject user with missing credentials', async () => {
       // Arrange
       const incompleteCredentials = { email: 'admin@example.com' };
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as CredentialsConfig<Record<string, any>>;
 
       // Act
-      const result = await provider.authorize(incompleteCredentials, mockRequest);
+      const result = await provider.authorize!(
+        incompleteCredentials,
+        mockRequest
+      );
 
       // Assert
       expect(result).toBeNull();
@@ -101,10 +98,10 @@ describe('NextAuth Configuration', () => {
     it('should reject user with invalid credentials', async () => {
       // Arrange
       mockUserService.authenticateUser.mockResolvedValue(null);
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as CredentialsConfig<Record<string, any>>;
 
       // Act
-      const result = await provider.authorize(mockCredentials, mockRequest);
+      const result = await provider.authorize!(mockCredentials, mockRequest);
 
       // Assert
       expect(result).toBeNull();
@@ -125,16 +122,18 @@ describe('NextAuth Configuration', () => {
       });
 
       mockUserService.authenticateUser.mockResolvedValue(mockUser);
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as CredentialsConfig<Record<string, any>>;
 
       // Act
-      const result = await provider.authorize(mockCredentials, mockRequest);
+      const result = await provider.authorize!(mockCredentials, mockRequest);
 
       // Assert
       expect(result).toBeNull();
       expect(mockLogger.securityLog).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('Access denied - insufficient privileges'),
+          message: expect.stringContaining(
+            'Access denied - insufficient privileges'
+          ),
           eventType: 'UNAUTHORIZED_ACCESS',
           severity: 'HIGH',
         })
@@ -145,10 +144,10 @@ describe('NextAuth Configuration', () => {
       // Arrange
       const systemError = new Error('Database connection failed');
       mockUserService.authenticateUser.mockRejectedValue(systemError);
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as CredentialsConfig<Record<string, any>>;
 
       // Act
-      const result = await provider.authorize(mockCredentials, mockRequest);
+      const result = await provider.authorize!(mockCredentials, mockRequest);
 
       // Assert
       expect(result).toBeNull();
@@ -175,7 +174,7 @@ describe('NextAuth Configuration', () => {
         role: 'ADMIN',
       });
       mockUserService.authenticateUser.mockResolvedValue(mockUser);
-      
+
       const requestWithHeaders = {
         headers: {
           'x-forwarded-for': '203.0.113.1',
@@ -183,10 +182,10 @@ describe('NextAuth Configuration', () => {
         },
       };
 
-      const provider = authOptions.providers[0] as any;
+      const provider = authOptions.providers[0] as CredentialsConfig<Record<string, any>>;
 
       // Act
-      await provider.authorize(mockCredentials, requestWithHeaders);
+      await provider.authorize!(mockCredentials, requestWithHeaders);
 
       // Assert
       expect(mockLogger.securityLog).toHaveBeenCalledWith(
@@ -204,14 +203,20 @@ describe('NextAuth Configuration', () => {
       const mockUser = MockFactories.createMockUser({
         role: 'ADMIN',
       });
-      
-      const token = {};
+
+      const token = {
+        id: 'test-user-id',
+        email: 'admin@example.com',
+        role: 'ADMIN' as const,
+        emailVerified: true,
+      };
 
       // Act
       const result = await authOptions.callbacks!.jwt!({
         token,
-        user: mockUser as any,
-      } as any);
+        user: mockUser as User,
+        account: null,
+      });
 
       // Assert
       expect(result).toEqual({
@@ -229,13 +234,16 @@ describe('NextAuth Configuration', () => {
       const existingToken = {
         id: 'existing-id',
         email: 'existing@example.com',
-        role: 'ADMIN',
+        role: 'ADMIN' as const,
+        emailVerified: true,
       };
 
       // Act
       const result = await authOptions.callbacks!.jwt!({
         token: existingToken,
-      } as any);
+        user: undefined as any,
+        account: null,
+      });
 
       // Assert
       expect(result).toEqual(existingToken);
@@ -255,15 +263,26 @@ describe('NextAuth Configuration', () => {
       };
 
       const session = {
-        user: {} as any,
+        user: {
+          id: 'test-user-id',
+          email: 'admin@example.com',
+          role: 'ADMIN' as const,
+          emailVerified: true,
+        },
         expires: new Date().toISOString(),
       };
 
       // Act
       const result = await authOptions.callbacks!.session!({
-        session,
+        session: {
+          ...session,
+          expires: session.expires,
+        },
         token: mockToken,
-      } as any);
+        user: undefined as any,
+        newSession: undefined as any,
+        trigger: undefined as any,
+      });
 
       // Assert
       expect(result.user).toEqual({
@@ -284,12 +303,19 @@ describe('NextAuth Configuration', () => {
         role: 'ADMIN',
       });
 
-      const mockAccount = { provider: 'credentials' };
+      const mockAccount = {
+        provider: 'credentials',
+        providerAccountId: 'test-account',
+        type: 'oauth',
+      };
 
       // Act
       await authOptions.events!.signIn!({
-        user: mockUser as any,
-        account: mockAccount,
+        user: mockUser as User,
+        account: {
+          ...mockAccount,
+          type: 'oauth' as any,
+        },
         isNewUser: false,
       });
 
@@ -322,13 +348,23 @@ describe('NextAuth Configuration', () => {
         user: {
           id: 'test-user-id',
           email: 'admin@example.com',
+          role: 'ADMIN' as const,
+          emailVerified: true,
         },
       };
 
       // Act
       await authOptions.events!.signOut!({
-        session: mockSession as any,
-        token: null as any,
+        session: {
+          ...mockSession,
+          expires: new Date().toISOString(),
+        },
+        token: {
+          id: 'test-user-id',
+          email: 'admin@example.com',
+          role: 'ADMIN' as const,
+          emailVerified: true,
+        },
       });
 
       // Assert
@@ -352,7 +388,7 @@ describe('NextAuth Configuration', () => {
 
       // Act
       await authOptions.events!.createUser!({
-        user: mockUser as any,
+        user: mockUser as User,
       });
 
       // Assert
@@ -375,14 +411,23 @@ describe('NextAuth Configuration', () => {
         user: {
           id: 'test-user-id',
           email: 'admin@example.com',
-          role: 'ADMIN',
+          role: 'ADMIN' as const,
+          emailVerified: true,
         },
       };
 
       // Act
       await authOptions.events!.session!({
-        session: mockSession as any,
-        token: null as any,
+        session: {
+          ...mockSession,
+          expires: new Date().toISOString(),
+        },
+        token: {
+          id: 'test-user-id',
+          email: 'admin@example.com', 
+          role: 'ADMIN' as const,
+          emailVerified: true,
+        },
       });
 
       // Assert
@@ -419,34 +464,34 @@ describe('NextAuth Configuration', () => {
       });
     });
 
-    it('should use secure cookies in production', () => {
+    it('should use secure cookies in production', async () => {
       // Mock production environment
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
+      (process.env as { NODE_ENV: string }).NODE_ENV = 'production';
 
       // Re-import to get updated config
       jest.resetModules();
-      const { authOptions: prodAuthOptions } = require('@/lib/auth');
+      const { authOptions: prodAuthOptions } = await import('@/lib/auth');
 
       expect(prodAuthOptions.useSecureCookies).toBe(true);
 
       // Restore environment
-      process.env.NODE_ENV = originalEnv;
+      (process.env as { NODE_ENV: string }).NODE_ENV = originalEnv;
     });
 
-    it('should have debug enabled in development', () => {
+    it('should have debug enabled in development', async () => {
       // Mock development environment
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'development';
+      (process.env as { NODE_ENV: string }).NODE_ENV = 'development';
 
       // Re-import to get updated config
       jest.resetModules();
-      const { authOptions: devAuthOptions } = require('@/lib/auth');
+      const { authOptions: devAuthOptions } = await import('@/lib/auth');
 
       expect(devAuthOptions.debug).toBe(true);
 
       // Restore environment
-      process.env.NODE_ENV = originalEnv;
+      (process.env as { NODE_ENV: string }).NODE_ENV = originalEnv;
     });
   });
 });

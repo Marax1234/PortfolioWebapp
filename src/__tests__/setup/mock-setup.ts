@@ -295,39 +295,51 @@ export const defaultRequestContext = {
  */
 export const resetAllMocks = () => {
   jest.clearAllMocks();
-  
+
   // Setup default mock implementations
   mockGetRequestContext.mockReturnValue(defaultRequestContext);
-  
+
   // Setup bcrypt defaults
   mockBcrypt.hash.mockResolvedValue('$2b$10$hashedpassword');
   mockBcrypt.compare.mockResolvedValue(true);
   mockBcrypt.genSalt.mockResolvedValue('$2b$10$salt');
-  
+
   // Setup email defaults
   mockEmailService.sendContactNotification.mockResolvedValue(true);
   mockEmailService.sendInquiryConfirmation.mockResolvedValue(true);
   mockEmailService.sendInquiryReply.mockResolvedValue(true);
-  
+
   // Setup validation defaults
-  mockValidation.portfolioItemSchema.safeParse.mockReturnValue({ success: true, data: {} });
-  mockValidation.contactFormSchema.safeParse.mockReturnValue({ success: true, data: {} });
-  mockValidation.categorySchema.safeParse.mockReturnValue({ success: true, data: {} });
-  mockValidation.inquiryUpdateSchema.safeParse.mockReturnValue({ success: true, data: {} });
-  
+  mockValidation.portfolioItemSchema.safeParse.mockReturnValue({
+    success: true,
+    data: {},
+  });
+  mockValidation.contactFormSchema.safeParse.mockReturnValue({
+    success: true,
+    data: {},
+  });
+  mockValidation.categorySchema.safeParse.mockReturnValue({
+    success: true,
+    data: {},
+  });
+  mockValidation.inquiryUpdateSchema.safeParse.mockReturnValue({
+    success: true,
+    data: {},
+  });
+
   // Setup auth defaults
   mockAuth.verifyPassword.mockResolvedValue(true);
   mockAuth.hashPassword.mockResolvedValue('$2b$10$hashedpassword');
   mockAuth.generateToken.mockReturnValue('mock-jwt-token');
   mockAuth.verifyToken.mockReturnValue({ userId: 'mock-user-id' });
-  
+
   // Setup file upload defaults
   mockFileUpload.uploadFile.mockResolvedValue({
     filePath: '/uploads/mock-file.jpg',
     thumbnailPath: '/uploads/thumbnails/mock-file-thumb.jpg',
   });
   mockFileUpload.validateFile.mockReturnValue({ isValid: true });
-  
+
   // Setup transporter verify
   mockTransporter.verify.mockResolvedValue(true);
   mockNodemailer.createTransporter.mockReturnValue(mockTransporter);
@@ -336,7 +348,9 @@ export const resetAllMocks = () => {
 /**
  * Sets up authenticated user session for tests
  */
-export const mockAuthenticatedSession = (userOverrides: any = {}) => {
+export const mockAuthenticatedSession = (
+  userOverrides: Record<string, unknown> = {}
+) => {
   const user = {
     id: 'test-user-id',
     email: 'test@example.com',
@@ -364,7 +378,10 @@ export const mockUnauthenticatedSession = () => {
 /**
  * Sets up database error for tests
  */
-export const mockDatabaseError = (operation: string, error: Error = new Error('Database error')) => {
+export const mockDatabaseError = (
+  operation: string,
+  error: Error = new Error('Database error')
+) => {
   switch (operation) {
     case 'findMany':
       prismaMock.portfolioItem.findMany.mockRejectedValue(error);

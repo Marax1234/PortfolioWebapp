@@ -1,27 +1,23 @@
-
 /**
  * Unit tests for /api/debug route
  */
 // Import mock setup FIRST to ensure mocks are established
 import '@/__tests__/setup/mock-setup';
-
-import { NextRequest } from 'next/server';
-import { GET } from '@/app/api/debug/route';
-import { TestUtils } from '@/__tests__/utils/test-utils';
-import { MockFactories } from '@/__tests__/utils/mock-factories';
 import {
-  resetAllMocks,
   mockGetServerSession,
-  mockAuthenticatedSession,
   mockUnauthenticatedSession,
+  resetAllMocks,
 } from '@/__tests__/setup/mock-setup';
+import { MockFactories } from '@/__tests__/utils/mock-factories';
+import { TestUtils } from '@/__tests__/utils/test-utils';
+import { GET } from '@/app/api/debug/route';
 
 describe('/api/debug', () => {
   beforeEach(() => {
     resetAllMocks();
-    
+
     // Mock environment variables
-    process.env.NODE_ENV = 'development';
+    Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', writable: true });
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
     process.env.NEXTAUTH_SECRET = 'test-secret';
   });
@@ -64,7 +60,8 @@ describe('/api/debug', () => {
           user: {
             id: mockSession.user.id,
             email: mockSession.user.email,
-            name: mockSession.user.name,
+            firstName: mockSession.user.firstName,
+            lastName: mockSession.user.lastName,
             role: mockSession.user.role,
           },
           expires: mockSession.expires,
@@ -167,7 +164,7 @@ describe('/api/debug', () => {
       // Arrange
       delete process.env.NEXTAUTH_URL;
       delete process.env.NEXTAUTH_SECRET;
-      
+
       mockUnauthenticatedSession();
 
       const request = TestUtils.createMockRequest(
@@ -183,13 +180,13 @@ describe('/api/debug', () => {
         success: true,
         hasSecret: false,
       });
-      
+
       expect(responseData.nextAuthUrl).toBeUndefined();
     });
 
     it('should return production environment correctly', async () => {
       // Arrange
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
       mockUnauthenticatedSession();
 
       const request = TestUtils.createMockRequest(
@@ -280,11 +277,13 @@ describe('/api/debug', () => {
       const responseData = await TestUtils.extractJsonResponse(response);
 
       // Assert
-      expect(TestUtils.validateApiResponse(responseData, {
-        success: true,
-        hasData: false,
-        hasError: false,
-      })).toBe(true);
+      expect(
+        TestUtils.validateApiResponse(responseData, {
+          success: true,
+          hasData: false,
+          hasError: false,
+        })
+      ).toBe(true);
 
       // Validate required fields
       expect(responseData).toHaveProperty('success');
@@ -313,9 +312,9 @@ describe('/api/debug', () => {
     it('should only be available in development environment', async () => {
       // Note: This test documents expected behavior but doesn't implement it
       // In a real-world scenario, you'd want to add environment checks to the route handler
-      
+
       // Arrange
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
       mockUnauthenticatedSession();
 
       const request = TestUtils.createMockRequest(
@@ -329,7 +328,7 @@ describe('/api/debug', () => {
       // Assert - Currently passes in production, but should be restricted
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
-      
+
       // TODO: Add production restriction to debug endpoint
       // expect(response.status).toBe(404);
       // expect(responseData.error).toContain('Not available in production');

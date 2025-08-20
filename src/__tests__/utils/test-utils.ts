@@ -20,18 +20,18 @@ export class TestUtils {
     options: {
       method?: string;
       headers?: Record<string, string>;
-      body?: any;
+      body?: unknown;
       searchParams?: Record<string, string>;
     } = {}
   ): NextRequest {
     const { method = 'GET', headers = {}, body, searchParams = {} } = options;
-    
+
     const urlWithParams = new URL(url);
     Object.entries(searchParams).forEach(([key, value]) => {
       urlWithParams.searchParams.set(key, value);
     });
 
-    const requestInit: RequestInit = {
+    const requestInit: any = {
       method,
       headers: {
         'Content-Type': 'application/json',
@@ -46,7 +46,6 @@ export class TestUtils {
     return new NextRequest(urlWithParams.toString(), requestInit);
   }
 
-
   /**
    * Extracts JSON response from NextResponse
    */
@@ -60,16 +59,25 @@ export class TestUtils {
   }
 
   /**
+   * Simulates JSON serialization/deserialization that happens in real API responses
+   * This converts Date objects to strings like they would be in actual API responses
+   */
+  static simulateJsonSerialization(obj: unknown): unknown {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  /**
    * Creates a standardized API error response for testing
    */
   static createErrorResponse(
     message: string,
     status: number = 500,
     code?: string,
-    details?: any
+    details?: unknown
   ) {
     return {
       success: false,
+      status,
       error: {
         message,
         code,
@@ -81,8 +89,8 @@ export class TestUtils {
   /**
    * Creates a standardized API success response for testing
    */
-  static createSuccessResponse(data: any, meta?: any) {
-    const response: any = {
+  static createSuccessResponse(data: unknown, meta?: unknown) {
+    const response: Record<string, unknown> = {
       success: true,
       data,
     };
@@ -105,7 +113,9 @@ export class TestUtils {
    * Generates a random string for testing
    */
   static randomString(length: number = 10): string {
-    return Math.random().toString(36).substring(2, 2 + length);
+    return Math.random()
+      .toString(36)
+      .substring(2, 2 + length);
   }
 
   /**
@@ -131,7 +141,7 @@ export class TestUtils {
    * Validates that a response matches the expected structure
    */
   static validateApiResponse(
-    response: any,
+    response: unknown,
     expectedStructure: {
       success?: boolean;
       status?: number;
@@ -142,16 +152,16 @@ export class TestUtils {
   ): boolean {
     const {
       success,
-      status,
       hasData = false,
       hasError = false,
       hasPagination = false,
     } = expectedStructure;
 
-    if (success !== undefined && response.success !== success) return false;
-    if (hasData && !response.data) return false;
-    if (hasError && !response.error) return false;
-    if (hasPagination && !response.pagination) return false;
+    const responseObj = response as Record<string, unknown>;
+    if (success !== undefined && responseObj.success !== success) return false;
+    if (hasData && !responseObj.data) return false;
+    if (hasError && !responseObj.error) return false;
+    if (hasPagination && !responseObj.pagination) return false;
 
     return true;
   }
@@ -159,7 +169,10 @@ export class TestUtils {
   /**
    * Validates pagination structure
    */
-  static validatePagination(pagination: any): boolean {
+  static validatePagination(pagination: unknown): boolean {
+    if (!pagination || typeof pagination !== 'object') return false;
+
+    const paginationObj = pagination as Record<string, unknown>;
     const requiredFields = [
       'currentPage',
       'totalPages',
@@ -169,6 +182,6 @@ export class TestUtils {
       'hasPreviousPage',
     ];
 
-    return requiredFields.every(field => field in pagination);
+    return requiredFields.every(field => field in paginationObj);
   }
 }
