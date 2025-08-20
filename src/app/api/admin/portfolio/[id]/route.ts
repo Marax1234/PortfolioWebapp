@@ -176,7 +176,6 @@ export async function PUT(
 
     // Parse request body
     const body = await request.json();
-    console.log('Update request body:', JSON.stringify(body, null, 2));
 
     // Validate request data
     const validationResult = updatePortfolioSchema.safeParse(body);

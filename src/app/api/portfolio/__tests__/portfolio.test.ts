@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import '@/__tests__/setup/mock-setup';
+import { MockFactories } from '@/__tests__/utils/mock-factories';
 import { PortfolioQueries } from '@/lib/db-utils';
 import { ErrorHandler } from '@/lib/error-handler';
 import { Logger } from '@/lib/logger';
@@ -53,46 +54,42 @@ describe('/api/portfolio', () => {
   describe('GET /api/portfolio', () => {
     it('should return portfolio items with default pagination', async () => {
       // Arrange
+      const mockCategory1 = MockFactories.createMockCategory({
+        id: 'cat-1',
+        name: 'Nature',
+        slug: 'nature',
+      });
+      
+      const mockCategory2 = MockFactories.createMockCategory({
+        id: 'cat-2',
+        name: 'Travel',
+        slug: 'travel',
+      });
+
       const mockPortfolioItems = [
         {
-          id: '1',
-          title: 'Test Image 1',
-          description: 'Test description',
-          mediaType: 'IMAGE' as any,
-          filePath: '/test/image1.jpg',
-          status: 'PUBLISHED',
-          viewCount: 10,
-          createdAt: new Date().toISOString(),
-          category: {
-            id: 'cat-1',
-            name: 'Nature',
-            slug: 'nature',
-            description: null,
-            sortOrder: 1,
-            coverImage: null,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-          },
+          ...MockFactories.createMockPortfolioItem({
+            id: '1',
+            title: 'Test Image 1',
+            description: 'Test description',
+            mediaType: 'IMAGE',
+            filePath: '/test/image1.jpg',
+            status: 'PUBLISHED',
+            viewCount: 10,
+          }),
+          category: mockCategory1,
         },
         {
-          id: '2',
-          title: 'Test Image 2',
-          description: 'Another test description',
-          mediaType: 'IMAGE' as any,
-          filePath: '/test/image2.jpg',
-          status: 'PUBLISHED',
-          viewCount: 5,
-          createdAt: new Date().toISOString(),
-          category: {
-            id: 'cat-2',
-            name: 'Travel',
-            slug: 'travel',
-            description: null,
-            sortOrder: 2,
-            coverImage: null,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-          },
+          ...MockFactories.createMockPortfolioItem({
+            id: '2',
+            title: 'Test Image 2',
+            description: 'Another test description',
+            mediaType: 'IMAGE',
+            filePath: '/test/image2.jpg',
+            status: 'PUBLISHED',
+            viewCount: 5,
+          }),
+          category: mockCategory2,
         },
       ];
 
@@ -120,7 +117,16 @@ describe('/api/portfolio', () => {
       expect(response.status).toBe(200);
       expect(responseData).toEqual({
         success: true,
-        data: mockPortfolioItems,
+        data: mockPortfolioItems.map(item => ({
+          ...item,
+          createdAt: expect.any(String), // Date is serialized as string in JSON response
+          updatedAt: expect.any(String), // Date is serialized as string in JSON response
+          publishedAt: expect.any(String), // Date is serialized as string in JSON response
+          category: {
+            ...item.category,
+            createdAt: expect.any(String), // Date is serialized as string in JSON response
+          },
+        })),
         pagination: mockPagination,
       });
 
@@ -316,34 +322,31 @@ describe('/api/portfolio', () => {
         sortOrder: 0,
       };
 
+      const mockCategory = MockFactories.createMockCategory({
+        id: portfolioData.categoryId,
+        name: 'Nature',
+        slug: 'nature',
+      });
+
       const mockCreatedItem = {
-        id: 'new-item-id',
-        title: portfolioData.title,
-        description: portfolioData.description,
-        mediaType: portfolioData.mediaType as any,
-        filePath: portfolioData.filePath,
-        thumbnailPath: null,
-        tags: JSON.stringify(portfolioData.tags),
-        metadata: JSON.stringify(portfolioData.metadata),
-        status: portfolioData.status,
-        featured: portfolioData.featured,
-        sortOrder: portfolioData.sortOrder,
-        viewCount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        publishedAt: null,
-        categoryId: portfolioData.categoryId,
-        userId: null,
-        category: {
-          id: 'category-1',
-          name: 'Nature',
-          slug: 'nature',
-          description: null,
-          sortOrder: 1,
-          coverImage: null,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        },
+        ...MockFactories.createMockPortfolioItem({
+          id: 'new-item-id',
+          title: portfolioData.title,
+          description: portfolioData.description,
+          mediaType: 'IMAGE',
+          filePath: portfolioData.filePath,
+          thumbnailPath: null,
+          tags: JSON.stringify(portfolioData.tags),
+          metadata: JSON.stringify(portfolioData.metadata),
+          status: 'DRAFT',
+          featured: portfolioData.featured,
+          sortOrder: portfolioData.sortOrder,
+          viewCount: 0,
+          publishedAt: null,
+          categoryId: portfolioData.categoryId,
+          userId: null,
+        }),
+        category: mockCategory,
       };
 
       mockPortfolioQueries.createPortfolioItem.mockResolvedValue(
@@ -366,6 +369,13 @@ describe('/api/portfolio', () => {
         success: true,
         data: {
           ...mockCreatedItem,
+          createdAt: expect.any(String), // Date is serialized as string in JSON response
+          updatedAt: expect.any(String), // Date is serialized as string in JSON response
+          publishedAt: mockCreatedItem.publishedAt ? expect.any(String) : null,
+          category: {
+            ...mockCreatedItem.category,
+            createdAt: expect.any(String), // Date is serialized as string in JSON response
+          },
           tags: portfolioData.tags,
           metadata: portfolioData.metadata,
         },

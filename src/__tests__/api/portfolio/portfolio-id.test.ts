@@ -56,8 +56,18 @@ describe('/api/portfolio/[id]', () => {
       expect(responseData).toEqual({
         success: true,
         data: {
-          item: mockPortfolioItem,
-          relatedItems: mockRelatedItems,
+          item: {
+            ...mockPortfolioItem,
+            createdAt: expect.any(String), // Date is serialized as string in JSON response
+            updatedAt: expect.any(String), // Date is serialized as string in JSON response
+            publishedAt: expect.any(String), // Date is serialized as string in JSON response
+          },
+          relatedItems: mockRelatedItems.map(item => ({
+            ...item,
+            createdAt: expect.any(String), // Date is serialized as string in JSON response
+            updatedAt: expect.any(String), // Date is serialized as string in JSON response
+            publishedAt: expect.any(String), // Date is serialized as string in JSON response
+          })),
         },
       });
 
@@ -98,7 +108,12 @@ describe('/api/portfolio/[id]', () => {
       // Assert
       expect(response.status).toBe(200);
       expect(responseData.data).toEqual({
-        item: mockItemWithoutCategory,
+        item: {
+          ...mockItemWithoutCategory,
+          createdAt: expect.any(String), // Date is serialized as string in JSON response
+          updatedAt: expect.any(String), // Date is serialized as string in JSON response
+          publishedAt: expect.any(String), // Date is serialized as string in JSON response
+        },
         relatedItems: [],
       });
 
