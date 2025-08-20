@@ -1,23 +1,111 @@
-src/**tests**/api/portfolio/portfolio-id.test.ts:391:45 - error TS2322: Type 'Promise<{ id: string |
-null; }>' is not assignable to type 'Promise<{ id: string; }>'. Type '{ id: string | null; }' is not
-assignable to type '{ id: string; }'. Types of property 'id' are incompatible. Type 'string | null'
-is not assignable to type 'string'. Type 'null' is not assignable to type 'string'.
+FAIL src/**tests**/api/auth/nextauth.test.ts ● NextAuth Configuration › Credentials Provider
+Authorization › should authenticate valid admin user successfully
 
-391 const response = await GET(request, { params: mockParams }); ~~~~~~
+    expect(received).toEqual(expected) // deep equality
 
-src/app/api/portfolio/[id]/route.ts:14:17 14 { params }: { params: Promise<{ id: string }> } ~~~~~~
-The expected type comes from property 'params' which is declared here on type '{ params: Promise<{
-id: string; }>; }'
+    Expected: {"email": "admin@example.com", "emailVerified": true, "firstName": "Test", "id": "ik7seiaqm7l", "lastName": "User s42f", "role": "ADMIN"}
+    Received: null
 
-src/**tests**/utils/test-utils.ts:46:54 - error TS2345: Argument of type 'RequestInit' is not
-assignable to parameter of type
-'import("/home/marax/kili/PortfolioWebapp/node_modules/next/dist/server/web/spec-extension/request").RequestInit'.
-Types of property 'signal' are incompatible. Type 'AbortSignal | null | undefined' is not assignable
-to type 'AbortSignal | undefined'. Type 'null' is not assignable to type 'AbortSignal | undefined'.
+      52 |
+      53 |       // Assert
+    > 54 |       expect(result).toEqual({
+         |                      ^
+      55 |         id: mockUser.id,
+      56 |         email: mockUser.email,
+      57 |         firstName: mockUser.firstName,
 
-46 return new NextRequest(urlWithParams.toString(), requestInit); ~~~~~~~~~~~
+      at Object.toEqual (src/__tests__/api/auth/nextauth.test.ts:54:22)
 
-Found 2 errors in 2 files.
+● NextAuth Configuration › Credentials Provider Authorization › should reject user with missing
+credentials
 
-Errors Files 1 src/**tests**/api/portfolio/portfolio-id.test.ts:391 1
-src/**tests**/utils/test-utils.ts:46
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: ObjectContaining {"eventType": "LOGIN_FAILURE", "message": "Login attempt with missing credentials", "severity": "MEDIUM"}
+
+    Number of calls: 0
+
+      87 |       // Assert
+      88 |       expect(result).toBeNull();
+    > 89 |       expect(mockLogger.securityLog).toHaveBeenCalledWith(
+         |                                      ^
+      90 |         expect.objectContaining({
+      91 |           message: 'Login attempt with missing credentials',
+      92 |           eventType: 'LOGIN_FAILURE',
+
+      at Object.toHaveBeenCalledWith (src/__tests__/api/auth/nextauth.test.ts:89:38)
+
+● NextAuth Configuration › Credentials Provider Authorization › should reject user with invalid
+credentials
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: ObjectContaining {"eventType": "LOGIN_FAILURE", "message": StringContaining "Authentication failed", "severity": "MEDIUM"}
+
+    Number of calls: 0
+
+      106 |       // Assert
+      107 |       expect(result).toBeNull();
+    > 108 |       expect(mockLogger.securityLog).toHaveBeenCalledWith(
+          |                                      ^
+      109 |         expect.objectContaining({
+      110 |           message: expect.stringContaining('Authentication failed'),
+      111 |           eventType: 'LOGIN_FAILURE',
+
+      at Object.toHaveBeenCalledWith (src/__tests__/api/auth/nextauth.test.ts:108:38)
+
+● NextAuth Configuration › Credentials Provider Authorization › should reject non-admin user
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: ObjectContaining {"eventType": "UNAUTHORIZED_ACCESS", "message": StringContaining "Access denied - insufficient privileges", "severity": "HIGH"}
+
+    Number of calls: 0
+
+      130 |       // Assert
+      131 |       expect(result).toBeNull();
+    > 132 |       expect(mockLogger.securityLog).toHaveBeenCalledWith(
+          |                                      ^
+      133 |         expect.objectContaining({
+      134 |           message: expect.stringContaining(
+      135 |             'Access denied - insufficient privileges'
+
+      at Object.toHaveBeenCalledWith (src/__tests__/api/auth/nextauth.test.ts:132:38)
+
+● NextAuth Configuration › Credentials Provider Authorization › should handle authentication system
+error
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: ObjectContaining {"eventType": "LOGIN_FAILURE", "message": StringContaining "Authentication system error", "severity": "HIGH"}
+
+    Number of calls: 0
+
+      152 |       // Assert
+      153 |       expect(result).toBeNull();
+    > 154 |       expect(mockLogger.securityLog).toHaveBeenCalledWith(
+          |                                      ^
+      155 |         expect.objectContaining({
+      156 |           message: expect.stringContaining('Authentication system error'),
+      157 |           eventType: 'LOGIN_FAILURE',
+
+      at Object.toHaveBeenCalledWith (src/__tests__/api/auth/nextauth.test.ts:154:38)
+
+● NextAuth Configuration › Credentials Provider Authorization › should log IP address and user agent
+from headers
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: ObjectContaining {"ip": "203.0.113.1", "userAgent": "Mozilla/5.0 Test Browser"}
+
+    Number of calls: 0
+
+      189 |
+      190 |       // Assert
+    > 191 |       expect(mockLogger.securityLog).toHaveBeenCalledWith(
+          |                                      ^
+      192 |         expect.objectContaining({
+      193 |           ip: '203.0.113.1',
+      194 |           userAgent: 'Mozilla/5.0 Test Browser',
+
+      at Object.toHaveBeenCalledWith (src/__tests__/api/auth/nextauth.test.ts:191:38)

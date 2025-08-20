@@ -103,7 +103,9 @@ describe('/api/admin/portfolio', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(responseData.data).toEqual(TestUtils.simulateJsonSerialization(filteredResult.items));
+      expect(responseData.data).toEqual(
+        TestUtils.simulateJsonSerialization(filteredResult.items)
+      );
       expect(responseData.pagination).toEqual(filteredResult.pagination);
 
       expect(mockPortfolioQueries.getAllItems).toHaveBeenCalledWith({

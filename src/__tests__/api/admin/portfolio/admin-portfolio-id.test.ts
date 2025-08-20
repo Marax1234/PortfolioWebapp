@@ -49,7 +49,7 @@ describe('/api/admin/portfolio/[id]', () => {
         data: {
           ...mockPortfolioItem,
           createdAt: expect.any(String), // Date is serialized as string in JSON response
-          updatedAt: expect.any(String), // Date is serialized as string in JSON response  
+          updatedAt: expect.any(String), // Date is serialized as string in JSON response
           publishedAt: expect.any(String), // Date is serialized as string in JSON response
           tags: ['admin', 'test'], // Should be parsed JSON
           metadata: { camera: 'Canon EOS R5', iso: 400 }, // Should be parsed JSON

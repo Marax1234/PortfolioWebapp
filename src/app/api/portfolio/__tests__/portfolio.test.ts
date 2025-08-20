@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import '@/__tests__/setup/mock-setup';
 import { MockFactories } from '@/__tests__/utils/mock-factories';
 import { PortfolioQueries } from '@/lib/db-utils';
-import { ErrorHandler, AppError } from '@/lib/error-handler';
+import { AppError, ErrorHandler } from '@/lib/error-handler';
 import { Logger } from '@/lib/logger';
 import { getRequestContext } from '@/lib/middleware/logging';
 
@@ -59,7 +59,7 @@ describe('/api/portfolio', () => {
         name: 'Nature',
         slug: 'nature',
       });
-      
+
       const mockCategory2 = MockFactories.createMockCategory({
         id: 'cat-2',
         name: 'Travel',
@@ -182,12 +182,20 @@ describe('/api/portfolio', () => {
         statusCode: 400,
         isOperational: true,
       };
-      const mockErrorResponse = Promise.resolve(NextResponse.json(
-        { success: false as const, error: 'Validation error', timestamp: new Date().toISOString() },
-        { status: 400 }
-      ));
+      const mockErrorResponse = Promise.resolve(
+        NextResponse.json(
+          {
+            success: false as const,
+            error: 'Validation error',
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        )
+      );
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError as AppError);
+      mockErrorHandler.createValidationError.mockReturnValue(
+        mockError as AppError
+      );
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
       const request = new NextRequest(
@@ -221,12 +229,20 @@ describe('/api/portfolio', () => {
         statusCode: 400,
         isOperational: true,
       };
-      const mockErrorResponse = Promise.resolve(NextResponse.json(
-        { success: false as const, error: 'Validation error', timestamp: new Date().toISOString() },
-        { status: 400 }
-      ));
+      const mockErrorResponse = Promise.resolve(
+        NextResponse.json(
+          {
+            success: false as const,
+            error: 'Validation error',
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        )
+      );
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError as AppError);
+      mockErrorHandler.createValidationError.mockReturnValue(
+        mockError as AppError
+      );
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
       const request = new NextRequest(
@@ -281,10 +297,16 @@ describe('/api/portfolio', () => {
     it('should handle database errors gracefully', async () => {
       // Arrange
       const dbError = new Error('Database connection failed');
-      const mockErrorResponse = Promise.resolve(NextResponse.json(
-        { success: false as const, error: 'Internal server error', timestamp: new Date().toISOString() },
-        { status: 500 }
-      ));
+      const mockErrorResponse = Promise.resolve(
+        NextResponse.json(
+          {
+            success: false as const,
+            error: 'Internal server error',
+            timestamp: new Date().toISOString(),
+          },
+          { status: 500 }
+        )
+      );
 
       mockPortfolioQueries.getPublishedItems.mockRejectedValue(dbError);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
@@ -408,12 +430,20 @@ describe('/api/portfolio', () => {
         statusCode: 400,
         isOperational: true,
       };
-      const mockErrorResponse = Promise.resolve(NextResponse.json(
-        { success: false as const, error: 'Validation error', timestamp: new Date().toISOString() },
-        { status: 400 }
-      ));
+      const mockErrorResponse = Promise.resolve(
+        NextResponse.json(
+          {
+            success: false as const,
+            error: 'Validation error',
+            timestamp: new Date().toISOString(),
+          },
+          { status: 400 }
+        )
+      );
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError as AppError);
+      mockErrorHandler.createValidationError.mockReturnValue(
+        mockError as AppError
+      );
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
       const request = new NextRequest('http://localhost:3000/api/portfolio', {
@@ -442,10 +472,16 @@ describe('/api/portfolio', () => {
       };
 
       const dbError = new Error('Database insert failed');
-      const mockErrorResponse = Promise.resolve(NextResponse.json(
-        { success: false as const, error: 'Internal server error', timestamp: new Date().toISOString() },
-        { status: 500 }
-      ));
+      const mockErrorResponse = Promise.resolve(
+        NextResponse.json(
+          {
+            success: false as const,
+            error: 'Internal server error',
+            timestamp: new Date().toISOString(),
+          },
+          { status: 500 }
+        )
+      );
 
       mockPortfolioQueries.createPortfolioItem.mockRejectedValue(dbError);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);

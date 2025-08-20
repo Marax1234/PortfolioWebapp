@@ -94,6 +94,7 @@ export const mockBcrypt = {
 };
 
 jest.mock('bcrypt', () => mockBcrypt);
+jest.mock('bcryptjs', () => mockBcrypt);
 
 // Mock nodemailer
 export const mockTransporter = {
@@ -142,6 +143,13 @@ jest.mock('@/lib/logger', () => ({
   Logger: mockLogger,
   LogLevel: mockLogLevel,
   LogCategory: mockLogCategory,
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    log: jest.fn(),
+  },
 }));
 
 // Mock database utilities - exported before jest.mock for proper reference
@@ -240,8 +248,13 @@ export const mockUserService = {
   deleteUser: jest.fn(),
 };
 
+// Create a mock UserService class
+export const MockUserService = jest
+  .fn()
+  .mockImplementation(() => mockUserService);
+
 jest.mock('@/lib/services/user-service', () => ({
-  UserService: jest.fn().mockImplementation(() => mockUserService),
+  UserService: MockUserService,
 }));
 
 // Note: Email service mock will be added when the module exists
@@ -296,6 +309,9 @@ export const defaultRequestContext = {
 export const resetAllMocks = () => {
   jest.clearAllMocks();
 
+  // Reset constructor mock
+  MockUserService.mockClear();
+
   // Setup default mock implementations
   mockGetRequestContext.mockReturnValue(defaultRequestContext);
 
@@ -343,6 +359,11 @@ export const resetAllMocks = () => {
   // Setup transporter verify
   mockTransporter.verify.mockResolvedValue(true);
   mockNodemailer.createTransporter.mockReturnValue(mockTransporter);
+
+  // Setup UserService defaults
+  mockUserService.authenticateUser.mockResolvedValue(null);
+  mockUserService.createUser.mockResolvedValue(null);
+  mockUserService.getUserById.mockResolvedValue(null);
 };
 
 /**

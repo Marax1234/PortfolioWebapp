@@ -17,7 +17,10 @@ describe('/api/debug', () => {
     resetAllMocks();
 
     // Mock environment variables
-    Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', writable: true });
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      value: 'development',
+      writable: true,
+    });
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
     process.env.NEXTAUTH_SECRET = 'test-secret';
   });
@@ -186,7 +189,10 @@ describe('/api/debug', () => {
 
     it('should return production environment correctly', async () => {
       // Arrange
-      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+      });
       mockUnauthenticatedSession();
 
       const request = TestUtils.createMockRequest(
@@ -314,7 +320,10 @@ describe('/api/debug', () => {
       // In a real-world scenario, you'd want to add environment checks to the route handler
 
       // Arrange
-      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+      });
       mockUnauthenticatedSession();
 
       const request = TestUtils.createMockRequest(
