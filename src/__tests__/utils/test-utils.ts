@@ -31,7 +31,11 @@ export class TestUtils {
       urlWithParams.searchParams.set(key, value);
     });
 
-    const requestInit: any = {
+    const requestInit: {
+      method: string;
+      headers: Record<string, string>;
+      body?: string;
+    } = {
       method,
       headers: {
         'Content-Type': 'application/json',

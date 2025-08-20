@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import '@/__tests__/setup/mock-setup';
 import { MockFactories } from '@/__tests__/utils/mock-factories';
 import { PortfolioQueries } from '@/lib/db-utils';
-import { ErrorHandler } from '@/lib/error-handler';
+import { ErrorHandler, AppError } from '@/lib/error-handler';
 import { Logger } from '@/lib/logger';
 import { getRequestContext } from '@/lib/middleware/logging';
 
@@ -187,7 +187,7 @@ describe('/api/portfolio', () => {
         { status: 400 }
       ));
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError as any);
+      mockErrorHandler.createValidationError.mockReturnValue(mockError as AppError);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
       const request = new NextRequest(
@@ -226,7 +226,7 @@ describe('/api/portfolio', () => {
         { status: 400 }
       ));
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError as any);
+      mockErrorHandler.createValidationError.mockReturnValue(mockError as AppError);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
       const request = new NextRequest(
@@ -385,7 +385,7 @@ describe('/api/portfolio', () => {
         expect.objectContaining({
           title: portfolioData.title,
           description: portfolioData.description,
-          mediaType: portfolioData.mediaType as any,
+          mediaType: portfolioData.mediaType as 'IMAGE' | 'VIDEO',
           filePath: portfolioData.filePath,
           categoryId: portfolioData.categoryId,
           status: portfolioData.status,
@@ -413,7 +413,7 @@ describe('/api/portfolio', () => {
         { status: 400 }
       ));
 
-      mockErrorHandler.createValidationError.mockReturnValue(mockError as any);
+      mockErrorHandler.createValidationError.mockReturnValue(mockError as AppError);
       mockErrorHandler.handleError.mockReturnValue(mockErrorResponse);
 
       const request = new NextRequest('http://localhost:3000/api/portfolio', {

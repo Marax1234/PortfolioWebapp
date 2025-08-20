@@ -384,8 +384,8 @@ describe('/api/portfolio/[id]', () => {
       const request = TestUtils.createMockRequest(
         'http://localhost:3000/api/portfolio/123'
       );
-      // Simulate invalid ID (though in practice, route params are strings)
-      const mockParams = Promise.resolve({ id: null as any });
+      // Simulate invalid ID (empty string triggers validation)
+      const mockParams = Promise.resolve({ id: '' });
 
       // Act
       const response = await GET(request, { params: mockParams });
@@ -394,7 +394,7 @@ describe('/api/portfolio/[id]', () => {
       expect(response.status).toBe(400);
       expect(mockErrorHandler.createValidationError).toHaveBeenCalledWith(
         'Valid portfolio item ID is required',
-        { id: null }
+        { id: '' }
       );
     });
 
