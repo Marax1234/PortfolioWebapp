@@ -34,7 +34,7 @@ const footerLinks = [
     links: [
       { name: 'Nature', href: '/portfolio?category=nature' },
       { name: 'Travel', href: '/portfolio?category=travel' },
-      { name: 'Events', href: '/portfolio?category=event' },
+      { name: 'Events', href: '/portfolio?category=events' },
       { name: 'Videography', href: '/portfolio?category=videography' },
     ],
   },

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,10 @@ export function SimpleCategoryFilter({
   className = '',
 }: SimpleCategoryFilterProps) {
   const { categories, filters, setFilters } = usePortfolioStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const initializedFromUrl = useRef(false);
+  const lastUrlCategory = useRef<string | null>(null);
 
   const { loadCategories, loadPortfolioItems } = usePortfolioApi();
 
@@ -25,18 +30,57 @@ export function SimpleCategoryFilter({
     }
   }, [loadCategories, categories.length]);
 
+  // Initialize and sync from URL parameters
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    
+    // Only update if this is different from what we last processed
+    if (categoryParam !== lastUrlCategory.current) {
+      lastUrlCategory.current = categoryParam;
+      
+      setFilters({
+        category: categoryParam || undefined,
+      });
+      
+      if (!initializedFromUrl.current) {
+        initializedFromUrl.current = true;
+      }
+    }
+  }, [searchParams, setFilters]);
+
   // Reload items when filters change
   useEffect(() => {
-    loadPortfolioItems({
-      ...filters,
-      page: 1,
-    });
+    if (initializedFromUrl.current) {
+      loadPortfolioItems({
+        ...filters,
+        page: 1,
+      });
+    }
   }, [filters, loadPortfolioItems]);
 
   const handleCategoryChange = (categorySlug: string) => {
+    const newCategory = categorySlug === 'all' ? undefined : categorySlug;
+    
+    // Skip if same category
+    if (newCategory === filters.category) {
+      return;
+    }
+    
+    // Update URL first - this will trigger the useEffect which will update filters
+    const params = new URLSearchParams();
+    if (newCategory) {
+      params.set('category', newCategory);
+    }
+    const newUrl = params.toString() ? `?${params.toString()}` : '';
+    
+    // Update the tracking ref to prevent double updates
+    lastUrlCategory.current = newCategory;
+    
+    // Update filter and URL together
     setFilters({
-      category: categorySlug === 'all' ? undefined : categorySlug,
+      category: newCategory,
     });
+    router.replace(`/portfolio${newUrl}`);
   };
 
   return (
