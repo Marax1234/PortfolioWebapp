@@ -1,59 +1,62 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { useState } from "react"
-import { Menu, X, LogIn, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+
+import Image from 'next/image';
+import Link from 'next/link';
+
+import { LogIn, Menu, Settings, X } from 'lucide-react';
+
+import { LogoutButton } from '@/components/auth/logout-button';
+import { useCurrentUser } from '@/components/auth/session-check';
+import { Button } from '@/components/ui/button';
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
-import { useCurrentUser } from "@/components/auth/session-check"
-import { LogoutButton } from "@/components/auth/logout-button"
-import Image from "next/image"
+} from '@/components/ui/navigation-menu';
 
 const navigation = [
-  { name: "Home", href: "/" },
-  { name: "Portfolio", href: "/portfolio" },
-  { name: "About", href: "/about" },
-  { name: "Contact", href: "/contact" },
-]
+  { name: 'Home', href: '/' },
+  { name: 'Portfolio', href: '/portfolio' },
+  { name: 'About', href: '/about' },
+  { name: 'Contact', href: '/contact' },
+];
 
 export function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { isAuthenticated } = useCurrentUser()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated } = useCurrentUser();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+    <header className='bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur'>
+      <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
+        <div className='flex h-16 items-center justify-between'>
           {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
+          <div className='flex items-center'>
+            <Link href='/' className='flex items-center space-x-2'>
               <Image
-                src="/images/logo.png"
-                alt="Portfolio Logo"
+                src='/images/logo.png'
+                alt='Portfolio Logo'
                 width={40}
                 height={40}
-                className="rounded-full"
+                className='rounded-full'
                 onError={() => {
                   // Fallback if logo doesn't exist
                 }}
               />
-              <span className="font-bold text-lg">Kilian Siebert</span>
+              <span className='text-lg font-bold'>Kilian Siebert</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className='hidden items-center space-x-6 md:flex'>
             <NavigationMenu>
               <NavigationMenuList>
-                {navigation.map((item) => (
+                {navigation.map(item => (
                   <NavigationMenuItem key={item.name}>
                     <Link href={item.href} legacyBehavior passHref>
-                      <NavigationMenuLink className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50">
+                      <NavigationMenuLink className='group bg-background hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50'>
                         {item.name}
                       </NavigationMenuLink>
                     </Link>
@@ -63,21 +66,21 @@ export function Header() {
             </NavigationMenu>
 
             {/* Auth Section */}
-            <div className="flex items-center space-x-2 border-l border-slate-200 pl-6">
+            <div className='flex items-center space-x-2 border-l border-slate-200 pl-6'>
               {isAuthenticated ? (
-                <div className="flex items-center space-x-2">
-                  <Button asChild variant="outline" size="sm">
-                    <Link href="/admin">
-                      <Settings className="w-4 h-4 mr-2" />
+                <div className='flex items-center space-x-2'>
+                  <Button asChild variant='outline' size='sm'>
+                    <Link href='/admin'>
+                      <Settings className='mr-2 h-4 w-4' />
                       Admin
                     </Link>
                   </Button>
-                  <LogoutButton variant="dropdown" />
+                  <LogoutButton variant='dropdown' />
                 </div>
               ) : (
-                <Button asChild size="sm">
-                  <Link href="/auth/signin">
-                    <LogIn className="w-4 h-4 mr-2" />
+                <Button asChild size='sm'>
+                  <Link href='/auth/signin'>
+                    <LogIn className='mr-2 h-4 w-4' />
                     Login
                   </Link>
                 </Button>
@@ -86,18 +89,18 @@ export function Header() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className='md:hidden'>
             <Button
-              variant="ghost"
-              size="sm"
+              variant='ghost'
+              size='sm'
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2"
+              className='inline-flex items-center justify-center p-2'
             >
-              <span className="sr-only">Open main menu</span>
+              <span className='sr-only'>Open main menu</span>
               {mobileMenuOpen ? (
-                <X className="h-6 w-6" aria-hidden="true" />
+                <X className='h-6 w-6' aria-hidden='true' />
               ) : (
-                <Menu className="h-6 w-6" aria-hidden="true" />
+                <Menu className='h-6 w-6' aria-hidden='true' />
               )}
             </Button>
           </div>
@@ -105,42 +108,45 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2 border-t border-slate-200">
-              {navigation.map((item) => (
+          <div className='md:hidden'>
+            <div className='space-y-1 border-t border-slate-200 px-2 pt-2 pb-3'>
+              {navigation.map(item => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+                  className='text-foreground hover:bg-accent hover:text-accent-foreground block rounded-md px-3 py-2 text-base font-medium'
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              
+
               {/* Mobile Auth Section */}
-              <div className="mt-4 pt-4 border-t border-slate-200">
+              <div className='mt-4 border-t border-slate-200 pt-4'>
                 {isAuthenticated ? (
-                  <div className="space-y-2">
+                  <div className='space-y-2'>
                     <Link
-                      href="/admin"
-                      className="flex items-center px-3 py-2 text-base font-medium text-foreground hover:bg-accent hover:text-accent-foreground rounded-md"
+                      href='/admin'
+                      className='text-foreground hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-base font-medium'
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Settings className="w-4 h-4 mr-2" />
+                      <Settings className='mr-2 h-4 w-4' />
                       Admin Dashboard
                     </Link>
-                    <div className="px-3">
-                      <LogoutButton variant="dropdown" className="w-full justify-start" />
+                    <div className='px-3'>
+                      <LogoutButton
+                        variant='dropdown'
+                        className='w-full justify-start'
+                      />
                     </div>
                   </div>
                 ) : (
                   <Link
-                    href="/auth/signin"
-                    className="flex items-center px-3 py-2 text-base font-medium text-primary hover:bg-accent hover:text-accent-foreground rounded-md"
+                    href='/auth/signin'
+                    className='text-primary hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-base font-medium'
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <LogIn className="w-4 h-4 mr-2" />
+                    <LogIn className='mr-2 h-4 w-4' />
                     Login
                   </Link>
                 )}
@@ -150,5 +156,5 @@ export function Header() {
         )}
       </div>
     </header>
-  )
+  );
 }

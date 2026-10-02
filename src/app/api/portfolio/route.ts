@@ -2,17 +2,18 @@
  * Portfolio API Endpoints
  * GET /api/portfolio - Fetch portfolio items with filtering and pagination
  */
+import { NextRequest, NextResponse } from 'next/server';
 
-import { NextRequest, NextResponse } from 'next/server'
-import { PortfolioQueries } from '@/lib/db-utils'
-import { Logger, LogCategory, LogLevel } from '@/lib/logger'
-import { RequestLogger, getRequestContext } from '@/lib/middleware/logging'
-import { ErrorHandler } from '@/lib/error-handler'
-import { z } from 'zod'
+import { z } from 'zod';
+
+import { PortfolioQueries } from '@/lib/db-utils';
+import { ErrorHandler } from '@/lib/error-handler';
+import { LogCategory, LogLevel, Logger } from '@/lib/logger';
+import { getRequestContext } from '@/lib/middleware/logging';
 
 export async function GET(request: NextRequest) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
+  const context = getRequestContext(request);
+  const startTime = Date.now();
 
   try {
     // Log incoming request
@@ -29,19 +30,25 @@ export async function GET(request: NextRequest) {
       responseTime: 0,
       metadata: {
         searchParams: context.searchParams,
-        timestamp: new Date().toISOString()
-      }
-    })
+        timestamp: new Date().toISOString(),
+      },
+    });
 
-    const { searchParams } = new URL(request.url)
-    
+    const { searchParams } = new URL(request.url);
+
     // Parse query parameters
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '12'), 50) // Max 50 items per page
-    const category = searchParams.get('category') || undefined
-    const featured = searchParams.get('featured') === 'true' ? true : undefined
-    const orderBy = (searchParams.get('orderBy') as 'createdAt' | 'publishedAt' | 'viewCount' | 'title') || 'createdAt'
-    const orderDirection = (searchParams.get('orderDirection') as 'asc' | 'desc') || 'desc'
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '12'), 50); // Max 50 items per page
+    const category = searchParams.get('category') || undefined;
+    const featured = searchParams.get('featured') === 'true' ? true : undefined;
+    const orderBy =
+      (searchParams.get('orderBy') as
+        | 'createdAt'
+        | 'publishedAt'
+        | 'viewCount'
+        | 'title') || 'createdAt';
+    const orderDirection =
+      (searchParams.get('orderDirection') as 'asc' | 'desc') || 'desc';
 
     // Log parsed parameters
     Logger.debug('Parsed portfolio query parameters', {
@@ -51,32 +58,38 @@ export async function GET(request: NextRequest) {
       category,
       featured,
       orderBy,
-      orderDirection
-    })
+      orderDirection,
+    });
 
     // Validate parameters
     if (page < 1) {
-      const error = ErrorHandler.createValidationError('Page must be greater than 0', { page })
+      const error = ErrorHandler.createValidationError(
+        'Page must be greater than 0',
+        { page }
+      );
       return ErrorHandler.handleError(error, {
         ...context,
         route: '/api/portfolio',
         operation: 'validation',
-        inputData: { page, limit, category, featured, orderBy, orderDirection }
-      })
+        inputData: { page, limit, category, featured, orderBy, orderDirection },
+      });
     }
 
     if (limit < 1) {
-      const error = ErrorHandler.createValidationError('Limit must be greater than 0', { limit })
+      const error = ErrorHandler.createValidationError(
+        'Limit must be greater than 0',
+        { limit }
+      );
       return ErrorHandler.handleError(error, {
         ...context,
         route: '/api/portfolio',
         operation: 'validation',
-        inputData: { page, limit, category, featured, orderBy, orderDirection }
-      })
+        inputData: { page, limit, category, featured, orderBy, orderDirection },
+      });
     }
 
     // Log database query start
-    const dbStartTime = Date.now()
+    const dbStartTime = Date.now();
     Logger.databaseLog({
       level: LogLevel.INFO,
       category: LogCategory.DATABASE,
@@ -86,9 +99,9 @@ export async function GET(request: NextRequest) {
       table: 'PortfolioItem',
       queryTime: 0,
       metadata: {
-        filters: { page, limit, category, featured, orderBy, orderDirection }
-      }
-    })
+        filters: { page, limit, category, featured, orderBy, orderDirection },
+      },
+    });
 
     // Fetch portfolio items
     const result = await PortfolioQueries.getPublishedItems({
@@ -97,11 +110,11 @@ export async function GET(request: NextRequest) {
       category,
       featured,
       orderBy,
-      orderDirection
-    })
+      orderDirection,
+    });
 
-    const dbQueryTime = Date.now() - dbStartTime
-    const totalResponseTime = Date.now() - startTime
+    const dbQueryTime = Date.now() - dbStartTime;
+    const totalResponseTime = Date.now() - startTime;
 
     // Log database query completion
     Logger.databaseLog({
@@ -115,9 +128,9 @@ export async function GET(request: NextRequest) {
       rowsAffected: result.items.length,
       metadata: {
         totalItems: result.pagination.total,
-        pagesRemaining: result.pagination.totalPages - page
-      }
-    })
+        pagesRemaining: result.pagination.totalPages - page,
+      },
+    });
 
     // Log successful response
     Logger.apiLog({
@@ -136,9 +149,9 @@ export async function GET(request: NextRequest) {
         totalItems: result.pagination.total,
         currentPage: page,
         dbQueryTime,
-        cached: false
-      }
-    })
+        cached: false,
+      },
+    });
 
     // Log performance if query is slow
     if (totalResponseTime > 1000) {
@@ -151,28 +164,27 @@ export async function GET(request: NextRequest) {
           responseTime: totalResponseTime,
           dbQueryTime,
           dbQueryCount: 1,
-          memoryUsage: process.memoryUsage().heapUsed
+          memoryUsage: process.memoryUsage().heapUsed,
         },
         metadata: {
           filters: { page, limit, category, featured, orderBy, orderDirection },
-          itemCount: result.items.length
-        }
-      })
+          itemCount: result.items.length,
+        },
+      });
     }
 
     const response = NextResponse.json({
       success: true,
       data: result.items,
-      pagination: result.pagination
-    })
+      pagination: result.pagination,
+    });
 
     // Add request ID to response headers for client tracking
-    response.headers.set('x-request-id', context.requestId)
-    
-    return response
+    response.headers.set('x-request-id', context.requestId);
 
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     // Log the error with context
     Logger.errorLog({
@@ -180,29 +192,25 @@ export async function GET(request: NextRequest) {
       category: LogCategory.ERROR,
       message: 'Error fetching portfolio items',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
         route: '/api/portfolio',
         operation: 'fetch_portfolio_items',
         inputData: context.searchParams,
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
       route: '/api/portfolio',
       operation: 'fetch_portfolio_items',
-      inputData: context.searchParams
-    })
+      inputData: context.searchParams,
+    });
   }
 }
 
@@ -220,12 +228,12 @@ const createPortfolioSchema = z.object({
   featured: z.boolean().default(false),
   tags: z.array(z.string()).default([]),
   metadata: z.any().nullable().optional(),
-  sortOrder: z.number().default(0)
-})
+  sortOrder: z.number().default(0),
+});
 
 export async function POST(request: NextRequest) {
-  const context = getRequestContext(request)
-  const startTime = Date.now()
+  const context = getRequestContext(request);
+  const startTime = Date.now();
 
   try {
     Logger.apiLog({
@@ -240,64 +248,67 @@ export async function POST(request: NextRequest) {
       statusCode: 0,
       responseTime: 0,
       metadata: {
-        timestamp: new Date().toISOString()
-      }
-    })
+        timestamp: new Date().toISOString(),
+      },
+    });
 
     // Parse request body
-    const body = await request.json()
-    console.log('Received request body:', JSON.stringify(body, null, 2))
-    
+    const body = await request.json();
+    console.log('Received request body:', JSON.stringify(body, null, 2));
+
     // Validate request data
     try {
-      const validationResult = createPortfolioSchema.safeParse(body)
-      console.log('Validation result:', { 
-        success: validationResult.success, 
-        error: validationResult.error, 
+      const validationResult = createPortfolioSchema.safeParse(body);
+      console.log('Validation result:', {
+        success: validationResult.success,
+        error: validationResult.error,
         errorType: validationResult.error?.constructor?.name,
         issues: validationResult.error?.issues,
-        errors: validationResult.error?.errors 
-      })
+        errors: validationResult.error?.issues,
+      });
     } catch (zodError) {
-      console.log('Zod parsing threw error:', zodError)
-      throw zodError
+      console.log('Zod parsing threw error:', zodError);
+      throw zodError;
     }
-    
+
     // Run validation again for actual use
-    const validationResult = createPortfolioSchema.safeParse(body)
-    
+    const validationResult = createPortfolioSchema.safeParse(body);
+
     if (!validationResult.success) {
-      const errorDetails = validationResult.error?.errors || []
-      const errors = errorDetails.map(err => 
-        `${err.path.join('.')}: ${err.message}`
-      ).join(', ')
-      
-      console.log('Validation failed:', { errors: errorDetails, body })
-      
-      const error = ErrorHandler.createValidationError(`Invalid portfolio data: ${errors}`, {
-        validationErrors: errorDetails
-      })
-      
+      const errorDetails = validationResult.error?.issues || [];
+      const errors = errorDetails
+        .map(err => `${err.path.join('.')}: ${err.message}`)
+        .join(', ');
+
+      console.log('Validation failed:', { errors: errorDetails, body });
+
+      const error = ErrorHandler.createValidationError(
+        `Invalid portfolio data: ${errors}`,
+        {
+          validationErrors: errorDetails,
+        }
+      );
+
       return ErrorHandler.handleError(error, {
         ...context,
         route: '/api/portfolio',
         operation: 'validation',
-        inputData: body
-      })
+        inputData: body,
+      });
     }
 
-    const portfolioData = validationResult.data
+    const portfolioData = validationResult.data;
 
     Logger.debug('Creating portfolio item', {
       requestId: context.requestId,
       title: portfolioData.title,
       mediaType: portfolioData.mediaType,
       categoryId: portfolioData.categoryId,
-      status: portfolioData.status
-    })
+      status: portfolioData.status,
+    });
 
     // Log database operation start
-    const dbStartTime = Date.now()
+    const dbStartTime = Date.now();
     Logger.databaseLog({
       level: LogLevel.INFO,
       category: LogCategory.DATABASE,
@@ -308,9 +319,9 @@ export async function POST(request: NextRequest) {
       queryTime: 0,
       metadata: {
         title: portfolioData.title,
-        mediaType: portfolioData.mediaType
-      }
-    })
+        mediaType: portfolioData.mediaType,
+      },
+    });
 
     // Create portfolio item in database
     const newItem = await PortfolioQueries.createPortfolioItem({
@@ -328,11 +339,12 @@ export async function POST(request: NextRequest) {
       viewCount: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      publishedAt: portfolioData.status === 'PUBLISHED' ? new Date().toISOString() : null
-    })
+      publishedAt:
+        portfolioData.status === 'PUBLISHED' ? new Date().toISOString() : null,
+    });
 
-    const dbQueryTime = Date.now() - dbStartTime
-    
+    const dbQueryTime = Date.now() - dbStartTime;
+
     Logger.databaseLog({
       level: LogLevel.INFO,
       category: LogCategory.DATABASE,
@@ -345,11 +357,11 @@ export async function POST(request: NextRequest) {
       metadata: {
         portfolioId: newItem.id,
         title: newItem.title,
-        status: newItem.status
-      }
-    })
+        status: newItem.status,
+      },
+    });
 
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.apiLog({
       level: LogLevel.INFO,
@@ -366,51 +378,49 @@ export async function POST(request: NextRequest) {
         portfolioId: newItem.id,
         title: newItem.title,
         mediaType: newItem.mediaType,
-        dbQueryTime
-      }
-    })
+        dbQueryTime,
+      },
+    });
 
-    const response = NextResponse.json({
-      success: true,
-      data: {
-        ...newItem,
-        tags: JSON.parse(newItem.tags),
-        metadata: JSON.parse(newItem.metadata || '{}')
-      }
-    }, { status: 201 })
+    const response = NextResponse.json(
+      {
+        success: true,
+        data: {
+          ...newItem,
+          tags: JSON.parse(newItem.tags),
+          metadata: JSON.parse(newItem.metadata || '{}'),
+        },
+      },
+      { status: 201 }
+    );
 
-    response.headers.set('x-request-id', context.requestId)
-    return response
-
+    response.headers.set('x-request-id', context.requestId);
+    return response;
   } catch (error) {
-    const totalResponseTime = Date.now() - startTime
+    const totalResponseTime = Date.now() - startTime;
 
     Logger.errorLog({
       level: LogLevel.ERROR,
       category: LogCategory.ERROR,
       message: 'Error creating portfolio item',
       requestId: context.requestId,
+      responseTime: totalResponseTime,
       error: {
         name: error instanceof Error ? error.name : 'UnknownError',
         message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       },
       context: {
         route: '/api/portfolio',
         operation: 'create_portfolio_item',
-        inputData: request.body,
-        metadata: {
-          responseTime: totalResponseTime,
-          ip: context.ip,
-          userAgent: context.userAgent
-        }
-      }
-    })
+        inputData: undefined, // Cannot log request.body as it's a ReadableStream
+      },
+    });
 
     return ErrorHandler.handleError(error, {
       ...context,
       route: '/api/portfolio',
-      operation: 'create_portfolio_item'
-    })
+      operation: 'create_portfolio_item',
+    });
   }
 }

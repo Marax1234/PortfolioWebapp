@@ -1,4 +1,5 @@
 # Software Design Documentation (SDD)
+
 ## Portfolio Website für Foto- und Videograf
 
 **Version:** 1.0  
@@ -27,11 +28,14 @@
 
 ### 1.1 Projektüberblick
 
-Dieses Software Design Document (SDD) transformiert die funktionalen und nicht-funktionalen Anforderungen aus der Software Requirements Specification (SRS v1.0) in eine konkrete technische Architektur für die Portfolio-Website eines Foto- und Videografen.
+Dieses Software Design Document (SDD) transformiert die funktionalen und nicht-funktionalen
+Anforderungen aus der Software Requirements Specification (SRS v1.0) in eine konkrete technische
+Architektur für die Portfolio-Website eines Foto- und Videografen.
 
 ### 1.2 Beziehung zur SRS
 
-Das SDD implementiert alle 15 funktionalen Anforderungen (FR1-FR15) aus der SRS und übersetzt die 5 definierten Use Cases in konkrete Systemkomponenten. Besonderer Fokus liegt auf:
+Das SDD implementiert alle 15 funktionalen Anforderungen (FR1-FR15) aus der SRS und übersetzt die 5
+definierten Use Cases in konkrete Systemkomponenten. Besonderer Fokus liegt auf:
 
 - **Performance-First Architecture** für optimale Bilddarstellung
 - **Mobile-First Design System** mit progressiver Verbesserung
@@ -52,6 +56,7 @@ Das SDD implementiert alle 15 funktionalen Anforderungen (FR1-FR15) aus der SRS 
 ### 1.4 Änderungen zur SRS
 
 **Technische Präzisierungen:**
+
 - Spezifizierung der Next.js App Router Architektur
 - Detaillierung der TypeScript Interface-Strukturen
 - Konkretisierung der Tailwind CSS Design System Implementierung
@@ -64,6 +69,7 @@ Das SDD implementiert alle 15 funktionalen Anforderungen (FR1-FR15) aus der SRS 
 ### 2.1 Performance-Spezifikationen
 
 #### 2.1.1 Core Web Vitals Targets
+
 ```typescript
 interface PerformanceTargets {
   LCP: number; // Largest Contentful Paint < 2.5s
@@ -78,11 +84,12 @@ const PERFORMANCE_BUDGET: PerformanceTargets = {
   FID: 100,
   CLS: 0.1,
   FCP: 1500,
-  TTI: 3500
-}
+  TTI: 3500,
+};
 ```
 
 #### 2.1.2 Durchsatz-Anforderungen
+
 - **Concurrent Users**: 100+ gleichzeitige Benutzer
 - **Image Optimization**: < 2s für optimierte Bildauslieferung
 - **Database Response**: < 200ms für 95% der Anfragen
@@ -91,6 +98,7 @@ const PERFORMANCE_BUDGET: PerformanceTargets = {
 ### 2.2 Sicherheitsanforderungen
 
 #### 2.2.1 Authentifizierung und Autorisierung
+
 ```typescript
 interface SecurityConfig {
   authentication: {
@@ -111,6 +119,7 @@ interface SecurityConfig {
 ```
 
 #### 2.2.2 Datenschutz und GDPR
+
 - **Data Minimization**: Nur notwendige Daten sammeln
 - **Consent Management**: Explizite Einwilligung für Cookies
 - **Right to be Forgotten**: Automatisierte Datenlöschung
@@ -119,6 +128,7 @@ interface SecurityConfig {
 ### 2.3 Wartbarkeits-Anforderungen
 
 #### 2.3.1 Code-Qualität
+
 ```typescript
 interface CodeQualityMetrics {
   testCoverage: number; // > 80%
@@ -129,6 +139,7 @@ interface CodeQualityMetrics {
 ```
 
 #### 2.3.2 Monitoring und Logging
+
 - **Error Tracking**: Automatische Fehlererfassung
 - **Performance Monitoring**: Real-time Metriken
 - **Audit Logging**: Alle Admin-Aktionen protokollieren
@@ -137,6 +148,7 @@ interface CodeQualityMetrics {
 ### 2.4 Skalierbarkeits-Anforderungen
 
 #### 2.4.1 Horizontale Skalierung
+
 - **Load Balancing**: NGINX mit mehreren App-Instanzen
 - **CDN Integration**: Globale Content-Auslieferung
 - **Database Scaling**: Connection Pooling und Read Replicas
@@ -203,6 +215,7 @@ interface CodeQualityMetrics {
 ### 3.2 Technologie-Stack Architektur
 
 #### 3.2.1 Frontend-Architektur
+
 ```typescript
 // Frontend Architecture Structure
 src/
@@ -236,6 +249,7 @@ src/
 ```
 
 #### 3.2.2 Backend-Service-Architektur
+
 ```typescript
 // Backend Services Structure
 api/
@@ -267,6 +281,7 @@ api/
 ### 3.3 Datenbank-Design
 
 #### 3.3.1 Entity Relationship Diagram
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │      Users      │    │ Portfolio_Items │    │   Inquiries     │
@@ -301,6 +316,7 @@ api/
 ```
 
 #### 3.3.2 Datenbank-Schema Implementation
+
 ```sql
 -- Users Table (Enhanced)
 CREATE TABLE users (
@@ -452,6 +468,7 @@ interface DesignSystem {
 ```
 
 #### 4.1.2 Component Architecture
+
 ```typescript
 // shadcn/ui Component Integration
 import { Button } from '@/components/ui/button';
@@ -483,6 +500,7 @@ interface PortfolioComponents {
 ### 4.2 Responsive Design Framework
 
 #### 4.2.1 Breakpoint System
+
 ```css
 /* Tailwind CSS Custom Breakpoints */
 module.exports = {
@@ -501,6 +519,7 @@ module.exports = {
 ```
 
 #### 4.2.2 Layout Grid System
+
 ```typescript
 // Responsive Grid Implementation
 interface GridSystem {
@@ -530,6 +549,7 @@ interface GridSystem {
 ### 4.3 Benutzeroberflächen-Mockups
 
 #### 4.3.1 Homepage Layout
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      NAVIGATION BAR                        │
@@ -562,6 +582,7 @@ interface GridSystem {
 ```
 
 #### 4.3.2 Portfolio Gallery Layout
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    FILTER NAVIGATION                       │
@@ -585,6 +606,7 @@ interface GridSystem {
 ```
 
 #### 4.3.3 Admin Dashboard Layout
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      ADMIN HEADER                          │
@@ -612,54 +634,56 @@ interface GridSystem {
 ### 4.4 Interaction Design Spezifikationen
 
 #### 4.4.1 Animation Framework (Framer Motion)
+
 ```typescript
 // Animation Variants Definition
 const pageTransitions = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
-  transition: { duration: 0.3, ease: "easeInOut" }
+  transition: { duration: 0.3, ease: 'easeInOut' },
 };
 
 const galleryAnimations = {
   item: {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { opacity: 1, scale: 1 },
-    hover: { scale: 1.05, transition: { duration: 0.2 } }
+    hover: { scale: 1.05, transition: { duration: 0.2 } },
   },
   lightbox: {
     backdrop: { opacity: 0 },
     visible: { opacity: 1 },
     modal: {
       hidden: { scale: 0.9, opacity: 0 },
-      visible: { scale: 1, opacity: 1 }
-    }
-  }
+      visible: { scale: 1, opacity: 1 },
+    },
+  },
 };
 
 const loadingAnimations = {
   skeleton: {
     animate: {
       opacity: [0.4, 0.8, 0.4],
-      transition: { duration: 1.5, repeat: Infinity }
-    }
+      transition: { duration: 1.5, repeat: Infinity },
+    },
   },
   progressBar: {
-    initial: { width: "0%" },
-    animate: { width: "100%" }
-  }
+    initial: { width: '0%' },
+    animate: { width: '100%' },
+  },
 };
 ```
 
 #### 4.4.2 Touch and Gesture Support
+
 ```typescript
 // Touch Gesture Handling
 interface GestureHandlers {
   swipe: {
-    left: () => void;  // Next image
+    left: () => void; // Next image
     right: () => void; // Previous image
-    up: () => void;    // Close lightbox
-    down: () => void;  // Image info
+    up: () => void; // Close lightbox
+    down: () => void; // Image info
   };
   pinch: {
     zoom: (scale: number) => void;
@@ -819,9 +843,15 @@ class User {
   }
 
   // Getters and Setters
-  public getId(): string { return this.id; }
-  public getEmail(): string { return this.email; }
-  public getRole(): UserRole { return this.role; }
+  public getId(): string {
+    return this.id;
+  }
+  public getEmail(): string {
+    return this.email;
+  }
+  public getRole(): UserRole {
+    return this.role;
+  }
 }
 
 class AuthenticationService {
@@ -829,20 +859,13 @@ class AuthenticationService {
   private tokenService: TokenService;
   private emailService: EmailService;
 
-  constructor(
-    userRepo: UserRepository,
-    tokenSvc: TokenService,
-    emailSvc: EmailService
-  ) {
+  constructor(userRepo: UserRepository, tokenSvc: TokenService, emailSvc: EmailService) {
     this.userRepository = userRepo;
     this.tokenService = tokenSvc;
     this.emailService = emailSvc;
   }
 
-  public async login(
-    email: string, 
-    password: string
-  ): Promise<AuthResult> {
+  public async login(email: string, password: string): Promise<AuthResult> {
     const user = await this.userRepository.findByEmail(email);
     if (!user || !user.authenticate(password)) {
       throw new AuthenticationError('Invalid credentials');
@@ -864,7 +887,7 @@ class AuthenticationService {
     const user = new User(userData);
     await this.userRepository.save(user);
     await this.emailService.sendVerificationEmail(user);
-    
+
     return user;
   }
 
@@ -882,7 +905,7 @@ class AuthenticationService {
 enum UserRole {
   VISITOR = 'visitor',
   REGISTERED = 'registered',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
 }
 
 enum Permission {
@@ -890,7 +913,7 @@ enum Permission {
   WRITE_PORTFOLIO = 'write_portfolio',
   MANAGE_USERS = 'manage_users',
   VIEW_ANALYTICS = 'view_analytics',
-  MANAGE_SETTINGS = 'manage_settings'
+  MANAGE_SETTINGS = 'manage_settings',
 }
 
 interface CreateUserData {
@@ -963,11 +986,21 @@ class PortfolioItem {
   }
 
   // Getters
-  public getId(): string { return this.id; }
-  public getTitle(): string { return this.title; }
-  public getStatus(): ContentStatus { return this.status; }
-  public isFeatured(): boolean { return this.featured; }
-  public isPublished(): boolean { return this.status === ContentStatus.PUBLISHED; }
+  public getId(): string {
+    return this.id;
+  }
+  public getTitle(): string {
+    return this.title;
+  }
+  public getStatus(): ContentStatus {
+    return this.status;
+  }
+  public isFeatured(): boolean {
+    return this.featured;
+  }
+  public isPublished(): boolean {
+    return this.status === ContentStatus.PUBLISHED;
+  }
 }
 
 class PortfolioService {
@@ -988,21 +1021,18 @@ class PortfolioService {
     this.cacheService = cacheSvc;
   }
 
-  public async createItem(
-    itemData: CreatePortfolioItemData,
-    file: File
-  ): Promise<PortfolioItem> {
+  public async createItem(itemData: CreatePortfolioItemData, file: File): Promise<PortfolioItem> {
     // Validate file
     await this.validateFile(file);
 
     // Process and optimize images
     const processedFiles = await this.imageService.processImage(file);
-    
+
     // Create portfolio item
     const item = new PortfolioItem({
       ...itemData,
       filePath: processedFiles.original,
-      metadata: processedFiles.metadata
+      metadata: processedFiles.metadata,
     });
 
     // Save to database
@@ -1017,9 +1047,7 @@ class PortfolioService {
     return item;
   }
 
-  public async getPublishedItems(
-    filters?: PortfolioFilters
-  ): Promise<PortfolioItem[]> {
+  public async getPublishedItems(filters?: PortfolioFilters): Promise<PortfolioItem[]> {
     const cacheKey = `portfolio:published:${JSON.stringify(filters)}`;
     let items = await this.cacheService.get(cacheKey);
 
@@ -1042,7 +1070,7 @@ class PortfolioService {
 
     // Update SEO
     await this.seoService.updateSitemap();
-    
+
     // Clear cache
     await this.cacheService.invalidate(['portfolio']);
   }
@@ -1062,14 +1090,14 @@ class PortfolioService {
 
 enum MediaType {
   IMAGE = 'image',
-  VIDEO = 'video'
+  VIDEO = 'video',
 }
 
 enum ContentStatus {
   DRAFT = 'draft',
   REVIEW = 'review',
   PUBLISHED = 'published',
-  ARCHIVED = 'archived'
+  ARCHIVED = 'archived',
 }
 
 interface ImageMetadata {
@@ -1168,10 +1196,18 @@ class Inquiry {
   }
 
   // Getters
-  public getId(): string { return this.id; }
-  public getStatus(): InquiryStatus { return this.status; }
-  public getPriority(): Priority { return this.priority; }
-  public isResolved(): boolean { return this.status === InquiryStatus.RESOLVED; }
+  public getId(): string {
+    return this.id;
+  }
+  public getStatus(): InquiryStatus {
+    return this.status;
+  }
+  public getPriority(): Priority {
+    return this.priority;
+  }
+  public isResolved(): boolean {
+    return this.status === InquiryStatus.RESOLVED;
+  }
 }
 
 class ContactService {
@@ -1192,9 +1228,7 @@ class ContactService {
     this.analyticsService = analyticsSvc;
   }
 
-  public async submitInquiry(
-    inquiryData: CreateInquiryData
-  ): Promise<Inquiry> {
+  public async submitInquiry(inquiryData: CreateInquiryData): Promise<Inquiry> {
     // Validate inquiry data
     await this.validateInquiryData(inquiryData);
 
@@ -1215,22 +1249,17 @@ class ContactService {
     // Track analytics
     await this.analyticsService.trackEvent('inquiry_submitted', {
       category: inquiry.getCategory(),
-      priority: inquiry.getPriority()
+      priority: inquiry.getPriority(),
     });
 
     return inquiry;
   }
 
-  public async getInquiries(
-    filters?: InquiryFilters
-  ): Promise<Inquiry[]> {
+  public async getInquiries(filters?: InquiryFilters): Promise<Inquiry[]> {
     return await this.inquiryRepository.findWithFilters(filters);
   }
 
-  public async assignInquiry(
-    inquiryId: string,
-    userId: string
-  ): Promise<void> {
+  public async assignInquiry(inquiryId: string, userId: string): Promise<void> {
     const inquiry = await this.inquiryRepository.findById(inquiryId);
     if (!inquiry) {
       throw new NotFoundError('Inquiry not found');
@@ -1242,10 +1271,7 @@ class ContactService {
     await this.notificationService.sendAssignmentNotification(inquiry, userId);
   }
 
-  public async resolveInquiry(
-    inquiryId: string,
-    resolution: string
-  ): Promise<void> {
+  public async resolveInquiry(inquiryId: string, resolution: string): Promise<void> {
     const inquiry = await this.inquiryRepository.findById(inquiryId);
     if (!inquiry) {
       throw new NotFoundError('Inquiry not found');
@@ -1257,7 +1283,7 @@ class ContactService {
     await this.emailService.sendResolutionEmail(inquiry, resolution);
     await this.analyticsService.trackEvent('inquiry_resolved', {
       id: inquiryId,
-      resolutionTime: inquiry.getResolutionTime()
+      resolutionTime: inquiry.getResolutionTime(),
     });
   }
 
@@ -1276,21 +1302,21 @@ enum InquiryCategory {
   PORTRAIT = 'portrait',
   EVENT = 'event',
   COMMERCIAL = 'commercial',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 enum InquiryStatus {
   NEW = 'new',
   IN_PROGRESS = 'in_progress',
   RESOLVED = 'resolved',
-  CLOSED = 'closed'
+  CLOSED = 'closed',
 }
 
 enum Priority {
   LOW = 1,
   MEDIUM = 2,
   HIGH = 3,
-  URGENT = 4
+  URGENT = 4,
 }
 
 interface CreateInquiryData {
@@ -1324,64 +1350,64 @@ interface InquiryFilters {
 ```typescript
 // Konkrete Objektinstanzen zur Laufzeit
 const adminUser: User = {
-  id: "123e4567-e89b-12d3-a456-426614174000",
-  email: "admin@photographer-portfolio.com",
-  passwordHash: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCOdyF...",
+  id: '123e4567-e89b-12d3-a456-426614174000',
+  email: 'admin@photographer-portfolio.com',
+  passwordHash: '$2b$12$LQv3c1yqBWVHxkd0LQ4YCOdyF...',
   role: UserRole.ADMIN,
   profile: {
-    firstName: "Max",
-    lastName: "Mustermann",
-    avatar: "/uploads/avatars/admin.jpg"
+    firstName: 'Max',
+    lastName: 'Mustermann',
+    avatar: '/uploads/avatars/admin.jpg',
   },
-  createdAt: new Date("2025-01-15T10:30:00Z"),
-  lastLogin: new Date("2025-07-18T09:15:00Z"),
-  emailVerified: true
+  createdAt: new Date('2025-01-15T10:30:00Z'),
+  lastLogin: new Date('2025-07-18T09:15:00Z'),
+  emailVerified: true,
 };
 
 const registeredUser: User = {
-  id: "456e7890-e89b-12d3-a456-426614174001",
-  email: "kunde@example.com",
-  passwordHash: "$2b$12$XYZ3c1yqBWVHxkd0LQ4YCOdyF...",
+  id: '456e7890-e89b-12d3-a456-426614174001',
+  email: 'kunde@example.com',
+  passwordHash: '$2b$12$XYZ3c1yqBWVHxkd0LQ4YCOdyF...',
   role: UserRole.REGISTERED,
   profile: {
-    firstName: "Anna",
-    lastName: "Schmidt",
-    avatar: null
+    firstName: 'Anna',
+    lastName: 'Schmidt',
+    avatar: null,
   },
-  createdAt: new Date("2025-07-10T14:20:00Z"),
-  lastLogin: new Date("2025-07-17T16:45:00Z"),
-  emailVerified: true
+  createdAt: new Date('2025-07-10T14:20:00Z'),
+  lastLogin: new Date('2025-07-17T16:45:00Z'),
+  emailVerified: true,
 };
 
 const visitorSession: GuestSession = {
-  sessionId: "sess_789abc123def456",
-  ipAddress: "192.168.1.100",
-  userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X)...",
-  createdAt: new Date("2025-07-18T11:30:00Z"),
-  lastActivity: new Date("2025-07-18T11:45:00Z"),
-  permissions: [Permission.READ_PORTFOLIO]
+  sessionId: 'sess_789abc123def456',
+  ipAddress: '192.168.1.100',
+  userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X)...',
+  createdAt: new Date('2025-07-18T11:30:00Z'),
+  lastActivity: new Date('2025-07-18T11:45:00Z'),
+  permissions: [Permission.READ_PORTFOLIO],
 };
 
 // Authentication Service Instanz
 const authService: AuthenticationService = new AuthenticationService(
   new PostgreSQLUserRepository(databaseConnection),
-  new JWTTokenService("secret_key_here"),
+  new JWTTokenService('secret_key_here'),
   new SMTPEmailService(emailConfig)
 );
 
 // Aktive Session
 const activeSession: UserSession = {
   user: adminUser,
-  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  createdAt: new Date("2025-07-18T09:15:00Z"),
-  expiresAt: new Date("2025-07-19T09:15:00Z"),
+  token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  createdAt: new Date('2025-07-18T09:15:00Z'),
+  expiresAt: new Date('2025-07-19T09:15:00Z'),
   permissions: [
     Permission.READ_PORTFOLIO,
     Permission.WRITE_PORTFOLIO,
     Permission.MANAGE_USERS,
     Permission.VIEW_ANALYTICS,
-    Permission.MANAGE_SETTINGS
-  ]
+    Permission.MANAGE_SETTINGS,
+  ],
 };
 ```
 
@@ -1390,65 +1416,65 @@ const activeSession: UserSession = {
 ```typescript
 // Konkrete Portfolio Items zur Laufzeit
 const weddingPhoto: PortfolioItem = {
-  id: "portfolio_001",
-  title: "Romantische Hochzeit im Schloss",
-  description: "Eine zauberhafte Hochzeitszeremonie im historischen Schloss Neuschwanstein",
+  id: 'portfolio_001',
+  title: 'Romantische Hochzeit im Schloss',
+  description: 'Eine zauberhafte Hochzeitszeremonie im historischen Schloss Neuschwanstein',
   mediaType: MediaType.IMAGE,
-  filePath: "/uploads/portfolio/2025/07/wedding-schloss-001.jpg",
-  thumbnailPath: "/uploads/portfolio/2025/07/thumbs/wedding-schloss-001-thumb.webp",
+  filePath: '/uploads/portfolio/2025/07/wedding-schloss-001.jpg',
+  thumbnailPath: '/uploads/portfolio/2025/07/thumbs/wedding-schloss-001-thumb.webp',
   category: {
-    id: "cat_wedding",
-    name: "Hochzeitsfotografie",
-    slug: "hochzeit"
+    id: 'cat_wedding',
+    name: 'Hochzeitsfotografie',
+    slug: 'hochzeit',
   },
-  tags: ["hochzeit", "schloss", "romantisch", "outdoor", "vintage"],
+  tags: ['hochzeit', 'schloss', 'romantisch', 'outdoor', 'vintage'],
   metadata: {
     width: 3840,
     height: 2560,
     fileSize: 2458624,
-    format: "JPEG",
-    camera: "Canon EOS R5",
-    lens: "RF 50mm f/1.2L USM",
+    format: 'JPEG',
+    camera: 'Canon EOS R5',
+    lens: 'RF 50mm f/1.2L USM',
     iso: 200,
-    aperture: "f/2.8",
-    shutterSpeed: "1/250",
+    aperture: 'f/2.8',
+    shutterSpeed: '1/250',
     focalLength: 50,
-    dateTaken: new Date("2025-06-15T15:30:00Z")
+    dateTaken: new Date('2025-06-15T15:30:00Z'),
   },
   status: ContentStatus.PUBLISHED,
   featured: true,
   viewCount: 247,
-  createdAt: new Date("2025-06-16T10:00:00Z"),
-  publishedAt: new Date("2025-06-16T14:30:00Z")
+  createdAt: new Date('2025-06-16T10:00:00Z'),
+  publishedAt: new Date('2025-06-16T14:30:00Z'),
 };
 
 const portraitVideo: PortfolioItem = {
-  id: "portfolio_002",
-  title: "Business Portrait Session",
-  description: "Professionelle Businessportraits für Unternehmensprofile",
+  id: 'portfolio_002',
+  title: 'Business Portrait Session',
+  description: 'Professionelle Businessportraits für Unternehmensprofile',
   mediaType: MediaType.VIDEO,
-  filePath: "/uploads/portfolio/2025/07/business-portrait-session.mp4",
-  thumbnailPath: "/uploads/portfolio/2025/07/thumbs/business-portrait-thumb.webp",
+  filePath: '/uploads/portfolio/2025/07/business-portrait-session.mp4',
+  thumbnailPath: '/uploads/portfolio/2025/07/thumbs/business-portrait-thumb.webp',
   category: {
-    id: "cat_portrait",
-    name: "Portraitfotografie",
-    slug: "portrait"
+    id: 'cat_portrait',
+    name: 'Portraitfotografie',
+    slug: 'portrait',
   },
-  tags: ["business", "portrait", "professionell", "studio"],
+  tags: ['business', 'portrait', 'professionell', 'studio'],
   metadata: {
     width: 1920,
     height: 1080,
     fileSize: 45678912,
-    format: "MP4",
+    format: 'MP4',
     duration: 45,
-    bitrate: "8 Mbps",
-    codec: "H.264"
+    bitrate: '8 Mbps',
+    codec: 'H.264',
   },
   status: ContentStatus.PUBLISHED,
   featured: false,
   viewCount: 89,
-  createdAt: new Date("2025-07-10T11:15:00Z"),
-  publishedAt: new Date("2025-07-11T09:00:00Z")
+  createdAt: new Date('2025-07-10T11:15:00Z'),
+  publishedAt: new Date('2025-07-11T09:00:00Z'),
 };
 
 // Portfolio Service mit Dependencies
@@ -1457,7 +1483,7 @@ const portfolioService: PortfolioService = new PortfolioService(
   new SharpImageOptimizationService({
     formats: ['webp', 'avif'],
     qualities: [80, 60, 40],
-    sizes: [400, 800, 1200, 1920]
+    sizes: [400, 800, 1200, 1920],
   }),
   new NextSEOService(siteConfig),
   new RedisaCacheService(redisConnection)
@@ -1467,21 +1493,21 @@ const portfolioService: PortfolioService = new PortfolioService(
 const galleryState: GalleryState = {
   items: [weddingPhoto, portraitVideo],
   filters: {
-    category: "all",
+    category: 'all',
     tags: [],
     mediaType: null,
-    featured: false
+    featured: false,
   },
   pagination: {
     currentPage: 1,
     itemsPerPage: 12,
     totalItems: 156,
-    totalPages: 13
+    totalPages: 13,
   },
   loading: false,
   error: null,
   selectedItem: null,
-  lightboxOpen: false
+  lightboxOpen: false,
 };
 ```
 
@@ -1490,62 +1516,64 @@ const galleryState: GalleryState = {
 ```typescript
 // Konkrete Inquiry Instanzen
 const weddingInquiry: Inquiry = {
-  id: "inquiry_001",
-  name: "Sarah und Thomas Meyer",
-  email: "sarah.meyer@example.com",
-  phone: "+49 151 23456789",
-  subject: "Hochzeitsfotografie September 2025",
-  message: "Hallo, wir planen unsere Hochzeit für den 15. September 2025 im Schloss Linderhof. Könnten Sie uns ein Angebot für die fotografische Begleitung unseres besonderen Tages erstellen?",
+  id: 'inquiry_001',
+  name: 'Sarah und Thomas Meyer',
+  email: 'sarah.meyer@example.com',
+  phone: '+49 151 23456789',
+  subject: 'Hochzeitsfotografie September 2025',
+  message:
+    'Hallo, wir planen unsere Hochzeit für den 15. September 2025 im Schloss Linderhof. Könnten Sie uns ein Angebot für die fotografische Begleitung unseres besonderen Tages erstellen?',
   category: InquiryCategory.WEDDING,
   status: InquiryStatus.IN_PROGRESS,
   priority: Priority.HIGH,
-  budgetRange: "2000-3000 EUR",
-  eventDate: new Date("2025-09-15T14:00:00Z"),
-  location: "Schloss Linderhof, Bayern",
-  assignedTo: "123e4567-e89b-12d3-a456-426614174000", // Admin User ID
-  createdAt: new Date("2025-07-18T10:15:00Z"),
+  budgetRange: '2000-3000 EUR',
+  eventDate: new Date('2025-09-15T14:00:00Z'),
+  location: 'Schloss Linderhof, Bayern',
+  assignedTo: '123e4567-e89b-12d3-a456-426614174000', // Admin User ID
+  createdAt: new Date('2025-07-18T10:15:00Z'),
   resolvedAt: null,
   customFields: {
-    guestCount: "80 Personen",
-    weddingStyle: "Vintage/Romantisch",
-    previouslyWorkedWith: false
-  }
+    guestCount: '80 Personen',
+    weddingStyle: 'Vintage/Romantisch',
+    previouslyWorkedWith: false,
+  },
 };
 
 const portraitInquiry: Inquiry = {
-  id: "inquiry_002",
-  name: "Dr. Michael Weber",
-  email: "m.weber@business-consulting.de",
-  phone: "+49 89 12345678",
-  subject: "Business Portraits für Team",
-  message: "Wir benötigen professionelle Businessportraits für unser 15-köpfiges Consulting-Team. Die Fotos sollen für unsere neue Website und LinkedIn-Profile verwendet werden.",
+  id: 'inquiry_002',
+  name: 'Dr. Michael Weber',
+  email: 'm.weber@business-consulting.de',
+  phone: '+49 89 12345678',
+  subject: 'Business Portraits für Team',
+  message:
+    'Wir benötigen professionelle Businessportraits für unser 15-köpfiges Consulting-Team. Die Fotos sollen für unsere neue Website und LinkedIn-Profile verwendet werden.',
   category: InquiryCategory.COMMERCIAL,
   status: InquiryStatus.NEW,
   priority: Priority.MEDIUM,
-  budgetRange: "1500-2500 EUR",
+  budgetRange: '1500-2500 EUR',
   eventDate: null,
-  location: "München Innenstadt (flexibel)",
+  location: 'München Innenstadt (flexibel)',
   assignedTo: null,
-  createdAt: new Date("2025-07-18T14:30:00Z"),
+  createdAt: new Date('2025-07-18T14:30:00Z'),
   resolvedAt: null,
   customFields: {
-    teamSize: "15 Personen",
-    deliveryFormat: "Digital + Print",
-    rushOrder: false
-  }
+    teamSize: '15 Personen',
+    deliveryFormat: 'Digital + Print',
+    rushOrder: false,
+  },
 };
 
 // Contact Service mit aktueller Konfiguration
 const contactService: ContactService = new ContactService(
   new PostgreSQLInquiryRepository(databaseConnection),
   new SMTPEmailService({
-    host: "smtp.gmail.com",
+    host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: {
-      user: "admin@photographer-portfolio.com",
-      pass: process.env.EMAIL_PASSWORD
-    }
+      user: 'admin@photographer-portfolio.com',
+      pass: process.env.EMAIL_PASSWORD,
+    },
   }),
   new SlackNotificationService(process.env.SLACK_WEBHOOK),
   new GoogleAnalyticsService(process.env.GA_TRACKING_ID)
@@ -1559,23 +1587,23 @@ const inquiryDashboard: InquiryDashboardState = {
     new: 12,
     inProgress: 18,
     resolved: 17,
-    avgResponseTime: "4.2 hours",
-    conversionRate: 0.73
+    avgResponseTime: '4.2 hours',
+    conversionRate: 0.73,
   },
   filters: {
     status: InquiryStatus.NEW,
     priority: null,
     dateRange: {
-      from: new Date("2025-07-01"),
-      to: new Date("2025-07-31")
-    }
+      from: new Date('2025-07-01'),
+      to: new Date('2025-07-31'),
+    },
   },
   sorting: {
-    field: "createdAt",
-    direction: "desc"
+    field: 'createdAt',
+    direction: 'desc',
   },
   loading: false,
-  selectedInquiry: weddingInquiry
+  selectedInquiry: weddingInquiry,
 };
 ```
 
@@ -1584,81 +1612,81 @@ const inquiryDashboard: InquiryDashboardState = {
 ```typescript
 // Performance Monitoring zur Laufzeit
 const performanceMetrics: PerformanceMetrics = {
-  timestamp: new Date("2025-07-18T12:00:00Z"),
+  timestamp: new Date('2025-07-18T12:00:00Z'),
   coreWebVitals: {
     LCP: 1847, // Largest Contentful Paint (ms)
-    FID: 67,   // First Input Delay (ms)
+    FID: 67, // First Input Delay (ms)
     CLS: 0.08, // Cumulative Layout Shift
     FCP: 1243, // First Contentful Paint (ms)
-    TTI: 2891  // Time to Interactive (ms)
+    TTI: 2891, // Time to Interactive (ms)
   },
   serverMetrics: {
-    responseTime: 156,     // Average API response time (ms)
-    throughput: 47,        // Requests per second
-    errorRate: 0.002,      // Error rate (2 errors per 1000 requests)
-    cpuUsage: 0.34,        // CPU usage (34%)
-    memoryUsage: 0.67,     // Memory usage (67%)
-    diskUsage: 0.45        // Disk usage (45%)
+    responseTime: 156, // Average API response time (ms)
+    throughput: 47, // Requests per second
+    errorRate: 0.002, // Error rate (2 errors per 1000 requests)
+    cpuUsage: 0.34, // CPU usage (34%)
+    memoryUsage: 0.67, // Memory usage (67%)
+    diskUsage: 0.45, // Disk usage (45%)
   },
   userMetrics: {
     activeUsers: 23,
     bounceRate: 0.31,
     avgSessionDuration: 185, // seconds
     pageViews: 1247,
-    uniqueVisitors: 543
-  }
+    uniqueVisitors: 543,
+  },
 };
 
 // Cache System Status
 const cacheStatus: CacheSystemStatus = {
   redis: {
     connected: true,
-    memory: "2.3 GB",
+    memory: '2.3 GB',
     hitRate: 0.89,
     keys: 15623,
-    lastBackup: new Date("2025-07-18T03:00:00Z")
+    lastBackup: new Date('2025-07-18T03:00:00Z'),
   },
   browser: {
     serviceWorkerActive: true,
-    cacheSize: "45 MB",
-    offlinePages: ["/", "/portfolio", "/contact"],
-    lastUpdate: new Date("2025-07-18T11:30:00Z")
+    cacheSize: '45 MB',
+    offlinePages: ['/', '/portfolio', '/contact'],
+    lastUpdate: new Date('2025-07-18T11:30:00Z'),
   },
   cdn: {
-    provider: "Cloudflare",
+    provider: 'Cloudflare',
     hitRate: 0.94,
-    bandwidth: "127 GB",
+    bandwidth: '127 GB',
     cacheNodes: 15,
-    lastPurge: new Date("2025-07-17T22:15:00Z")
-  }
+    lastPurge: new Date('2025-07-17T22:15:00Z'),
+  },
 };
 
 // SEO Performance Status
 const seoStatus: SEOStatus = {
   sitemap: {
-    lastGenerated: new Date("2025-07-18T06:00:00Z"),
+    lastGenerated: new Date('2025-07-18T06:00:00Z'),
     urls: 89,
     submitted: true,
-    indexed: 76
+    indexed: 76,
   },
   schemaMarkup: {
     validated: true,
     errors: 0,
     warnings: 2,
-    types: ["Person", "ImageObject", "Organization"]
+    types: ['Person', 'ImageObject', 'Organization'],
   },
   metaTags: {
     coverage: 0.96,
     uniqueTitles: 89,
     uniqueDescriptions: 87,
     avgTitleLength: 52,
-    avgDescriptionLength: 148
+    avgDescriptionLength: 148,
   },
   pageSpeed: {
     mobile: 89,
     desktop: 94,
-    lastCheck: new Date("2025-07-18T08:30:00Z")
-  }
+    lastCheck: new Date('2025-07-18T08:30:00Z'),
+  },
 };
 ```
 
@@ -1673,6 +1701,7 @@ const seoStatus: SEOStatus = {
 **Entscheidung:** Verwendung von Next.js 15 mit App Router anstelle von Pages Router
 
 **Begründung:**
+
 - **Performance**: App Router bietet bessere Performance durch Streaming und Partial Prerendering
 - **Developer Experience**: Vereinfachte Routing-Logik und bessere TypeScript-Integration
 - **SEO-Vorteile**: Integrierte Meta-Tag-Verwaltung und automatische Sitemap-Generierung
@@ -1680,6 +1709,7 @@ const seoStatus: SEOStatus = {
 - **Zukunftssicherheit**: App Router ist die empfohlene Architektur für neue Next.js Projekte
 
 **Alternativen betrachtet:**
+
 - Pages Router: Weniger performant, ältere API
 - Astro: Zu statisch für Content-Management-Anforderungen
 - SvelteKit: Kleineres Ökosystem, weniger TypeScript-Support
@@ -1689,6 +1719,7 @@ const seoStatus: SEOStatus = {
 **Entscheidung:** 100% TypeScript-Implementation
 
 **Begründung:**
+
 - **Typsicherheit**: Reduziert Laufzeitfehler um ca. 80%
 - **Entwicklerproduktivität**: IntelliSense und Autocomplete
 - **Refactoring-Sicherheit**: Sichere Code-Änderungen bei Systemerweiterungen
@@ -1696,6 +1727,7 @@ const seoStatus: SEOStatus = {
 - **Team-Kollaboration**: Eindeutige Schnittstellen-Definitionen
 
 **Trade-offs:**
+
 - Höhere initiale Lernkurve
 - Längere Compile-Zeiten (akzeptabel bei modernen Build-Tools)
 
@@ -1704,6 +1736,7 @@ const seoStatus: SEOStatus = {
 **Entscheidung:** Tailwind CSS als Styling-Foundation mit shadcn/ui Komponenten
 
 **Begründung:**
+
 - **Konsistenz**: Einheitliches Design-System durch Utility-Classes
 - **Performance**: Keine ungenutzten CSS-Regeln durch Purging
 - **Wartbarkeit**: Komponenten-basierte Architektur
@@ -1711,6 +1744,7 @@ const seoStatus: SEOStatus = {
 - **Community**: Große Community und Ecosystem-Support
 
 **shadcn/ui Vorteile:**
+
 - Hochwertige, barrierefreie Komponenten
 - Radix UI Foundation für Accessibility
 - Copy-Paste Ansatz für volle Kontrolle
@@ -1721,6 +1755,7 @@ const seoStatus: SEOStatus = {
 **Entscheidung:** PostgreSQL als primäre Datenbank
 
 **Begründung:**
+
 - **ACID-Compliance**: Wichtig für kritische Geschäftsdaten
 - **Relationaler Ansatz**: Portfolio-Items, Benutzer und Anfragen haben klare Beziehungen
 - **JSON-Support**: Flexible Metadaten-Speicherung mit JSONB
@@ -1728,6 +1763,7 @@ const seoStatus: SEOStatus = {
 - **Ecosystem**: Ausgereifte Tools und ORM-Support
 
 **Alternativen:**
+
 - MongoDB: Weniger strukturiert, potentielle Datenkonsistenz-Probleme
 - SQLite: Nicht skalierbar für Produktionsumgebung
 - MySQL: Weniger fortgeschrittene JSON-Features
@@ -1739,6 +1775,7 @@ const seoStatus: SEOStatus = {
 **Entscheidung:** Repository Pattern für Datenzugriff
 
 **Begründung:**
+
 ```typescript
 // Abstraktion ermöglicht einfache Testbarkeit
 interface UserRepository {
@@ -1760,6 +1797,7 @@ class InMemoryUserRepository implements UserRepository {
 ```
 
 **Vorteile:**
+
 - **Testbarkeit**: Mock-Repositories für Unit Tests
 - **Flexibilität**: Einfacher Wechsel der Datenbank-Technologie
 - **Separation of Concerns**: Business Logic getrennt von Persistierung
@@ -1770,6 +1808,7 @@ class InMemoryUserRepository implements UserRepository {
 **Entscheidung:** Service Layer zwischen API Routes und Repositories
 
 **Begründung:**
+
 - **Business Logic Kapselung**: Alle Geschäftsregeln in Services
 - **Wiederverwertbarkeit**: Services können von verschiedenen Endpunkten genutzt werden
 - **Transaktionsmanagement**: Koordination mehrerer Repository-Operationen
@@ -1782,19 +1821,19 @@ class PortfolioService {
   async createItem(data: CreateItemData, file: File): Promise<PortfolioItem> {
     // 1. Validierung
     await this.validateFile(file);
-    
+
     // 2. Bildverarbeitung
     const processed = await this.imageService.optimize(file);
-    
+
     // 3. Persistierung
     const item = await this.repository.save(new PortfolioItem(data));
-    
+
     // 4. SEO-Update
     await this.seoService.updateSitemap();
-    
+
     // 5. Cache-Invalidierung
     await this.cacheService.invalidate(['portfolio']);
-    
+
     return item;
   }
 }
@@ -1805,6 +1844,7 @@ class PortfolioService {
 **Entscheidung:** Zustand für Client-Side State Management
 
 **Begründung:**
+
 - **Einfachheit**: Minimaler Boilerplate im Vergleich zu Redux
 - **Performance**: Optimierte Re-Renders durch Selector-Pattern
 - **TypeScript**: Native TypeScript-Unterstützung
@@ -1823,11 +1863,11 @@ const usePortfolioStore = create<PortfolioState>((set, get) => ({
   items: [],
   filters: { category: 'all' },
   loading: false,
-  
+
   // Actions
-  setItems: (items) => set({ items }),
-  setLoading: (loading) => set({ loading }),
-  updateFilters: (filters) => set({ filters: { ...get().filters, ...filters } })
+  setItems: items => set({ items }),
+  setLoading: loading => set({ loading }),
+  updateFilters: filters => set({ filters: { ...get().filters, ...filters } }),
 }));
 ```
 
@@ -1838,6 +1878,7 @@ const usePortfolioStore = create<PortfolioState>((set, get) => ({
 **Entscheidung:** JWT Tokens in HTTP-Only Cookies
 
 **Begründung:**
+
 - **XSS Protection**: HTTP-Only Cookies nicht von JavaScript zugänglich
 - **CSRF Protection**: SameSite Cookie-Attribut
 - **Stateless**: Server muss keine Session-State speichern
@@ -1846,11 +1887,11 @@ const usePortfolioStore = create<PortfolioState>((set, get) => ({
 ```typescript
 // Sichere Token-Implementierung
 const tokenOptions: CookieOptions = {
-  httpOnly: true,        // XSS Protection
-  secure: true,          // Nur über HTTPS
-  sameSite: 'strict',    // CSRF Protection
+  httpOnly: true, // XSS Protection
+  secure: true, // Nur über HTTPS
+  sameSite: 'strict', // CSRF Protection
   maxAge: 24 * 60 * 60 * 1000, // 24 Stunden
-  path: '/'
+  path: '/',
 };
 
 response.setHeader('Set-Cookie', `auth-token=${jwt}; ${serializeOptions(tokenOptions)}`);
@@ -1861,6 +1902,7 @@ response.setHeader('Set-Cookie', `auth-token=${jwt}; ${serializeOptions(tokenOpt
 **Entscheidung:** Zod für Schema-Validation
 
 **Begründung:**
+
 - **Type Safety**: Automatische TypeScript-Typ-Generierung
 - **Runtime Validation**: Schutz vor ungültigen Daten
 - **DRY Principle**: Ein Schema für Frontend und Backend
@@ -1872,7 +1914,7 @@ const ContactFormSchema = z.object({
   name: z.string().min(2, 'Name muss mindestens 2 Zeichen haben'),
   email: z.string().email('Ungültige E-Mail-Adresse'),
   message: z.string().min(10, 'Nachricht muss mindestens 10 Zeichen haben'),
-  category: z.enum(['wedding', 'portrait', 'event', 'commercial'])
+  category: z.enum(['wedding', 'portrait', 'event', 'commercial']),
 });
 
 type ContactFormData = z.infer<typeof ContactFormSchema>;
@@ -1885,6 +1927,7 @@ type ContactFormData = z.infer<typeof ContactFormSchema>;
 **Entscheidung:** Multi-Format Image Optimization
 
 **Begründung:**
+
 - **Modern Formats**: AVIF (50% kleinere Dateien) und WebP (25% kleiner)
 - **Responsive Images**: Verschiedene Größen für verschiedene Viewports
 - **Lazy Loading**: Bilder werden nur bei Bedarf geladen
@@ -1898,10 +1941,10 @@ const imageOptimization = {
   qualities: {
     avif: 60,
     webp: 80,
-    jpeg: 85
+    jpeg: 85,
   },
   lazyLoading: true,
-  placeholder: 'blur'
+  placeholder: 'blur',
 };
 ```
 
@@ -1910,6 +1953,7 @@ const imageOptimization = {
 **Entscheidung:** Multi-Level Caching
 
 **Begründung:**
+
 - **Browser Cache**: Statische Assets langzeit-gecacht
 - **CDN Cache**: Globale Edge-Caches für Medieninhalte
 - **Server Cache**: Redis für dynamische Daten
@@ -1921,17 +1965,17 @@ const cachingStrategy = {
   static: {
     images: '365d',
     css: '30d',
-    js: '30d'
+    js: '30d',
   },
   dynamic: {
     portfolio: '1h',
     analytics: '5m',
-    user: '15m'
+    user: '15m',
   },
   revalidation: {
     ISR: 3600, // 1 hour
-    API: 300   // 5 minutes
-  }
+    API: 300, // 5 minutes
+  },
 };
 ```
 
@@ -1942,6 +1986,7 @@ const cachingStrategy = {
 **Entscheidung:** Vollständige WCAG 2.1 AA Implementierung
 
 **Begründung:**
+
 - **Rechtliche Anforderungen**: Gesetzliche Verpflichtungen in Deutschland
 - **Marktvergrößerung**: Zugänglich für Benutzer mit Beeinträchtigungen
 - **SEO-Vorteile**: Bessere Suchmaschinen-Rankings
@@ -1955,3 +2000,4 @@ const accessibilityFeatures = {
   keyboardNavigation: true,
   screenReaderSupport: true,
   color
+```

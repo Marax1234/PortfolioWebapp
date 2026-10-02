@@ -2,22 +2,25 @@
  * Enhanced Error Handler with Structured Logging
  * Provides consistent error handling and logging across all API routes
  */
+import { NextResponse } from 'next/server';
 
-import { NextResponse } from 'next/server'
-import { Prisma } from '@prisma/client'
-import { Logger, LogCategory, LogLevel } from './logger'
-import { ZodError } from 'zod'
+import { Prisma } from '@prisma/client';
+import { ZodError } from 'zod';
+
+import { LogCategory, LogLevel, Logger } from './logger';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * Standard error response interface
  */
 export interface ErrorResponse {
-  success: false
-  error: string
-  code?: string
-  details?: Record<string, any>
-  requestId?: string
-  timestamp: string
+  success: false;
+  error: string;
+  code?: string;
+  details?: Record<string, unknown>;
+  requestId?: string;
+  timestamp: string;
 }
 
 /**
@@ -33,18 +36,18 @@ export enum ErrorType {
   DATABASE_ERROR = 'DATABASE_ERROR',
   EXTERNAL_SERVICE_ERROR = 'EXTERNAL_SERVICE_ERROR',
   FILE_UPLOAD_ERROR = 'FILE_UPLOAD_ERROR',
-  INTERNAL_ERROR = 'INTERNAL_ERROR'
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
 }
 
 /**
  * Custom application error class
  */
 export class AppError extends Error {
-  public readonly type: ErrorType
-  public readonly statusCode: number
-  public readonly code?: string
-  public readonly details?: Record<string, any>
-  public readonly isOperational: boolean
+  public readonly type: ErrorType;
+  public readonly statusCode: number;
+  public readonly code?: string;
+  public readonly details?: Record<string, any>;
+  public readonly isOperational: boolean;
 
   constructor(
     message: string,
@@ -54,16 +57,16 @@ export class AppError extends Error {
     details?: Record<string, any>,
     isOperational: boolean = true
   ) {
-    super(message)
-    this.name = 'AppError'
-    this.type = type
-    this.statusCode = statusCode
-    this.code = code
-    this.details = details
-    this.isOperational = isOperational
+    super(message);
+    this.name = 'AppError';
+    this.type = type;
+    this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+    this.isOperational = isOperational;
 
     // Capture stack trace
-    Error.captureStackTrace(this, this.constructor)
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
@@ -71,16 +74,16 @@ export class AppError extends Error {
  * Error context for logging
  */
 export interface ErrorContext {
-  requestId?: string
-  userId?: string
-  ip?: string
-  userAgent?: string
-  method?: string
-  url?: string
-  route?: string
-  operation?: string
-  inputData?: Record<string, any>
-  metadata?: Record<string, any>
+  requestId?: string;
+  userId?: string;
+  ip?: string;
+  userAgent?: string;
+  method?: string;
+  url?: string;
+  route?: string;
+  operation?: string;
+  inputData?: Record<string, any>;
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -94,8 +97,8 @@ export class ErrorHandler {
     error: unknown,
     context?: ErrorContext
   ): Promise<NextResponse<ErrorResponse>> {
-    const errorInfo = this.analyzeError(error)
-    const requestId = context?.requestId || Logger.generateRequestId()
+    const errorInfo = this.analyzeError(error);
+    const requestId = context?.requestId || Logger.generateRequestId();
 
     // Log the error with full context
     Logger.errorLog({
@@ -112,15 +115,14 @@ export class ErrorHandler {
         name: errorInfo.name,
         message: errorInfo.message,
         stack: errorInfo.stack,
-        code: errorInfo.code
+        code: errorInfo.code,
       },
       context: {
         route: context?.route,
         operation: context?.operation,
         inputData: this.sanitizeInputData(context?.inputData),
-        metadata: context?.metadata
-      }
-    })
+      },
+    });
 
     // Create standardized error response
     const errorResponse: ErrorResponse = {
@@ -129,30 +131,30 @@ export class ErrorHandler {
       code: errorInfo.code,
       details: errorInfo.publicDetails,
       requestId,
-      timestamp: new Date().toISOString()
-    }
+      timestamp: new Date().toISOString(),
+    };
 
     return NextResponse.json(errorResponse, {
       status: errorInfo.statusCode,
       headers: {
         'x-request-id': requestId,
-        'content-type': 'application/json'
-      }
-    })
+        'content-type': 'application/json',
+      },
+    });
   }
 
   /**
    * Analyze error and extract relevant information
    */
   private static analyzeError(error: unknown): {
-    name: string
-    message: string
-    stack?: string
-    type: ErrorType
-    statusCode: number
-    code?: string
-    publicMessage: string
-    publicDetails?: Record<string, any>
+    name: string;
+    message: string;
+    stack?: string;
+    type: ErrorType;
+    statusCode: number;
+    code?: string;
+    publicMessage: string;
+    publicDetails?: Record<string, any>;
   } {
     // Handle custom AppError
     if (error instanceof AppError) {
@@ -164,16 +166,19 @@ export class ErrorHandler {
         statusCode: error.statusCode,
         code: error.code,
         publicMessage: error.message,
-        publicDetails: error.details
-      }
+        publicDetails: error.details,
+      };
     }
 
     // Handle Zod validation errors
     if (error instanceof ZodError) {
-      const details = error.errors.reduce((acc, err) => {
-        acc[err.path.join('.')] = err.message
-        return acc
-      }, {} as Record<string, string>)
+      const details = (error.issues || []).reduce(
+        (acc, err) => {
+          acc[err.path.join('.')] = err.message;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
 
       return {
         name: 'ZodError',
@@ -183,13 +188,13 @@ export class ErrorHandler {
         statusCode: 400,
         code: 'VALIDATION_FAILED',
         publicMessage: 'Request validation failed',
-        publicDetails: { fields: details }
-      }
+        publicDetails: { fields: details },
+      };
     }
 
     // Handle Prisma errors
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return this.handlePrismaError(error)
+      return this.handlePrismaError(error);
     }
 
     if (error instanceof Prisma.PrismaClientUnknownRequestError) {
@@ -200,8 +205,8 @@ export class ErrorHandler {
         type: ErrorType.DATABASE_ERROR,
         statusCode: 500,
         code: 'DATABASE_UNKNOWN_ERROR',
-        publicMessage: 'Database operation failed'
-      }
+        publicMessage: 'Database operation failed',
+      };
     }
 
     if (error instanceof Prisma.PrismaClientRustPanicError) {
@@ -212,8 +217,8 @@ export class ErrorHandler {
         type: ErrorType.DATABASE_ERROR,
         statusCode: 500,
         code: 'DATABASE_ENGINE_ERROR',
-        publicMessage: 'Database service error'
-      }
+        publicMessage: 'Database service error',
+      };
     }
 
     if (error instanceof Prisma.PrismaClientInitializationError) {
@@ -224,8 +229,8 @@ export class ErrorHandler {
         type: ErrorType.DATABASE_ERROR,
         statusCode: 503,
         code: 'DATABASE_CONNECTION_ERROR',
-        publicMessage: 'Database service unavailable'
-      }
+        publicMessage: 'Database service unavailable',
+      };
     }
 
     if (error instanceof Prisma.PrismaClientValidationError) {
@@ -236,8 +241,8 @@ export class ErrorHandler {
         type: ErrorType.VALIDATION_ERROR,
         statusCode: 400,
         code: 'DATABASE_VALIDATION_ERROR',
-        publicMessage: 'Invalid database operation'
-      }
+        publicMessage: 'Invalid database operation',
+      };
     }
 
     // Handle standard JavaScript errors
@@ -249,8 +254,8 @@ export class ErrorHandler {
         type: ErrorType.INTERNAL_ERROR,
         statusCode: 500,
         code: 'INTERNAL_SERVER_ERROR',
-        publicMessage: 'Internal server error occurred'
-      }
+        publicMessage: 'Internal server error occurred',
+      };
     }
 
     // Handle unknown error types
@@ -260,29 +265,31 @@ export class ErrorHandler {
       type: ErrorType.INTERNAL_ERROR,
       statusCode: 500,
       code: 'UNKNOWN_ERROR',
-      publicMessage: 'An unexpected error occurred'
-    }
+      publicMessage: 'An unexpected error occurred',
+    };
   }
 
   /**
    * Handle Prisma-specific errors with detailed mapping
    */
-  private static handlePrismaError(error: Prisma.PrismaClientKnownRequestError): {
-    name: string
-    message: string
-    stack?: string
-    type: ErrorType
-    statusCode: number
-    code: string
-    publicMessage: string
-    publicDetails?: Record<string, any>
+  private static handlePrismaError(
+    error: Prisma.PrismaClientKnownRequestError
+  ): {
+    name: string;
+    message: string;
+    stack?: string;
+    type: ErrorType;
+    statusCode: number;
+    code: string;
+    publicMessage: string;
+    publicDetails?: Record<string, any>;
   } {
-    const code = error.code
-    const meta = error.meta as Record<string, any> | undefined
+    const code = error.code;
+    const meta = error.meta as Record<string, any> | undefined;
 
     switch (code) {
       case 'P2002': // Unique constraint violation
-        const field = meta?.target || 'field'
+        const field = meta?.target || 'field';
         return {
           name: 'PrismaUniqueConstraintError',
           message: `Unique constraint violation on ${field}`,
@@ -291,8 +298,8 @@ export class ErrorHandler {
           statusCode: 409,
           code: 'UNIQUE_CONSTRAINT_VIOLATION',
           publicMessage: `A record with this ${field} already exists`,
-          publicDetails: { field }
-        }
+          publicDetails: { field },
+        };
 
       case 'P2025': // Record not found
         return {
@@ -302,8 +309,8 @@ export class ErrorHandler {
           type: ErrorType.NOT_FOUND_ERROR,
           statusCode: 404,
           code: 'RECORD_NOT_FOUND',
-          publicMessage: 'The requested resource was not found'
-        }
+          publicMessage: 'The requested resource was not found',
+        };
 
       case 'P2003': // Foreign key constraint violation
         return {
@@ -313,8 +320,8 @@ export class ErrorHandler {
           type: ErrorType.VALIDATION_ERROR,
           statusCode: 400,
           code: 'FOREIGN_KEY_CONSTRAINT',
-          publicMessage: 'Invalid reference to related record'
-        }
+          publicMessage: 'Invalid reference to related record',
+        };
 
       case 'P2014': // Required relation violation
         return {
@@ -324,11 +331,11 @@ export class ErrorHandler {
           type: ErrorType.VALIDATION_ERROR,
           statusCode: 400,
           code: 'REQUIRED_RELATION_MISSING',
-          publicMessage: 'Required related record is missing'
-        }
+          publicMessage: 'Required related record is missing',
+        };
 
       case 'P2011': // Null constraint violation
-        const nullField = meta?.target || 'field'
+        const nullField = meta?.target || 'field';
         return {
           name: 'PrismaNullConstraintError',
           message: `Null constraint violation on ${nullField}`,
@@ -336,8 +343,8 @@ export class ErrorHandler {
           type: ErrorType.VALIDATION_ERROR,
           statusCode: 400,
           code: 'NULL_CONSTRAINT_VIOLATION',
-          publicMessage: `${nullField} is required`
-        }
+          publicMessage: `${nullField} is required`,
+        };
 
       case 'P2034': // Transaction conflict
         return {
@@ -347,8 +354,8 @@ export class ErrorHandler {
           type: ErrorType.CONFLICT_ERROR,
           statusCode: 409,
           code: 'TRANSACTION_CONFLICT',
-          publicMessage: 'Operation conflicts with concurrent changes'
-        }
+          publicMessage: 'Operation conflicts with concurrent changes',
+        };
 
       default:
         return {
@@ -358,85 +365,175 @@ export class ErrorHandler {
           type: ErrorType.DATABASE_ERROR,
           statusCode: 500,
           code: `PRISMA_${code}`,
-          publicMessage: 'Database operation failed'
-        }
+          publicMessage: 'Database operation failed',
+        };
     }
   }
 
   /**
    * Sanitize input data for logging (remove sensitive information)
    */
-  private static sanitizeInputData(data?: Record<string, any>): Record<string, any> | undefined {
-    if (!data) return undefined
+  private static sanitizeInputData(
+    data?: Record<string, any>
+  ): Record<string, any> | undefined {
+    if (!data) return undefined;
 
     const sensitiveFields = [
-      'password', 'token', 'secret', 'key', 'authorization',
-      'cookie', 'session', 'csrf', 'api_key', 'access_token',
-      'refresh_token', 'private_key', 'credit_card', 'ssn'
-    ]
+      'password',
+      'token',
+      'secret',
+      'key',
+      'authorization',
+      'cookie',
+      'session',
+      'csrf',
+      'api_key',
+      'access_token',
+      'refresh_token',
+      'private_key',
+      'credit_card',
+      'ssn',
+    ];
 
-    const sanitized = { ...data }
+    const sanitized = { ...data };
 
     const sanitizeValue = (value: any, key: string): any => {
       if (typeof value === 'string') {
-        const lowerKey = key.toLowerCase()
+        const lowerKey = key.toLowerCase();
         if (sensitiveFields.some(field => lowerKey.includes(field))) {
-          return '[REDACTED]'
+          return '[REDACTED]';
         }
-        return value
+        return value;
       }
 
       if (Array.isArray(value)) {
-        return value.map((item, index) => sanitizeValue(item, `${key}[${index}]`))
+        return value.map((item, index) =>
+          sanitizeValue(item, `${key}[${index}]`)
+        );
       }
 
       if (value && typeof value === 'object') {
-        const sanitizedObj: Record<string, any> = {}
+        const sanitizedObj: Record<string, any> = {};
         Object.keys(value).forEach(nestedKey => {
-          sanitizedObj[nestedKey] = sanitizeValue(value[nestedKey], nestedKey)
-        })
-        return sanitizedObj
+          sanitizedObj[nestedKey] = sanitizeValue(value[nestedKey], nestedKey);
+        });
+        return sanitizedObj;
       }
 
-      return value
-    }
+      return value;
+    };
 
     Object.keys(sanitized).forEach(key => {
-      sanitized[key] = sanitizeValue(sanitized[key], key)
-    })
+      sanitized[key] = sanitizeValue(sanitized[key], key);
+    });
 
-    return sanitized
+    return sanitized;
   }
 
   /**
    * Create common application errors
    */
-  static createValidationError(message: string, details?: Record<string, any>): AppError {
-    return new AppError(message, ErrorType.VALIDATION_ERROR, 400, 'VALIDATION_ERROR', details)
+  static createValidationError(
+    message: string,
+    details?: Record<string, any>
+  ): AppError {
+    return new AppError(
+      message,
+      ErrorType.VALIDATION_ERROR,
+      400,
+      'VALIDATION_ERROR',
+      details
+    );
   }
 
   static createNotFoundError(resource: string): AppError {
-    return new AppError(`${resource} not found`, ErrorType.NOT_FOUND_ERROR, 404, 'NOT_FOUND')
+    return new AppError(
+      `${resource} not found`,
+      ErrorType.NOT_FOUND_ERROR,
+      404,
+      'NOT_FOUND'
+    );
   }
 
-  static createUnauthorizedError(message: string = 'Authentication required'): AppError {
-    return new AppError(message, ErrorType.AUTHENTICATION_ERROR, 401, 'UNAUTHORIZED')
+  static createUnauthorizedError(
+    message: string = 'Authentication required'
+  ): AppError {
+    return new AppError(
+      message,
+      ErrorType.AUTHENTICATION_ERROR,
+      401,
+      'UNAUTHORIZED'
+    );
   }
 
   static createForbiddenError(message: string = 'Access denied'): AppError {
-    return new AppError(message, ErrorType.AUTHORIZATION_ERROR, 403, 'FORBIDDEN')
+    return new AppError(
+      message,
+      ErrorType.AUTHORIZATION_ERROR,
+      403,
+      'FORBIDDEN'
+    );
   }
 
-  static createConflictError(message: string, details?: Record<string, any>): AppError {
-    return new AppError(message, ErrorType.CONFLICT_ERROR, 409, 'CONFLICT', details)
+  static createConflictError(
+    message: string,
+    details?: Record<string, any>
+  ): AppError {
+    return new AppError(
+      message,
+      ErrorType.CONFLICT_ERROR,
+      409,
+      'CONFLICT',
+      details
+    );
   }
 
   static createRateLimitError(message: string = 'Too many requests'): AppError {
-    return new AppError(message, ErrorType.RATE_LIMIT_ERROR, 429, 'RATE_LIMITED')
+    return new AppError(
+      message,
+      ErrorType.RATE_LIMIT_ERROR,
+      429,
+      'RATE_LIMITED'
+    );
   }
 
-  static createFileUploadError(message: string, details?: Record<string, any>): AppError {
-    return new AppError(message, ErrorType.FILE_UPLOAD_ERROR, 400, 'FILE_UPLOAD_ERROR', details)
+  static createFileUploadError(
+    message: string,
+    details?: Record<string, any>
+  ): AppError {
+    return new AppError(
+      message,
+      ErrorType.FILE_UPLOAD_ERROR,
+      400,
+      'FILE_UPLOAD_ERROR',
+      details
+    );
+  }
+
+  static createAuthenticationError(
+    message: string = 'Authentication required',
+    details?: Record<string, any>
+  ): AppError {
+    return new AppError(
+      message,
+      ErrorType.AUTHENTICATION_ERROR,
+      401,
+      'AUTHENTICATION_ERROR',
+      details
+    );
+  }
+
+  static createExternalServiceError(
+    message: string,
+    details?: Record<string, any>
+  ): AppError {
+    return new AppError(
+      message,
+      ErrorType.EXTERNAL_SERVICE_ERROR,
+      503,
+      'EXTERNAL_SERVICE_ERROR',
+      details
+    );
   }
 }
 
@@ -449,11 +546,11 @@ export function withErrorHandler<T extends any[], R>(
 ) {
   return async (...args: T): Promise<R | NextResponse<ErrorResponse>> => {
     try {
-      return await handler(...args)
+      return await handler(...args);
     } catch (error) {
-      return ErrorHandler.handleError(error, context as ErrorContext)
+      return ErrorHandler.handleError(error, context as ErrorContext);
     }
-  }
+  };
 }
 
-export default ErrorHandler
+export default ErrorHandler;

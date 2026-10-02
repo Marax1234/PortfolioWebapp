@@ -10,8 +10,6 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
 
 # next.js
 /.next/
@@ -31,7 +29,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env.local
 
 # vercel
 .vercel
@@ -41,3 +39,40 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+# --- laptop backup defaults ---
+node_modules/
+.venv/
+venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.next/
+.parcel-cache/
+.gradle/
+coverage/
+target/
+*.class
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+.DS_Store
+.claude/settings.local.json
+_minted-*/
+*.aux
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.run.xml
+*.bcf
+*.blg
+*.toc
+__MACOSX/
+*:Zone.Identifier
+*Zone.Identifier
